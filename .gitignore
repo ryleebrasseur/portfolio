@@ -9,3 +9,12 @@ coverage/
 playwright-report/
 .DS_Store
 *.log
+
+# Setup script generated files
+.setup-logs/
+.setup-health.json
+.dev-server.pid
+.setup.lock/
+.setup-backups/
+stop-dev-server.sh
+.dev-server-wrapper.sh

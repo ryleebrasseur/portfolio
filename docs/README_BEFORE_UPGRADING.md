@@ -114,11 +114,12 @@ This document tracks all deviations from the original documentation and the reas
 **Reason:** Single app doesn't need shared config yet  
 **Impact:** Will need these when adding more apps
 
-### 12. No CI/CD Pipeline
+### 12. Basic CI/CD Pipeline
 
-**Not Implemented:** .github/workflows/ci.yml  
-**Reason:** Repository not connected to GitHub yet  
-**Impact:** No automated testing/deployment
+**Implemented:** .github/workflows/ci.yml  
+**Status:** Basic CI pipeline exists with setup, lint, typecheck, test, build, and E2E test jobs  
+**Missing:** Advanced features like deployment, release automation, performance monitoring  
+**Impact:** Automated testing on PR/push, but no deployment automation yet
 
 ## ES Modules Configuration
 
@@ -224,6 +225,7 @@ This document tracks all deviations from the original documentation and the reas
 | TypeScript     | ✅           | Proper references configuration         |
 | Turbo Pipeline | ✅           | All pipeline tasks properly defined     |
 | Monorepo       | ⚠️           | Structure ready, apps missing           |
+| CI/CD          | ⚠️           | Basic pipeline exists, missing deploy   |
 | Features       | ❌           | None implemented yet                    |
 | Documentation  | ✅           | All examples fixed and accurate         |
 

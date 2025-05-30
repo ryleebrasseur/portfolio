@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "playwright test",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit"
   }
 }
