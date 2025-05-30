@@ -50,7 +50,14 @@ This document tracks all deviations from the original documentation and the reas
 **Reason:** Proactive upgrade to avoid deprecated ESLint 8  
 **Impact:** Modern configuration style, better performance
 
-### 6. Motion → Framer Motion
+### 6. ESLint Plugin Versions (PR Review Fixes)
+
+**Original Implementation:** eslint-plugin-react 7.37.0, eslint-plugin-react-hooks 5.0.0  
+**Fixed to:** eslint-plugin-react 7.34.3, eslint-plugin-react-hooks 4.6.2  
+**Reason:** Version 7.37.0 doesn't exist on npm, 5.0.0 is pre-release  
+**Impact:** Using latest stable versions for reliability
+
+### 7. Motion → Framer Motion
 
 **Original Spec:** "motion": "12.15.0"  
 **Implemented:** "framer-motion": "11.0.24"  
@@ -59,7 +66,7 @@ This document tracks all deviations from the original documentation and the reas
 
 ## Added Dependencies Not in Docs
 
-### 7. Additional Libraries
+### 8. Additional Libraries
 
 **Added without spec:**
 
@@ -75,7 +82,7 @@ This document tracks all deviations from the original documentation and the reas
 
 ## Critical Missing Implementations
 
-### 8. Missing Apps (2 of 3)
+### 9. Missing Apps (2 of 3)
 
 **Not Implemented:**
 
@@ -85,7 +92,7 @@ This document tracks all deviations from the original documentation and the reas
 **Reason:** Initial setup phase only created example app  
 **Impact:** Monorepo structure incomplete, can't validate cross-app builds
 
-### 9. Missing Shared Packages (All)
+### 10. Missing Shared Packages (All)
 
 **Not Implemented:**
 
@@ -96,7 +103,7 @@ This document tracks all deviations from the original documentation and the reas
 **Reason:** Premature abstraction - need apps first to identify shared code  
 **Impact:** No code reuse yet, but structure ready
 
-### 10. Missing Configuration Sharing
+### 11. Missing Configuration Sharing
 
 **Not Implemented:**
 
@@ -107,7 +114,7 @@ This document tracks all deviations from the original documentation and the reas
 **Reason:** Single app doesn't need shared config yet  
 **Impact:** Will need these when adding more apps
 
-### 11. No CI/CD Pipeline
+### 12. No CI/CD Pipeline
 
 **Not Implemented:** .github/workflows/ci.yml  
 **Reason:** Repository not connected to GitHub yet  
@@ -115,12 +122,74 @@ This document tracks all deviations from the original documentation and the reas
 
 ## ES Modules Configuration
 
-### 12. Added "type": "module"
+### 13. Added "type": "module"
 
 **Original Spec:** Not mentioned  
 **Implemented:** Added to all package.json files  
 **Reason:** Prevent Vite CJS deprecation warnings  
 **Impact:** Modern ES modules throughout project
+
+## PR Review Changes (2025-05-30)
+
+### 14. TypeScript References Added
+
+**Original:** Root tsconfig.json had `composite: true` but no references  
+**Fixed:** Added references array pointing to apps/robin-noguier  
+**Reason:** TypeScript project references require explicit references array  
+**Impact:** Proper incremental builds and type checking across monorepo
+
+### 15. Turbo Pipeline Entries
+
+**Original:** Only had build, dev, test, lint pipelines  
+**Fixed:** Added test:e2e and test:unit pipeline entries  
+**Reason:** Scripts in package.json referenced non-existent pipeline tasks  
+**Impact:** Can now run `pnpm test:e2e` and `pnpm test:unit` successfully
+
+### 16. Removed Redundant pnpm.overrides
+
+**Original:** Had pnpm.overrides for react/react-dom versions  
+**Fixed:** Removed the overrides section entirely  
+**Reason:** Already using pinned versions in dependencies, overrides redundant  
+**Impact:** Cleaner package.json, same version resolution
+
+### 17. Removed Non-existent App Scripts
+
+**Original:** Scripts for dev:jeremy and dev:vilinskyy  
+**Fixed:** Removed these scripts until apps exist  
+**Reason:** Prevent confusion and failing commands  
+**Impact:** Only working scripts remain in package.json
+
+### 18. ESLint TypeScript Parser
+
+**Original:** No explicit parser specified in languageOptions  
+**Fixed:** Added `parser: typescriptEslint.parser`  
+**Reason:** Ensure proper TypeScript file parsing  
+**Impact:** More reliable TypeScript linting
+
+### 19. Documentation Accuracy Fixes
+
+**Fixed in various docs:**
+
+- Incorrect version numbers in code examples
+- Invalid JSON syntax in feature_implementations_catalog.md (was frontend_feature_pack.md)
+- Syntax errors in JavaScript examples
+- Import paths (motion → framer-motion)
+- Missing newlines at end of files (auto-fixed by Prettier)
+
+**Reason:** Maintain accurate, runnable documentation  
+**Impact:** Developers can copy-paste examples without errors
+
+### 20. Documentation Files Renamed for Clarity
+
+**Renamed:**
+
+- `frontend_skeleton.md` → `architecture_monorepo_blueprint.md`
+- `frontend_feature_pack.md` → `feature_implementations_catalog.md`
+- `implementation_decisions.md` → `README_BEFORE_UPGRADING.md`
+- `portfolio_setup_30-05-2025_07_42_19.md` → `setup_session_2025-05-30.md`
+
+**Reason:** Better reflect content purpose and importance  
+**Impact:** Clearer documentation structure, README_BEFORE_UPGRADING screams importance
 
 ## Future Upgrade Path
 
@@ -144,16 +213,19 @@ This document tracks all deviations from the original documentation and the reas
 
 ## Validation Status
 
-| Component     | Docs Aligned | Notes                                   |
-| ------------- | ------------ | --------------------------------------- |
-| React Version | ❌           | Downgraded for compatibility            |
-| Build Tools   | ❌           | Older Vite, different plugin            |
-| 3D Libraries  | ❌           | Older versions for stability            |
-| Animation     | ✅           | Correct library, older version          |
-| Testing       | ⚠️           | Added Vitest, missing Playwright config |
-| Linting       | ⚡           | Newer than docs (ESLint 9)              |
-| Monorepo      | ⚠️           | Structure ready, apps missing           |
-| Features      | ❌           | None implemented yet                    |
+| Component      | Docs Aligned | Notes                                   |
+| -------------- | ------------ | --------------------------------------- |
+| React Version  | ❌           | Downgraded for compatibility            |
+| Build Tools    | ❌           | Older Vite, different plugin            |
+| 3D Libraries   | ❌           | Older versions for stability            |
+| Animation      | ✅           | Correct library, older version          |
+| Testing        | ⚠️           | Added Vitest, missing Playwright config |
+| Linting        | ⚡           | ESLint 9 + fixed plugin versions        |
+| TypeScript     | ✅           | Proper references configuration         |
+| Turbo Pipeline | ✅           | All pipeline tasks properly defined     |
+| Monorepo       | ⚠️           | Structure ready, apps missing           |
+| Features       | ❌           | None implemented yet                    |
+| Documentation  | ✅           | All examples fixed and accurate         |
 
 ## Decision Authority
 
@@ -164,4 +236,5 @@ These decisions were made based on:
 3. Stability over bleeding edge
 4. Practical development needs
 
-Last validated: 2025-05-30
+Last validated: 2025-05-30  
+Last PR review fixes: 2025-05-30 (PR #1)

@@ -752,7 +752,7 @@ Run tests with: `pnpm test --filter=robin-noguier`
 ```typescript
 import { useRef, useEffect, Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { motion } from 'motion'
+import { motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import styles from './ImmersiveHero.module.css'
