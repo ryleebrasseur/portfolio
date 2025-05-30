@@ -65,4 +65,4 @@ This is a pnpm monorepo using Turborepo for orchestration:
 
 ### Important Note
 
-See `/docs/implementation_decisions.md` for deviations from original specifications and reasoning behind version choices (e.g., React 18 instead of 19 for compatibility).
+See `/docs/README_BEFORE_UPGRADING.md` for deviations from original specifications and reasoning behind version choices (e.g., React 18 instead of 19 for compatibility).

@@ -698,11 +698,15 @@ This feature aims to create a highly engaging and memorable first impression for
 1.  Ensure you have Node.js and npm/yarn installed.
 2.  Install necessary dependencies:bash
     npm install three @react-three/fiber @react-three/drei gsap @studio-freight/lenis
+
     # or
+
     yarn add three @react-three/fiber @react-three/drei gsap @studio-freight/lenis
+
     ```
 
     ```
+
 3.  Place the `HeroSectionWebGLScrollNarrative.jsx`, `useCustomScroll.js`, `styles.module.css`, and the `shaders/` directory within your project's feature components directory.
 4.  Import and use the `HeroSectionWebGLScrollNarrative` component in your desired page/layout.
 
@@ -757,7 +761,8 @@ _(A GIF demonstrating the scroll-driven WebGL animations, 3D element transitions
 ---
 **./elite-portfolio-features/[jeremy-stokes.com/site-map.json](https://jeremy-stokes.com/site-map.json)**
 ```json
-",
+[
+  {
     "path": "/",
     "stack": "Framer (React, Framer Motion, CSS)"
   },
@@ -847,13 +852,13 @@ This analysis is based on information from StackCrawler [28], Framer's own docum
 **./elite-portfolio-features/[jeremy-stokes.com/features/project-showcase-grid-list/ProjectShowcaseGrid.jsx](https://www.google.com/search?q=https://jeremy-stokes.com/features/project-showcase-grid-list/ProjectShowcaseGrid.jsx)**
 
 ```jsx
-import React from 'react';
-import { motion } from 'framer-motion';
-import ProjectCard from './ProjectCard'; // Assuming ProjectCard is in the same directory
-import styles from './styles.module.css';
+import React from 'react'
+import { motion } from 'framer-motion'
+import ProjectCard from './ProjectCard' // Assuming ProjectCard is in the same directory
+import styles from './styles.module.css'
 
 // Dummy data, replace with actual project data structure
-const projectsData =;
+const projectsData = []
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -863,7 +868,7 @@ const containerVariants = {
       staggerChildren: 0.1, // Stagger animation for each card
     },
   },
-};
+}
 
 const ProjectShowcaseGrid = () => {
   return (
@@ -883,10 +888,10 @@ const ProjectShowcaseGrid = () => {
         ))}
       </div>
     </motion.section>
-  );
-};
+  )
+}
 
-export default ProjectShowcaseGrid;
+export default ProjectShowcaseGrid
 ```
 
 ---
@@ -1239,11 +1244,15 @@ This feature provides a visually engaging, clean, and organized method for prese
 1.  Ensure you have Node.js and npm/yarn installed.
 2.  Install necessary dependencies:bash
     npm install react framer-motion
+
     # or
+
     yarn add react framer-motion
+
     ```
 
     ```
+
 3.  Place `ProjectShowcaseGrid.jsx`, `ProjectCard.jsx`, and `styles.module.css` into your project's feature components directory.
 4.  Ensure project data (titles, images, links, descriptions) is available, either hardcoded as in the example or fetched from an API.
 
@@ -1286,7 +1295,8 @@ _(An animated GIF showcasing the project cards appearing with a stagger animatio
 ---
 **./elite-portfolio-features/[vilinskyy.com/site-map.json](https://vilinskyy.com/site-map.json)**
 ```json
-",
+[
+  {
     "path": "/",
     "stack": "HTML, CSS, Embedded Video Player (e.g., Loom, YouTube), JavaScript"
   },
@@ -1404,34 +1414,34 @@ This analysis is based on site content review [30, 31, 33, 32, 34, 48], external
 **./elite-portfolio-features/[vilinskyy.com/features/expandable-content-sections/ExpandableProjectSection.jsx](https://www.google.com/search?q=https://vilinskyy.com/features/expandable-content-sections/ExpandableProjectSection.jsx)**
 
 ```jsx
-import React, { useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import ProjectSummary from './ProjectSummary';
-import ProjectDetail from './ProjectDetail';
-import styles from './styles.module.css';
+import React, { useState, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import ProjectSummary from './ProjectSummary'
+import ProjectDetail from './ProjectDetail'
+import styles from './styles.module.css'
 
 const ExpandableProjectSection = ({ project }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const contentRef = useRef(null);
+  const [isExpanded, setIsExpanded] = useState(false)
+  const contentRef = useRef(null)
 
   const toggleExpand = () => {
-    setIsExpanded(!isExpanded);
-  };
+    setIsExpanded(!isExpanded)
+  }
 
   // Dummy project data structure if not passed as prop fully
-  const currentProject = project |
-| {
+  const currentProject = project || {
     id: 'default-project',
     summary: {
       title: 'Sample Project Title',
       shortDescription: 'A brief overview of the project. Click to read more.',
     },
     detail: {
-      longDescription: 'This is the detailed description of the project, including challenges, processes, and outcomes. It can contain multiple paragraphs and even images or embedded videos if the ProjectDetail component is designed to handle them.',
+      longDescription:
+        'This is the detailed description of the project, including challenges, processes, and outcomes. It can contain multiple paragraphs and even images or embedded videos if the ProjectDetail component is designed to handle them.',
       images: ['/path/to/detail-image1.jpg'],
       // other details like client, role, tech stack etc.
     },
-  };
+  }
 
   return (
     <div className={styles.expandableSection}>
@@ -1468,10 +1478,10 @@ const ExpandableProjectSection = ({ project }) => {
         )}
       </AnimatePresence>
     </div>
-  );
-};
+  )
+}
 
-export default ExpandableProjectSection;
+export default ExpandableProjectSection
 ```
 
 ---
@@ -1793,11 +1803,15 @@ This feature implements a progressive disclosure pattern, commonly used on `vili
 1.  Ensure you have Node.js and npm/yarn installed.
 2.  Install necessary dependencies:bash
     npm install react framer-motion
+
     # or
+
     yarn add react framer-motion
+
     ```
 
     ```
+
 3.  Place `ExpandableProjectSection.jsx`, `ProjectSummary.jsx`, `ProjectDetail.jsx`, and `styles.module.css` into your project's feature components directory.
 4.  Prepare project data to be passed to the `ExpandableProjectSection` component.
 
