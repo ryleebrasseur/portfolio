@@ -99,10 +99,7 @@ portfolio-monorepo/
     "pnpm": ">=8.0.0"
   },
   "packageManager": "pnpm@8.15.0",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "workspaces": ["apps/*", "packages/*"],
   "scripts": {
     "dev": "turbo run dev",
     "dev:robin": "turbo run dev --filter=robin-noguier",
@@ -127,7 +124,7 @@ portfolio-monorepo/
     "@types/react-dom": "18.2.25",
     "@typescript-eslint/eslint-plugin": "7.4.0",
     "@typescript-eslint/parser": "7.4.0",
-    "@vitejs/plugin-react-swc": "3.6.0",
+    "@vitejs/plugin-react": "4.2.1",
     "autoprefixer": "10.4.19",
     "eslint": "8.57.0",
     "eslint-config-prettier": "9.1.0",
@@ -141,21 +138,18 @@ portfolio-monorepo/
     "prettier": "3.2.5",
     "turbo": "1.13.2",
     "typescript": "5.8.3",
-    "vite": "6.3.5"
+    "vite": "5.2.8"
   },
   "dependencies": {
-    "@react-three/fiber": "9.1.2",
-    "gsap": "3.13.0",
-    "motion": "12.15.0",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "three": "0.176.0"
+    "@react-three/fiber": "8.15.19",
+    "gsap": "3.12.5",
+    "framer-motion": "11.0.24",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "three": "0.162.0"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
+    "*.{ts,tsx,js,jsx}": ["eslint --fix", "prettier --write"],
     "*.{json,css,md}": "prettier --write"
   }
 }
@@ -176,23 +170,23 @@ export function createViteConfig(rootDir: string) {
     plugins: [
       react({
         // Use SWC for faster builds in development
-        jsxImportSource: 'react'
-      })
+        jsxImportSource: 'react',
+      }),
     ],
     resolve: {
       alias: {
         '@': path.resolve(rootDir, './src'),
         '@shared': path.resolve(rootDir, '../../packages/shared-ui/src'),
         '@three': path.resolve(rootDir, '../../packages/three-components/src'),
-        '@animation': path.resolve(rootDir, '../../packages/animation-lib/src')
-      }
+        '@animation': path.resolve(rootDir, '../../packages/animation-lib/src'),
+      },
     },
     css: {
       modules: {
         // CSS Modules configuration
         localsConvention: 'camelCase',
-        generateScopedName: '[name]__[local]___[hash:base64:5]'
-      }
+        generateScopedName: '[name]__[local]___[hash:base64:5]',
+      },
     },
     build: {
       // Enable source maps for production debugging
@@ -203,20 +197,27 @@ export function createViteConfig(rootDir: string) {
           manualChunks: {
             'react-vendor': ['react', 'react-dom'],
             'three-vendor': ['three', '@react-three/fiber'],
-            'animation-vendor': ['gsap', 'motion']
-          }
-        }
-      }
+            'animation-vendor': ['gsap', 'motion'],
+          },
+        },
+      },
     },
     server: {
       // Enable HMR with proper host configuration
       host: true,
-      strictPort: true
+      strictPort: true,
     },
     optimizeDeps: {
       // Pre-bundle heavy dependencies
-      include: ['react', 'react-dom', 'three', '@react-three/fiber', 'gsap', 'motion']
-    }
+      include: [
+        'react',
+        'react-dom',
+        'three',
+        '@react-three/fiber',
+        'gsap',
+        'motion',
+      ],
+    },
   })
 }
 ```
@@ -231,14 +232,14 @@ export function createViteConfig(rootDir: string) {
     "declaration": true,
     "declarationMap": true,
     "incremental": true,
-    
+
     // Strict type checking
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    
+
     // Module resolution
     "target": "ES2022",
     "module": "ESNext",
@@ -246,11 +247,11 @@ export function createViteConfig(rootDir: string) {
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    
+
     // React configuration
     "jsx": "react-jsx",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    
+
     // Output configuration
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
@@ -296,28 +297,27 @@ export function createViteConfig(rootDir: string) {
     "plugin:react-hooks/recommended",
     "prettier"
   ],
-  "plugins": [
-    "@typescript-eslint",
-    "react",
-    "react-hooks"
-  ],
+  "plugins": ["@typescript-eslint", "react", "react-hooks"],
   "rules": {
     // React 19 - new JSX transform
     "react/react-in-jsx-scope": "off",
     "react/prop-types": "off",
-    
+
     // TypeScript specific
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-explicit-any": "warn",
-    
+
     // Best practices
     "no-console": ["warn", { "allow": ["warn", "error"] }],
     "prefer-const": "error",
     "no-unused-vars": "off",
-    "@typescript-eslint/no-unused-vars": ["error", { 
-      "argsIgnorePattern": "^_",
-      "varsIgnorePattern": "^_"
-    }]
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ]
   }
 }
 ```
@@ -329,7 +329,7 @@ export function createViteConfig(rootDir: string) {
   "semi": false,
   "singleQuote": true,
   "tabWidth": 2,
-  "trailingComma": "none",
+  "trailingComma": "es5",
   "printWidth": 100,
   "bracketSpacing": true,
   "arrowParens": "avoid",
@@ -345,57 +345,57 @@ import { defineConfig, devices } from '@playwright/test'
 export default defineConfig({
   // Test directory configuration
   testDir: './e2e',
-  
+
   // Test execution settings
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  
+
   // Reporter configuration
   reporter: [
     ['html', { outputFolder: 'playwright-report' }],
-    ['json', { outputFile: 'test-results.json' }]
+    ['json', { outputFile: 'test-results.json' }],
   ],
-  
+
   // Global test settings
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure'
+    video: 'retain-on-failure',
   },
-  
+
   // Project configuration for different browsers
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
+      use: { ...devices['Desktop Chrome'] },
     },
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] }
+      use: { ...devices['Desktop Firefox'] },
     },
     {
       name: 'webkit',
-      use: { ...devices['Desktop Safari'] }
+      use: { ...devices['Desktop Safari'] },
     },
     {
       name: 'mobile-chrome',
-      use: { ...devices['Pixel 5'] }
+      use: { ...devices['Pixel 5'] },
     },
     {
       name: 'mobile-safari',
-      use: { ...devices['iPhone 12'] }
-    }
+      use: { ...devices['iPhone 12'] },
+    },
   ],
-  
+
   // Dev server configuration
   webServer: {
     command: 'pnpm dev',
     port: 3000,
-    reuseExistingServer: !process.env.CI
-  }
+    reuseExistingServer: !process.env.CI,
+  },
 })
 ```
 
@@ -407,27 +407,21 @@ module.exports = {
     // CSS Modules support
     require('postcss-modules')({
       generateScopedName: '[name]__[local]___[hash:base64:5]',
-      exportGlobals: true
+      exportGlobals: true,
     }),
-    
+
     // Nested CSS support
     require('postcss-nested'),
-    
+
     // Autoprefixer for browser compatibility
     require('autoprefixer')({
       // Target modern browsers
-      overrideBrowserslist: [
-        '>0.2%',
-        'not dead',
-        'not op_mini all'
-      ]
+      overrideBrowserslist: ['>0.2%', 'not dead', 'not op_mini all'],
     }),
-    
+
     // Custom media queries
-    require('postcss-custom-media')({
-      importFrom: './config/media-queries.css'
-    })
-  ]
+    require('postcss-custom-media')(),
+  ],
 }
 ```
 
@@ -436,9 +430,7 @@ module.exports = {
 ```json
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": [
-    "**/.env.*local"
-  ],
+  "globalDependencies": ["**/.env.*local"],
   "pipeline": {
     "build": {
       "dependsOn": ["^build"],
@@ -606,18 +598,19 @@ A production-grade modular frontend monorepo for portfolio sites, built with cut
 - **Language**: TypeScript 5.8.3
 
 ## 📁 Structure
+```
 
-```
-├── apps/               # Portfolio sites
-│   ├── robin-noguier/
-│   ├── jeremy-stokes/
-│   └── vilinskyy/
-├── packages/          # Shared packages
-│   ├── shared-ui/     # Common UI components
-│   ├── three-components/ # 3D components
-│   └── animation-lib/ # Animation utilities
-└── config/           # Shared configurations
-```
+├── apps/ # Portfolio sites
+│ ├── robin-noguier/
+│ ├── jeremy-stokes/
+│ └── vilinskyy/
+├── packages/ # Shared packages
+│ ├── shared-ui/ # Common UI components
+│ ├── three-components/ # 3D components
+│ └── animation-lib/ # Animation utilities
+└── config/ # Shared configurations
+
+````
 
 ## 🚦 Getting Started
 
@@ -635,7 +628,7 @@ A production-grade modular frontend monorepo for portfolio sites, built with cut
 # Or manually:
 npm install -g pnpm@8.15.0
 pnpm install
-```
+````
 
 ### Development
 
@@ -683,18 +676,19 @@ pnpm build --filter=robin-noguier
 
 ## 📋 Scripts
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start development servers |
-| `pnpm build` | Production build |
-| `pnpm test` | Run all tests |
-| `pnpm lint` | Lint code |
-| `pnpm format` | Format code |
-| `pnpm clean` | Clean build artifacts |
+| Command       | Description               |
+| ------------- | ------------------------- |
+| `pnpm dev`    | Start development servers |
+| `pnpm build`  | Production build          |
+| `pnpm test`   | Run all tests             |
+| `pnpm lint`   | Lint code                 |
+| `pnpm format` | Format code               |
+| `pnpm clean`  | Clean build artifacts     |
 
 ## 🔧 Configuration
 
 Each app can be configured through:
+
 - `vite.config.ts` - Build configuration
 - `tsconfig.json` - TypeScript settings
 - `.env.local` - Environment variables
@@ -702,7 +696,8 @@ Each app can be configured through:
 ## 📝 License
 
 MIT
-```
+
+````
 
 ## 4. Sample Feature: Immersive Hero
 
@@ -720,7 +715,7 @@ This feature combines Three.js for 3D graphics with GSAP for scroll-triggered an
 ## Components
 
 - `ImmersiveHero.tsx` - Main component orchestrating the 3D scene
-- `Scene.tsx` - Three.js scene setup and management  
+- `Scene.tsx` - Three.js scene setup and management
 - `ScrollTrigger.tsx` - GSAP ScrollTrigger integration
 - `ImmersiveHero.module.css` - Scoped styles
 
@@ -732,16 +727,16 @@ import { ImmersiveHero } from '@/features/immersive-hero'
 function HomePage() {
   return <ImmersiveHero title="Portfolio" subtitle="Creative Developer" />
 }
-```
+````
 
 ## Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| title | string | required | Main heading text |
-| subtitle | string | - | Secondary text |
-| particleCount | number | 1000 | Number of particles in scene |
-| scrollDepth | number | 2 | Scroll multiplier for parallax |
+| Prop          | Type   | Default  | Description                    |
+| ------------- | ------ | -------- | ------------------------------ |
+| title         | string | required | Main heading text              |
+| subtitle      | string | -        | Secondary text                 |
+| particleCount | number | 1000     | Number of particles in scene   |
+| scrollDepth   | number | 2        | Scroll multiplier for parallax |
 
 ## Testing
 
@@ -749,7 +744,8 @@ function HomePage() {
 - E2E tests: `ImmersiveHero.spec.ts`
 
 Run tests with: `pnpm test --filter=robin-noguier`
-```
+
+````
 
 ### apps/robin-noguier/src/features/immersive-hero/ImmersiveHero.tsx
 
@@ -772,11 +768,11 @@ interface ImmersiveHeroProps {
   scrollDepth?: number
 }
 
-export function ImmersiveHero({ 
-  title, 
-  subtitle, 
+export function ImmersiveHero({
+  title,
+  subtitle,
   particleCount = 1000,
-  scrollDepth = 2 
+  scrollDepth = 2
 }: ImmersiveHeroProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -807,7 +803,7 @@ export function ImmersiveHero({
   }, [scrollDepth])
 
   return (
-    <motion.section 
+    <motion.section
       ref={containerRef}
       className={styles.container}
       initial={{ opacity: 0 }}
@@ -828,12 +824,12 @@ export function ImmersiveHero({
           </Canvas>
         </Suspense>
       </div>
-      
+
       <HeroText title={title} subtitle={subtitle} />
     </motion.section>
   )
 }
-```
+````
 
 ### apps/robin-noguier/src/features/immersive-hero/ImmersiveHero.module.css
 
@@ -887,23 +883,23 @@ test.describe('Immersive Hero Feature', () => {
   test('renders hero section with title', async ({ page }) => {
     const hero = page.locator('[data-testid="immersive-hero"]')
     await expect(hero).toBeVisible()
-    
+
     const title = hero.locator('h1')
     await expect(title).toHaveText('Portfolio')
   })
 
   test('scroll animations trigger correctly', async ({ page }) => {
     const hero = page.locator('[data-testid="immersive-hero"]')
-    
+
     // Initial state
     await expect(hero).toHaveCSS('opacity', '1')
-    
+
     // Scroll and check animation
     await page.evaluate(() => window.scrollBy(0, 500))
     await page.waitForTimeout(100) // Wait for animation
-    
-    const opacity = await hero.evaluate(el => 
-      window.getComputedStyle(el).opacity
+
+    const opacity = await hero.evaluate(
+      (el) => window.getComputedStyle(el).opacity
     )
     expect(parseFloat(opacity)).toBeLessThan(1)
   })
@@ -913,13 +909,12 @@ test.describe('Immersive Hero Feature', () => {
     const hasWebGL = await page.evaluate(() => {
       const canvas = document.createElement('canvas')
       return !!(
-        canvas.getContext('webgl') || 
-        canvas.getContext('experimental-webgl')
+        canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
       )
     })
-    
+
     expect(hasWebGL).toBe(true)
-    
+
     // Check canvas is rendered
     const canvas = page.locator('canvas')
     await expect(canvas).toBeVisible()
@@ -927,10 +922,10 @@ test.describe('Immersive Hero Feature', () => {
 
   test('responsive behavior on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 })
-    
+
     const hero = page.locator('[data-testid="immersive-hero"]')
     await expect(hero).toBeVisible()
-    
+
     // Check mobile-specific styles applied
     await expect(hero).toHaveCSS('height', '667px')
   })
@@ -939,60 +934,62 @@ test.describe('Immersive Hero Feature', () => {
 
 ## 5. Dependency Version Table
 
-| Package | Version | Justification |
-|---------|---------|---------------|
-| **Core Build Tools** | | |
-| vite | 6.3.5 | Latest stable. Node 18+ support, improved dev server performance |
-| turbo | 1.13.2 | Proven monorepo orchestration, excellent caching |
-| typescript | 5.8.3 | Latest stable before v7.0 Go rewrite |
-| **React Ecosystem** | | |
-| react | 19.1.0 | Latest stable with Server Components, new hooks |
-| react-dom | 19.1.0 | Matches React version for compatibility |
-| @vitejs/plugin-react-swc | 3.6.0 | SWC for 10x faster HMR than Babel |
-| **3D Graphics** | | |
-| three | 0.176.0 | Latest stable, WebGPU readiness |
-| @react-three/fiber | 9.1.2 | React 19 compatible, stable API |
-| **Animation** | | |
-| gsap | 3.13.0 | Now free (Webflow acquisition), industry standard |
-| motion | 12.15.0 | Smaller bundle than GSAP, hardware accelerated |
-| **Testing** | | |
-| @playwright/test | 1.52.0 | Latest with component testing, cross-browser |
-| **CSS Processing** | | |
-| postcss | 8.4.38 | Latest stable, wide plugin ecosystem |
-| postcss-modules | 6.0.1 | Scoped styles, prevents conflicts |
-| autoprefixer | 10.4.19 | Browser compatibility, modern targets |
-| **Code Quality** | | |
-| eslint | 8.57.0 | Pinned pre-v9 for plugin compatibility |
-| prettier | 3.2.5 | Latest stable, consistent formatting |
-| husky | 9.0.11 | Git hooks for quality gates |
+| Package              | Version | Justification                                           |
+| -------------------- | ------- | ------------------------------------------------------- |
+| **Core Build Tools** |         |                                                         |
+| vite                 | 5.2.8   | Stable version with mature plugin ecosystem             |
+| turbo                | 1.13.2  | Proven monorepo orchestration, excellent caching        |
+| typescript           | 5.8.3   | Latest stable before v7.0 Go rewrite                    |
+| **React Ecosystem**  |         |                                                         |
+| react                | 18.2.0  | Stable with concurrent features, wide ecosystem support |
+| react-dom            | 18.2.0  | Matches React version for compatibility                 |
+| @vitejs/plugin-react | 4.2.1   | Standard React plugin with stable HMR                   |
+| **3D Graphics**      |         |                                                         |
+| three                | 0.162.0 | Compatible with @react-three/fiber 8.x                  |
+| @react-three/fiber   | 8.15.19 | React 18 compatible, stable API                         |
+| **Animation**        |         |                                                         |
+| gsap                 | 3.12.5  | Industry standard animation library                     |
+| framer-motion        | 11.0.24 | React-specific animations, hardware accelerated         |
+| **Testing**          |         |                                                         |
+| @playwright/test     | 1.52.0  | Latest with component testing, cross-browser            |
+| **CSS Processing**   |         |                                                         |
+| postcss              | 8.4.38  | Latest stable, wide plugin ecosystem                    |
+| postcss-modules      | 6.0.1   | Scoped styles, prevents conflicts                       |
+| autoprefixer         | 10.4.19 | Browser compatibility, modern targets                   |
+| **Code Quality**     |         |                                                         |
+| eslint               | 8.57.0  | Pinned pre-v9 for plugin compatibility                  |
+| prettier             | 3.2.5   | Latest stable, consistent formatting                    |
+| husky                | 9.0.11  | Git hooks for quality gates                             |
 
 **Note on version pinning**: Exact versions used except for peerDependencies to prevent resolution conflicts. The `^` operator avoided to ensure reproducible builds across environments.
 
 ## 6. Script Explanation Table
 
-| Script | Purpose | Usage Context |
-|--------|---------|---------------|
-| `dev` | Start all apps in development mode | Full monorepo development |
-| `dev:robin` | Start only Robin's portfolio | Focused development on single site |
-| `build` | Production build of all apps | CI/CD, deployment preparation |
-| `test` | Run all test suites | Pre-commit, CI validation |
-| `test:e2e` | Run Playwright E2E tests | Integration testing, QA |
-| `lint` | ESLint validation | Code quality checks |
-| `format` | Auto-fix code formatting | Development workflow |
-| `typecheck` | TypeScript compilation check | Type safety validation |
-| `clean` | Remove all build artifacts | Fresh start troubleshooting |
+| Script      | Purpose                            | Usage Context                      |
+| ----------- | ---------------------------------- | ---------------------------------- |
+| `dev`       | Start all apps in development mode | Full monorepo development          |
+| `dev:robin` | Start only Robin's portfolio       | Focused development on single site |
+| `build`     | Production build of all apps       | CI/CD, deployment preparation      |
+| `test`      | Run all test suites                | Pre-commit, CI validation          |
+| `test:e2e`  | Run Playwright E2E tests           | Integration testing, QA            |
+| `lint`      | ESLint validation                  | Code quality checks                |
+| `format`    | Auto-fix code formatting           | Development workflow               |
+| `typecheck` | TypeScript compilation check       | Type safety validation             |
+| `clean`     | Remove all build artifacts         | Fresh start troubleshooting        |
 
 ## 7. Self-Critique and Risk Analysis
 
 ### Architecture Decisions
 
 **Strengths:**
+
 - Turbo provides excellent DX with minimal configuration
 - Strict TypeScript with project references ensures type safety
 - CSS Modules prevent style conflicts in multi-site setup
 - Modular feature folders enable easy sharing/isolation
 
 **Potential Issues:**
+
 - Heavy animation libraries (GSAP + Motion) increase bundle size
 - Three.js requires WebGL support (98% browser coverage)
 - Monorepo complexity may slow initial onboarding
@@ -1000,11 +997,13 @@ test.describe('Immersive Hero Feature', () => {
 ### Upgrade Considerations
 
 **High Priority (6 months):**
+
 - TypeScript 7.0 when stable (10x performance boost)
 - React compiler when production-ready
 - Vite 7.0 for potential Module Federation support
 
 **Medium Priority (12 months):**
+
 - Evaluate WebGPU adoption for Three.js
 - Consider Bun runtime for faster builds
 - Assess React Server Components adoption
@@ -1012,13 +1011,15 @@ test.describe('Immersive Hero Feature', () => {
 ### Performance Risks
 
 1. **Bundle Size**: Combined animation libraries ~41kb gzipped
-   - *Mitigation*: Use dynamic imports, tree-shake unused features
+
+   - _Mitigation_: Use dynamic imports, tree-shake unused features
 
 2. **3D Performance**: Complex scenes may struggle on low-end devices
-   - *Mitigation*: Implement quality settings, progressive enhancement
+
+   - _Mitigation_: Implement quality settings, progressive enhancement
 
 3. **Build Times**: Monorepo builds can become slow at scale
-   - *Mitigation*: Turbo caching, consider remote caching for teams
+   - _Mitigation_: Turbo caching, consider remote caching for teams
 
 ### Security Considerations
 

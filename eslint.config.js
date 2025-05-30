@@ -24,7 +24,11 @@ export default typescriptEslint.config(
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_' },
+      ],
+      'eol-last': ['error', 'always'],
       ...reactHooksPlugin.configs.recommended.rules,
     },
     settings: {
@@ -34,6 +38,11 @@ export default typescriptEslint.config(
     },
   },
   {
-    ignores: ['**/node_modules/**', '**/dist/**', '**/.turbo/**', '**/coverage/**'],
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.turbo/**',
+      '**/coverage/**',
+    ],
   }
 )
