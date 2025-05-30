@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 
 function App() {
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       style={{ width: '100vw', height: '100vh' }}

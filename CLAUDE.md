@@ -5,6 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ### Development
+
 - `pnpm dev` - Start all development servers (uses Turborepo)
 - `pnpm build` - Build all packages for production
 - `pnpm test` - Run all tests across the monorepo
@@ -12,6 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `pnpm format` - Format all code with Prettier
 
 ### App-specific (from apps/robin-noguier)
+
 - `pnpm dev` - Start Vite dev server on port 5173
 - `pnpm build` - Create production build in dist/
 - `pnpm preview` - Preview production build locally
@@ -23,12 +25,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a pnpm monorepo using Turborepo for orchestration:
 
 ### Structure
+
 - `apps/` - Individual portfolio applications
   - `robin-noguier/` - Sample React + Three.js portfolio
 - `packages/` - Shared packages (currently empty, ready for extraction)
 - `config/` - Shared configuration (currently empty)
 
 ### Tech Stack
+
 - **Build**: Vite 5.2.8 with @vitejs/plugin-react
 - **Framework**: React 18.2.0 with TypeScript 5.8.3
 - **3D Graphics**: Three.js 0.162.0 + @react-three/fiber + @react-three/drei
@@ -40,6 +44,7 @@ This is a pnpm monorepo using Turborepo for orchestration:
 - **Utilities**: Lodash, PapaParse
 
 ### Key Patterns
+
 1. **Monorepo Setup**: Uses pnpm workspaces defined in `pnpm-workspace.yaml`
 2. **Build Pipeline**: Turborepo manages parallel builds and caching (see `turbo.json`)
 3. **TypeScript**: Strict mode enabled with composite projects for monorepo
@@ -47,6 +52,7 @@ This is a pnpm monorepo using Turborepo for orchestration:
 5. **ES Modules**: IMPORTANT - All package.json files must include `"type": "module"` to avoid Vite CJS deprecation warnings
 
 ### Current State
+
 - Basic monorepo structure established
 - Sample app demonstrates 3D graphics and animation capabilities
 - ESLint 9 with flat config (eslint.config.js)
@@ -58,4 +64,5 @@ This is a pnpm monorepo using Turborepo for orchestration:
 - No Vite CJS deprecation warnings
 
 ### Important Note
+
 See `/docs/implementation_decisions.md` for deviations from original specifications and reasoning behind version choices (e.g., React 18 instead of 19 for compatibility).
