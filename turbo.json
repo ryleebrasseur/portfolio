@@ -13,6 +13,14 @@
       "outputs": ["coverage/**"],
       "cache": true
     },
+    "test:e2e": {
+      "outputs": ["test-results/**", "playwright-report/**"],
+      "cache": false
+    },
+    "test:unit": {
+      "outputs": ["coverage/**"],
+      "cache": true
+    },
     "lint": {
       "outputs": []
     }
