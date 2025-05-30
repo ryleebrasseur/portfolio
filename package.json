@@ -18,8 +18,6 @@
   "scripts": {
     "dev": "turbo run dev",
     "dev:robin": "turbo run dev --filter=robin-noguier",
-    "dev:jeremy": "turbo run dev --filter=jeremy-stokes",
-    "dev:vilinskyy": "turbo run dev --filter=vilinskyy",
     "build": "turbo run build",
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
@@ -78,11 +76,5 @@
       "prettier --write"
     ],
     "*.{json,css,scss,md}": "prettier --write"
-  },
-  "pnpm": {
-    "overrides": {
-      "react": "18.2.0",
-      "react-dom": "18.2.0"
-    }
   }
 }

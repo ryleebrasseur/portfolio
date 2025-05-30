@@ -14,6 +14,7 @@ export default typescriptEslint.config(
       'react-hooks': reactHooksPlugin,
     },
     languageOptions: {
+      parser: typescriptEslint.parser,
       parserOptions: {
         ecmaFeatures: {
           jsx: true,
