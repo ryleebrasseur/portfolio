@@ -198,7 +198,12 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+  background: linear-gradient(
+    135deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 70%
+  );
   transform: translateX(-100%);
   transition: transform 0.6s ease;
 }
@@ -214,27 +219,27 @@
 }
 
 /* Theme preview colors */
-.themePreview[data-theme="default"] {
-  background: linear-gradient(135deg, #0a0a0a 0%, #4A90E2 50%, #141414 100%);
+.themePreview[data-theme='default'] {
+  background: linear-gradient(135deg, #0a0a0a 0%, #4a90e2 50%, #141414 100%);
 }
 
-.themePreview[data-theme="cyberpunk"] {
+.themePreview[data-theme='cyberpunk'] {
   background: linear-gradient(135deg, #0f0f23 0%, #00ff88 50%, #ff006e 100%);
 }
 
-.themePreview[data-theme="ocean"] {
+.themePreview[data-theme='ocean'] {
   background: linear-gradient(135deg, #001f3f 0%, #7fdbff 50%, #39cccc 100%);
 }
 
-.themePreview[data-theme="sunset"] {
+.themePreview[data-theme='sunset'] {
   background: linear-gradient(135deg, #1a0033 0%, #ff6b6b 50%, #feca57 100%);
 }
 
-.themePreview[data-theme="monochrome"] {
+.themePreview[data-theme='monochrome'] {
   background: linear-gradient(135deg, #ffffff 0%, #888888 50%, #000000 100%);
 }
 
-.themePreview[data-theme="forest"] {
+.themePreview[data-theme='forest'] {
   background: linear-gradient(135deg, #0b1e0b 0%, #90ee90 50%, #ffd700 100%);
 }
 
@@ -243,17 +248,17 @@
   .pinnedNav {
     padding: 1rem 1.5rem;
   }
-  
+
   .projectButtons {
     gap: 1rem;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
-  
+
   .projectTitle.visible {
     max-width: 100px;
   }
-  
+
   .themeOptions {
     right: 0;
     left: auto;

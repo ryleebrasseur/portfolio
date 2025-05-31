@@ -41,19 +41,19 @@
   .header {
     padding: 1.25rem 1.5rem;
   }
-  
+
   .header.scrolled {
     padding: 0.875rem 1.5rem;
   }
-  
+
   .headerContent {
     gap: 1rem;
   }
-  
+
   .name {
     font-size: 1rem;
   }
-  
+
   .title {
     font-size: 0.75rem;
   }
