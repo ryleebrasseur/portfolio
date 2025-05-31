@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Custom Cursor', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
     await page.waitForLoadState('networkidle')
   })
 

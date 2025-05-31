@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Hero Section with WebGL', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
     await page.waitForSelector('canvas', { timeout: 10000 })
   })
 

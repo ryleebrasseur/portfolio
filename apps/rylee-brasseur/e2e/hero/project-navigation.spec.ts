@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Project Navigation Buttons', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
     await page.waitForSelector('[class*="projectButton"]', { timeout: 10000 })
   })
 
