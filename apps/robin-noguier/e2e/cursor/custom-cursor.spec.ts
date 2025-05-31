@@ -115,20 +115,29 @@ test.describe('Custom Cursor', () => {
     expect(releasedClasses).not.toMatch(/clicking/)
   })
 
-  test('should be hidden on mobile devices', async ({ page }) => {
-    // Set mobile viewport
-    await page.setViewportSize({ width: 375, height: 667 })
-    await page.reload()
-    await page.waitForLoadState('networkidle')
+  test('should be hidden on mobile devices', async ({ page, context }) => {
+    // Create a new context with mobile viewport to ensure media queries apply correctly
+    const mobileContext = await context.browser()?.newContext({
+      viewport: { width: 375, height: 667 },
+      isMobile: true,
+      hasTouch: true,
+    })
+    if (!mobileContext) return
 
-    const cursor = await page.locator(
+    const mobilePage = await mobileContext.newPage()
+    await mobilePage.goto('/', { waitUntil: 'domcontentloaded' })
+    await mobilePage.waitForLoadState('networkidle')
+
+    const cursor = await mobilePage.locator(
       '[class*="cursor"]:not([class*="cursorDot"])'
     )
-    const cursorDot = await page.locator('[class*="cursorDot"]')
+    const cursorDot = await mobilePage.locator('[class*="cursorDot"]')
 
     // Should be hidden via CSS
     await expect(cursor).toHaveCSS('display', 'none')
     await expect(cursorDot).toHaveCSS('display', 'none')
+
+    await mobileContext.close()
   })
 
   test('should respect reduced motion preference', async ({
