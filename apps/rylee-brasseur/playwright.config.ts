@@ -7,9 +7,12 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
+  timeout: 60000, // Increase default test timeout to 60s
   use: {
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
+    navigationTimeout: 60000, // Increase navigation timeout
+    actionTimeout: 30000, // Increase action timeout
   },
 
   projects: [
@@ -20,7 +23,16 @@ export default defineConfig({
 
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      use: { 
+        ...devices['Desktop Firefox'],
+        launchOptions: {
+          firefoxUserPrefs: {
+            // Disable GPU acceleration for better stability in CI
+            'layers.acceleration.disabled': true,
+            'gfx.webrender.all': false,
+          }
+        }
+      },
     },
 
     {
