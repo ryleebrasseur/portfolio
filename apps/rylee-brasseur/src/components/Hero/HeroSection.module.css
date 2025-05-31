@@ -54,17 +54,16 @@
   .heroTitle {
     font-size: clamp(2rem, 10vw, 4rem);
   }
-  
+
   .heroSubtitle {
     font-size: clamp(1.125rem, 4vw, 1.5rem);
     margin-top: 1.5rem;
   }
-  
+
   .heroInstitution {
     font-size: clamp(1rem, 3vw, 1.25rem);
   }
 }
-
 
 /* Scroll indicator */
 .scrollIndicator {
@@ -92,9 +91,18 @@
 }
 
 @keyframes scrollPulse {
-  0% { transform: scaleY(0); transform-origin: top; }
-  50% { transform: scaleY(1); transform-origin: top; }
-  100% { transform: scaleY(0); transform-origin: bottom; }
+  0% {
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+  50% {
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+  100% {
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
 }
 
 /* Project previews */
@@ -173,7 +181,7 @@
     padding: 2rem;
     text-align: center;
   }
-  
+
   .previewImage {
     max-width: 100%;
     height: 400px;
