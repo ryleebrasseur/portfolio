@@ -13,7 +13,7 @@ const Header: React.FC = () => {
       trigger: document.body,
       start: '100px top',
       onEnter: () => setIsScrolled(true),
-      onLeaveBack: () => setIsScrolled(false)
+      onLeaveBack: () => setIsScrolled(false),
     })
   }, [])
 

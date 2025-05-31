@@ -17,10 +17,13 @@ const themes = [
   { name: 'ocean', label: 'Ocean' },
   { name: 'sunset', label: 'Sunset' },
   { name: 'monochrome', label: 'Mono' },
-  { name: 'forest', label: 'Forest' }
+  { name: 'forest', label: 'Forest' },
 ]
 
-const PinnedNav: React.FC<PinnedNavProps> = ({ onProjectClick, currentProjectIndex }) => {
+const PinnedNav: React.FC<PinnedNavProps> = ({
+  onProjectClick,
+  currentProjectIndex,
+}) => {
   const [visibleTitles, setVisibleTitles] = useState<number[]>([])
   const [currentTheme, setCurrentTheme] = useState('default')
 
@@ -37,18 +40,18 @@ const PinnedNav: React.FC<PinnedNavProps> = ({ onProjectClick, currentProjectInd
         start: `${index * 100}vh top`,
         end: `${(index + 1) * 100}vh top`,
         onEnter: () => {
-          setVisibleTitles(prev => [...new Set([...prev, index])])
+          setVisibleTitles((prev) => [...new Set([...prev, index])])
         },
         onLeaveBack: () => {
           if (index === 0) {
             setVisibleTitles([])
           }
-        }
+        },
       })
     })
 
     return () => {
-      ScrollTrigger.getAll().forEach(trigger => trigger.kill())
+      ScrollTrigger.getAll().forEach((trigger) => trigger.kill())
     }
   }, [])
 
@@ -69,7 +72,7 @@ const PinnedNav: React.FC<PinnedNavProps> = ({ onProjectClick, currentProjectInd
             data-hover
           >
             <span className={styles.projectNumber}>0{index + 1}</span>
-            <span 
+            <span
               className={`${styles.projectTitle} ${visibleTitles.includes(index) ? styles.visible : ''}`}
             >
               {project.title}
@@ -77,16 +80,23 @@ const PinnedNav: React.FC<PinnedNavProps> = ({ onProjectClick, currentProjectInd
           </button>
         ))}
       </div>
-      
+
       <div className={styles.themeSection}>
         <div className={styles.themeWrapper}>
-          <button 
+          <button
             className={styles.themeToggle}
             aria-label="Theme options"
             data-hover
           >
             <span className={styles.themeIcon}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              >
                 <circle cx="12" cy="12" r="5" />
                 <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24" />
               </svg>

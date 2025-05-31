@@ -61,8 +61,8 @@ a {
 }
 
 /* Keep cursor visible when modal is open */
-body[data-modal-open="true"] .cursor,
-body[data-modal-open="true"] .cursorDot {
+body[data-modal-open='true'] .cursor,
+body[data-modal-open='true'] .cursorDot {
   opacity: 1;
   pointer-events: none;
 }

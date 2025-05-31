@@ -33,22 +33,22 @@ const CustomCursor: React.FC = () => {
         x: position.current.x,
         y: position.current.y,
         duration: 0.15,
-        ease: 'power2.out'
+        ease: 'power2.out',
       })
 
       gsap.to(cursorDot, {
         x: position.current.x,
         y: position.current.y,
-        duration: 0.05
+        duration: 0.05,
       })
     }
 
     const onMouseMove = (e: MouseEvent) => {
       position.current = { x: e.clientX, y: e.clientY }
-      
+
       // Disable magnetic effect for now - it's causing lag
       // We can re-enable with better performance later
-      
+
       if (!rafId) {
         rafId = requestAnimationFrame(() => {
           updateCursor()
@@ -59,14 +59,22 @@ const CustomCursor: React.FC = () => {
 
     const onMouseEnter = (e: MouseEvent) => {
       const target = e.target as Element
-      if (target && target.matches && target.matches('a, button, [data-hover]')) {
+      if (
+        target &&
+        target.matches &&
+        target.matches('a, button, [data-hover]')
+      ) {
         setIsHovering(true)
       }
     }
 
     const onMouseLeave = (e: MouseEvent) => {
       const target = e.target as Element
-      if (target && target.matches && target.matches('a, button, [data-hover]')) {
+      if (
+        target &&
+        target.matches &&
+        target.matches('a, button, [data-hover]')
+      ) {
         setIsHovering(false)
       }
     }
@@ -95,7 +103,7 @@ const CustomCursor: React.FC = () => {
     gsap.set([cursor, cursorDot], {
       xPercent: -50,
       yPercent: -50,
-      opacity: 0
+      opacity: 0,
     })
 
     return () => {
@@ -112,21 +120,19 @@ const CustomCursor: React.FC = () => {
   }, [])
 
   // Check for reduced motion preference
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const prefersReducedMotion = window.matchMedia(
+    '(prefers-reduced-motion: reduce)'
+  ).matches
   if (prefersReducedMotion) return null
 
   return (
     <>
-      <div 
+      <div
         ref={cursorRef}
         className={`${styles.cursor} ${isHovering ? styles.hovering : ''} ${isClicking ? styles.clicking : ''}`}
         aria-hidden="true"
       />
-      <div 
-        ref={cursorDotRef}
-        className={styles.cursorDot}
-        aria-hidden="true"
-      />
+      <div ref={cursorDotRef} className={styles.cursorDot} aria-hidden="true" />
     </>
   )
 }
