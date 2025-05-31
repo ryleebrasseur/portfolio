@@ -27,8 +27,9 @@ test.describe('Hero Section with WebGL', () => {
   })
 
   test('should respond to scroll interactions', async ({ page }) => {
-    // Get initial position of overlay content
+    // Wait for overlay content to be ready
     const overlayContent = await page.locator('.overlayContent')
+    await expect(overlayContent).toBeVisible()
     const initialBox = await overlayContent.boundingBox()
 
     // Scroll down
@@ -56,7 +57,9 @@ test.describe('Hero Section with WebGL', () => {
   test('should be responsive', async ({ page }) => {
     // Desktop
     await page.setViewportSize({ width: 1920, height: 1080 })
+    await page.waitForTimeout(500) // Wait for viewport change
     let title = await page.locator('h1')
+    await expect(title).toBeVisible()
     let titleFontSize = await title.evaluate(
       (el) => window.getComputedStyle(el).fontSize
     )

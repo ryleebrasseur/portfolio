@@ -120,6 +120,7 @@ test.describe('Custom Cursor', () => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 })
     await page.reload()
+    await page.waitForLoadState('networkidle')
 
     const cursor = await page.locator(
       '[class*="cursor"]:not([class*="cursorDot"])'

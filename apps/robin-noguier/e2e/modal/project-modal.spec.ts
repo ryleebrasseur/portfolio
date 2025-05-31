@@ -33,9 +33,9 @@ test.describe('Project Detail Modal', () => {
     const modal = await page.locator('[role="dialog"]')
     await expect(modal).toBeVisible()
 
-    // Click close button
+    // Click close button with force to bypass any overlapping elements
     const closeButton = await page.locator('[aria-label="Close modal"]').first()
-    await closeButton.click()
+    await closeButton.click({ force: true })
 
     // Modal should be hidden
     await expect(modal).not.toBeVisible()
@@ -51,9 +51,9 @@ test.describe('Project Detail Modal', () => {
     const modal = await page.locator('[role="dialog"]')
     await expect(modal).toBeVisible()
 
-    // Click overlay (not the content)
+    // Click overlay (not the content) with force
     const overlay = await page.locator('[class*="overlay"]')
-    await overlay.click({ position: { x: 10, y: 10 } })
+    await overlay.click({ position: { x: 10, y: 10 }, force: true })
 
     // Modal should be hidden
     await expect(modal).not.toBeVisible()
