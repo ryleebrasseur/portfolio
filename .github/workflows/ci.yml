@@ -84,7 +84,7 @@ jobs:
           CI: true
 
       - name: Run linting
-        run: pnpm lint
+        run: pnpm lint:ci
 
       - name: Check formatting
         run: pnpm format:check

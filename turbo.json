@@ -22,7 +22,12 @@
       "cache": true
     },
     "lint": {
-      "outputs": []
+      "outputs": [".eslintcache"],
+      "cache": true
+    },
+    "lint:fix": {
+      "outputs": [".eslintcache"],
+      "cache": false
     },
     "typecheck": {
       "outputs": []
