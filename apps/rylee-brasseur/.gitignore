@@ -1,0 +1,16 @@
+# Screenshots
+screenshots/
+*.png
+
+# Test results
+test-results/
+playwright-report/
+
+# Build output
+dist/
+
+# Logs
+*.log
+
+# ESLint cache
+.eslintcache

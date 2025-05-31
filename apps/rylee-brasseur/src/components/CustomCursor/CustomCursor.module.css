@@ -1,0 +1,68 @@
+.cursor {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  border: 1.5px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99999;
+  transition: all 0.15s ease-out;
+  backdrop-filter: invert(1);
+}
+
+.cursor.hovering {
+  width: 48px;
+  height: 48px;
+  border-width: 2px;
+  border-color: var(--accent);
+}
+
+.cursor.clicking {
+  width: 30px;
+  height: 30px;
+  border-width: 3px;
+}
+
+.cursorDot {
+  position: fixed;
+  width: 4px;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99999;
+}
+
+/* Hide default cursor on buttons */
+button {
+  cursor: none !important;
+}
+
+a {
+  cursor: none !important;
+}
+
+[data-hover] {
+  cursor: none !important;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .cursor,
+  .cursorDot {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor,
+  .cursorDot {
+    display: none;
+  }
+}
+
+/* Keep cursor visible when modal is open */
+body[data-modal-open='true'] .cursor,
+body[data-modal-open='true'] .cursorDot {
+  opacity: 1;
+  pointer-events: none;
+}

@@ -1,472 +1,219 @@
-#!/bin/bash
-# Portfolio Development Setup Script v2.0
-# Combines the robustness of v1.2 with fixes that actually work
-
+#!/bin/bash 
+# Portfolio Development Setup Script (robust v2.2.1 for Turbo/pnpm monorepos - PROJECT_ROOT bugfix)
 set -euo pipefail
 
-# Script version
-SCRIPT_VERSION="2.0.0"
+SCRIPT_VERSION="2.2.1"
 
-# ============================================================================
-# Configuration
-# ============================================================================
+REQUIRED_NODE_VERSION_MAJOR="20"
+REQUIRED_NODE_VERSION_MINOR="17"
+REQUIRED_PNPM_VERSION_MAJOR="9"
+REQUIRED_PNPM_VERSION_MINOR="12"
 
-REQUIRED_NODE_VERSION="20.17.0"
-REQUIRED_PNPM_VERSION="9.12.0"
+# PROJECT_ROOT is always the directory you run this script from.
+PROJECT_ROOT="$(pwd)"
 
-# Get script directory
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$SCRIPT_DIR"
-
-# Lock file for preventing concurrent runs
 LOCK_FILE="$PROJECT_ROOT/.setup.lock"
-PID_FILE="$PROJECT_ROOT/.dev-server.pid"
-
-# Logging
 LOG_DIR="$PROJECT_ROOT/.setup-logs"
 LOG_FILE="$LOG_DIR/setup-$(date +%Y%m%d_%H%M%S).log"
 
-# ============================================================================
-# Color codes
-# ============================================================================
+IS_CI="${CI:-false}"
+IS_TTY="$(if [ -t 1 ]; then echo true; else echo false; fi)"
 
-if [[ -t 1 ]]; then
-  RED='\033[0;31m'
-  GREEN='\033[0;32m'
-  YELLOW='\033[1;33m'
-  BLUE='\033[0;34m'
-  BOLD='\033[1m'
-  NC='\033[0m'
+if [[ "$IS_TTY" == "true" ]]; then
+  RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BLUE='\033[0;34m'; BOLD='\033[1m'; NC='\033[0m'
 else
-  RED=''
-  GREEN=''
-  YELLOW=''
-  BLUE=''
-  BOLD=''
-  NC=''
+  RED=''; GREEN=''; YELLOW=''; BLUE=''; BOLD=''; NC=''
 fi
 
-# ============================================================================
-# Utility Functions
-# ============================================================================
+command_exists() { command -v "$1" >/dev/null 2>&1; }
 
-# Check if command exists
-command_exists() {
-  command -v "$1" >/dev/null 2>&1
-}
-
-# Get current Node version
 get_node_version() {
-  if command_exists node; then
-    node --version | sed 's/v//'
-  else
-    echo "0.0.0"
-  fi
+  if command_exists node; then node --version | sed 's/v//'; else echo "0.0.0"; fi
 }
-
-# Get current pnpm version
 get_pnpm_version() {
-  if command_exists pnpm; then
-    pnpm --version 2>/dev/null || echo "0.0.0"
-  else
-    echo "0.0.0"
-  fi
+  if command_exists pnpm; then pnpm --version 2>/dev/null || echo "0.0.0"; else echo "0.0.0"; fi
 }
-
-# ============================================================================
-# Logging Functions
-# ============================================================================
 
 setup_logging() {
-  mkdir -p "$LOG_DIR"
-  
-  # Rotate logs if too many
+  mkdir -p "$LOG_DIR" || { echo "Log dir $LOG_DIR not writeable"; exit 1; }
   local log_count=$(find "$LOG_DIR" -name "setup-*.log" 2>/dev/null | wc -l)
   if [[ $log_count -gt 10 ]]; then
-    find "$LOG_DIR" -name "setup-*.log" -type f -print0 | 
-      xargs -0 ls -t | 
-      tail -n +11 | 
-      xargs rm -f
+    find "$LOG_DIR" -name "setup-*.log" -type f -print0 | xargs -0 ls -t | tail -n +11 | xargs rm -f
   fi
-  
-  # Initialize log file
   echo "===== Setup started at $(date) =====" >> "$LOG_FILE"
 }
 
 log() {
-  local level=$1
-  shift
-  local message="$*"
-  local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-  
-  # Log to file
+  local level=$1; shift; local message="$*"; local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
   echo "[$timestamp] [$level] $message" >> "$LOG_FILE"
-  
-  # Log to console with colors
   case $level in
-    ERROR)
-      echo -e "${RED}❌ ERROR: $message${NC}" >&2
-      ;;
-    SUCCESS)
-      echo -e "${GREEN}✅ SUCCESS: $message${NC}"
-      ;;
-    WARNING)
-      echo -e "${YELLOW}⚠️  WARNING: $message${NC}"
-      ;;
-    INFO)
-      echo -e "ℹ️  INFO: $message"
-      ;;
-    DEBUG)
-      [[ "${DEBUG:-false}" == "true" ]] && echo -e "${BLUE}🔍 DEBUG: $message${NC}"
-      ;;
-    *)
-      echo "$message"
-      ;;
+    ERROR)   echo -e "${RED}❌ $message${NC}" >&2 ;;
+    SUCCESS) echo -e "${GREEN}✅ $message${NC}" ;;
+    WARNING) echo -e "${YELLOW}⚠️  $message${NC}" ;;
+    INFO)    echo -e "ℹ️ $message" ;;
+    DEBUG)   [[ "${DEBUG:-false}" == "true" ]] && echo -e "${BLUE}🔍 $message${NC}" ;;
+    *)       echo "$message" ;;
   esac
 }
 
-# ============================================================================
-# Lock Management
-# ============================================================================
-
 acquire_lock() {
-  local timeout="${LOCK_TIMEOUT:-300}"
-  local waited=0
-  
+  local timeout=300 waited=0
   while ! mkdir "$LOCK_FILE" 2>/dev/null; do
-    if [[ $waited -ge $timeout ]]; then
-      log ERROR "Could not acquire lock after ${timeout}s"
-      return 1
-    fi
-    
-    if [[ $waited -eq 0 ]]; then
-      log WARNING "Another instance is running. Waiting..."
-    fi
-    
-    sleep 2
-    waited=$((waited + 2))
+    if [[ $waited -ge $timeout ]]; then log ERROR "Could not acquire lock after ${timeout}s"; return 1; fi
+    sleep 2; waited=$((waited + 2))
   done
-  
-  # Store PID in lock
-  echo $$ > "$LOCK_FILE/pid"
-  echo "$(date '+%Y-%m-%d %H:%M:%S')" > "$LOCK_FILE/timestamp"
-  
-  # Ensure cleanup on exit
-  trap 'release_lock' EXIT INT TERM HUP
-  
-  return 0
+  echo $$ > "$LOCK_FILE/pid"; trap 'release_lock' EXIT INT TERM HUP
 }
-
 release_lock() {
-  if [[ -d "$LOCK_FILE" ]] && [[ -f "$LOCK_FILE/pid" ]]; then
-    local lock_pid=$(cat "$LOCK_FILE/pid" 2>/dev/null || echo "")
-    if [[ "$lock_pid" == "$$" ]]; then
-      rm -rf "$LOCK_FILE"
-      log DEBUG "Lock released"
-    fi
-  fi
+  [[ -d "$LOCK_FILE" && -f "$LOCK_FILE/pid" ]] && [[ "$(cat "$LOCK_FILE/pid")" == "$$" ]] && rm -rf "$LOCK_FILE"
 }
-
-# ============================================================================
-# Preflight Checks
-# ============================================================================
 
 check_os() {
-  local os=""
-  local arch=""
-  
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    os="macOS"
-    arch=$(uname -m)
+  if [[ "$OSTYPE" == "darwin"* ]]; then os="macOS"; arch=$(uname -m)
   elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    if grep -q Microsoft /proc/version 2>/dev/null; then
-      os="WSL"
-    else
-      os="Linux"
-    fi
-    arch=$(uname -m)
-  else
-    log ERROR "Unsupported operating system: $OSTYPE"
-    return 1
-  fi
-  
+    if grep -q Microsoft /proc/version 2>/dev/null; then os="WSL"; else os="Linux"; fi; arch=$(uname -m)
+  else log ERROR "Unsupported OS: $OSTYPE"; return 1; fi
   log INFO "Detected OS: $os ($arch)"
-  return 0
 }
 
 check_conflicting_tools() {
   local has_conflicts=false
-  
-  if command_exists nvm; then
-    log WARNING "Found nvm - this may conflict with Volta"
-    has_conflicts=true
+  command_exists nvm && { log WARNING "Found nvm (can conflict with Volta)"; has_conflicts=true; }
+  command_exists fnm && { log WARNING "Found fnm (can conflict with Volta)"; has_conflicts=true; }
+  if [[ "$has_conflicts" == "true" && "${FORCE:-false}" != "true" && "$IS_TTY" == "true" && "$IS_CI" != "true" ]]; then
+    read -p "Continue anyway? (y/N) " -n 1 -r; echo
+    [[ ! $REPLY =~ ^[Yy]$ ]] && { log ERROR "Setup cancelled by user"; return 1; }
   fi
-  
-  if command_exists fnm; then
-    log WARNING "Found fnm - this may conflict with Volta"
-    has_conflicts=true
-  fi
-  
-  if [[ "$has_conflicts" == "true" ]]; then
-    log WARNING "Conflicting Node.js version managers detected"
-    log WARNING "Consider uninstalling them or this setup might not work correctly"
-    
-    if [[ "${FORCE:-false}" != "true" ]]; then
-      read -p "Continue anyway? (y/N) " -n 1 -r
-      echo
-      if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        log ERROR "Setup cancelled by user"
-        return 1
-      fi
-    fi
-  fi
-  
-  return 0
 }
-
-# ============================================================================
-# Installation Functions
-# ============================================================================
 
 setup_volta() {
   log INFO "Checking Volta installation..."
-  
-  # Install Volta if not present
   if ! command_exists volta; then
-    log INFO "Installing Volta..."
-    
-    if ! curl -fsSL https://get.volta.sh | bash; then
-      log ERROR "Failed to download and install Volta"
-      return 1
-    fi
-    
+    log INFO "Installing Volta..."; curl -fsSL https://get.volta.sh | bash || { log ERROR "Volta install failed"; return 1; }
+    export VOLTA_HOME="${VOLTA_HOME:-$HOME/.volta}"; export PATH="$VOLTA_HOME/bin:$PATH"
     log SUCCESS "Volta installed"
+    if [[ "$IS_TTY" == "true" && "$IS_CI" != "true" ]]; then
+      for profile in ~/.bashrc ~/.zshrc ~/.profile; do
+        [[ -f "$profile" ]] && ! grep -q 'VOLTA_HOME' "$profile" &&
+        { echo -e '\n# Volta - JavaScript Tool Manager\nexport VOLTA_HOME="$HOME/.volta"\nexport PATH="$VOLTA_HOME/bin:$PATH"' >> "$profile"; }
+      done
+      log INFO "Volta added to shell profile (if not present)"
+    fi
   else
     log SUCCESS "Volta already installed ($(volta --version))"
   fi
-  
-  # CRITICAL: Export Volta paths for THIS session
-  export VOLTA_HOME="${VOLTA_HOME:-$HOME/.volta}"
-  export PATH="$VOLTA_HOME/bin:$PATH"
-  
-  # Ensure Volta is in shell profiles for future sessions
-  local updated_profile=false
-  for profile in ~/.bashrc ~/.zshrc ~/.profile; do
-    if [[ -f "$profile" ]] && ! grep -q 'VOLTA_HOME' "$profile"; then
-      log INFO "Adding Volta to $profile"
-      {
-        echo ''
-        echo '# Volta - JavaScript Tool Manager'
-        echo 'export VOLTA_HOME="$HOME/.volta"'
-        echo 'export PATH="$VOLTA_HOME/bin:$PATH"'
-      } >> "$profile"
-      updated_profile=true
-    fi
-  done
-  
-  if [[ "$updated_profile" == "true" ]]; then
-    log INFO "Shell profile updated - restart your shell or run: source ~/.bashrc"
-  fi
-  
-  # Verify Volta is actually available
-  if ! command_exists volta; then
-    log ERROR "Volta installation failed or not in PATH"
-    log ERROR "Try manually adding to PATH:"
-    log ERROR "  export VOLTA_HOME=\"\$HOME/.volta\""
-    log ERROR "  export PATH=\"\$VOLTA_HOME/bin:\$PATH\""
-    return 1
-  fi
-  
-  return 0
+  export VOLTA_HOME="${VOLTA_HOME:-$HOME/.volta}"; export PATH="$VOLTA_HOME/bin:$PATH"
+  command_exists volta || { log ERROR "Volta not in PATH after install"; return 1; }
+}
+
+version_ok() {
+  [[ "$1" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+) ]]
+  [[ "${BASH_REMATCH[1]}" == "$2" && "${BASH_REMATCH[2]}" == "$3" ]]
 }
 
 setup_node() {
   log INFO "Checking Node.js installation..."
-  
   local current_version=$(get_node_version)
-  
-  if [[ "$current_version" == "$REQUIRED_NODE_VERSION" ]]; then
-    log SUCCESS "Node.js $REQUIRED_NODE_VERSION is already installed"
+  if version_ok "$current_version" "$REQUIRED_NODE_VERSION_MAJOR" "$REQUIRED_NODE_VERSION_MINOR"; then
+    log SUCCESS "Node.js $current_version (meets requirement $REQUIRED_NODE_VERSION_MAJOR.$REQUIRED_NODE_VERSION_MINOR.x)"
   else
-    if [[ "$current_version" == "0.0.0" ]]; then
-      log INFO "Node.js is not installed"
-    else
-      log INFO "Found Node.js $current_version (required: $REQUIRED_NODE_VERSION)"
-    fi
-    
-    log INFO "Installing Node.js $REQUIRED_NODE_VERSION via Volta..."
-    if ! volta install node@$REQUIRED_NODE_VERSION; then
-      log ERROR "Failed to install Node.js"
-      return 1
-    fi
-    
-    log SUCCESS "Node.js $REQUIRED_NODE_VERSION installed"
+    log INFO "Installing Node.js $REQUIRED_NODE_VERSION_MAJOR.$REQUIRED_NODE_VERSION_MINOR.x via Volta..."
+    volta install "node@$REQUIRED_NODE_VERSION_MAJOR.$REQUIRED_NODE_VERSION_MINOR" || { log ERROR "Failed to install Node"; return 1; }
+    log SUCCESS "Node.js installed: $(get_node_version)"
   fi
-  
-  # Verify Node is available through Volta
-  if ! volta which node >/dev/null 2>&1; then
-    log ERROR "Node not available through Volta"
-    # Check Volta logs
-    if [[ -d "$HOME/.volta/log" ]]; then
-      log ERROR "Recent Volta errors:"
-      tail -n 20 "$HOME/.volta/log"/*.log 2>/dev/null | while IFS= read -r line; do
-        log ERROR "  $line"
-      done
-    fi
-    return 1
-  fi
-  
-  return 0
+  volta which node >/dev/null 2>&1 || { log ERROR "Node not available through Volta"; return 1; }
 }
 
 setup_pnpm() {
   log INFO "Checking pnpm installation..."
-  
-  # ALWAYS add pnpm paths to current session
-  export PNPM_HOME="${PNPM_HOME:-$HOME/.local/share/pnpm}"
-  export PATH="$PNPM_HOME:$PATH"
-  
+  export PNPM_HOME="${PNPM_HOME:-$HOME/.local/share/pnpm}"; export PATH="$PNPM_HOME:$PATH"
   local current_version=$(get_pnpm_version)
-  
-  if [[ "$current_version" == "$REQUIRED_PNPM_VERSION" ]]; then
-    log SUCCESS "pnpm $REQUIRED_PNPM_VERSION is already installed"
+  if version_ok "$current_version" "$REQUIRED_PNPM_VERSION_MAJOR" "$REQUIRED_PNPM_VERSION_MINOR"; then
+    log SUCCESS "pnpm $current_version (meets requirement $REQUIRED_PNPM_VERSION_MAJOR.$REQUIRED_PNPM_VERSION_MINOR.x)"
     return 0
   fi
-  
-  # Skip Volta for pnpm - it's too unreliable
-  log INFO "Installing pnpm $REQUIRED_PNPM_VERSION via official installer..."
-  log DEBUG "Current version: $current_version"
-  
-  if ! curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=$REQUIRED_PNPM_VERSION sh -; then
-    log ERROR "Failed to install pnpm"
-    return 1
+  if [[ "$IS_CI" == "true" || "$IS_TTY" != "true" ]]; then
+    export SHELL=${SHELL:-/bin/bash}
   fi
-  
-  # Re-export paths after installation
-  export PNPM_HOME="${PNPM_HOME:-$HOME/.local/share/pnpm}"
-  export PATH="$PNPM_HOME:$PATH"
-  
-  log SUCCESS "pnpm installed"
-  
-  # Verify installation
-  if ! command_exists pnpm; then
-    log ERROR "pnpm installation failed - not in PATH"
-    log DEBUG "PATH: $PATH"
-    log DEBUG "PNPM_HOME: $PNPM_HOME"
-    return 1
-  fi
-  
-  local installed_version=$(get_pnpm_version)
-  if [[ "$installed_version" != "$REQUIRED_PNPM_VERSION" ]]; then
-    log WARNING "pnpm version mismatch (installed: $installed_version, required: $REQUIRED_PNPM_VERSION)"
-    log WARNING "This is usually OK - pnpm manages versions internally"
-  fi
-  
-  return 0
+  log INFO "Installing pnpm $REQUIRED_PNPM_VERSION_MAJOR.$REQUIRED_PNPM_VERSION_MINOR.x via official installer..."
+  curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION="$REQUIRED_PNPM_VERSION_MAJOR.$REQUIRED_PNPM_VERSION_MINOR.0" SHELL="${SHELL:-/bin/bash}" sh - || { log ERROR "Failed to install pnpm"; return 1; }
+  export PNPM_HOME="${PNPM_HOME:-$HOME/.local/share/pnpm}"; export PATH="$PNPM_HOME:$PATH"
+  command_exists pnpm || { log ERROR "pnpm not in PATH after install"; return 1; }
+  log SUCCESS "pnpm installed: $(get_pnpm_version)"
 }
 
 install_dependencies() {
   log INFO "Installing project dependencies..."
-  
-  if ! pnpm install; then
-    log ERROR "Failed to install dependencies"
+
+  # Harden: Validate run location
+  if [[ ! -f "$PROJECT_ROOT/package.json" ]]; then
+    log ERROR "No package.json found in $PROJECT_ROOT; cannot install dependencies."
+    log ERROR "Current directory: $PROJECT_ROOT"
+    log ERROR "Directory contents: $(ls -la "$PROJECT_ROOT")"
     return 1
   fi
-  
-  log SUCCESS "Dependencies installed"
-  
-  # Setup git hooks if present
-  if [[ -f "package.json" ]] && grep -q '"prepare"' package.json; then
-    log INFO "Setting up git hooks..."
-    if pnpm prepare; then
-      log SUCCESS "Git hooks configured"
-    else
-      log WARNING "Git hooks setup failed (non-critical)"
-    fi
-  fi
-  
-  return 0
-}
 
-# ============================================================================
-# Main
-# ============================================================================
+  # Monorepo guard
+  if [[ -f "$PROJECT_ROOT/pnpm-workspace.yaml" || -f "$PROJECT_ROOT/turbo.json" ]] && [[ ! -f "$PROJECT_ROOT/package.json" ]]; then
+    log ERROR "Turbo/monorepo detected, but root package.json is missing. Add a minimal root package.json to enable workspace bootstrapping."
+    log ERROR "See: https://pnpm.io/workspaces#the-monorepo-structure"
+    log ERROR "Current directory: $PROJECT_ROOT"
+    log ERROR "Directory contents: $(ls -la "$PROJECT_ROOT")"
+    return 1
+  fi
+
+  pnpm install || { log ERROR "Failed to install dependencies"; return 1; }
+  log SUCCESS "Dependencies installed"
+  [[ -f "$PROJECT_ROOT/package.json" ]] && grep -q '"prepare"' "$PROJECT_ROOT/package.json" && pnpm prepare && log SUCCESS "Git hooks configured"
+}
 
 main() {
   local start_time=$(date +%s)
-  
-  echo ""
-  echo -e "${BOLD}🚀 Portfolio Development Setup v$SCRIPT_VERSION${NC}"
-  echo "============================================"
-  echo ""
-  
-  # Parse arguments
+  echo -e "${BOLD}🚀 Portfolio Development Setup v$SCRIPT_VERSION${NC}\n============================================\n"
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --force)
-        export FORCE=true
-        shift
-        ;;
-      --debug)
-        export DEBUG=true
-        shift
-        ;;
+      --force) export FORCE=true; shift ;;
+      --debug) export DEBUG=true; shift ;;
       --help|-h)
         echo "Usage: $0 [options]"
-        echo ""
-        echo "Options:"
-        echo "  --force     Skip confirmation prompts"
-        echo "  --debug     Enable debug output"
-        echo "  --help      Show this help message"
-        echo ""
+        echo "  --force     Skip prompts"
+        echo "  --debug     Enable debug"
+        echo "  --help      Show help"
         exit 0
         ;;
-      *)
-        log ERROR "Unknown option: $1"
-        echo "Use --help for usage information"
-        exit 1
-        ;;
+      *) log ERROR "Unknown option: $1"; exit 1 ;;
     esac
   done
-  
-  # Setup
   acquire_lock
   setup_logging
-  
   log INFO "Starting setup script v$SCRIPT_VERSION"
-  
-  # Preflight checks
   check_os || exit 1
   check_conflicting_tools || exit 1
-  
-  # Main installation steps
   setup_volta || exit 1
   setup_node || exit 1
   setup_pnpm || exit 1
   install_dependencies || exit 1
-  
-  # Success!
+
+  # >>>>>>>>>>>>>>>>>> FIXED: Playwright install is now inside main and error checked <<<<<<<<<<<<<<<<<<<
+  log INFO "Installing Playwright browsers..."
+  pnpm exec playwright install || { log ERROR "Failed to install Playwright browsers"; exit 1; }
+  log SUCCESS "Playwright browsers installed"
+  # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
   local end_time=$(date +%s)
-  local duration=$((end_time - start_time))
-  
-  echo ""
-  log SUCCESS "Setup complete! 🎉"
-  echo ""
+  echo ""; log SUCCESS "Setup complete! 🎉"; echo ""
   echo "📍 Installed versions:"
   echo "  Node: $(node --version 2>/dev/null || echo 'ERROR - restart shell')"
   echo "  pnpm: $(pnpm --version 2>/dev/null || echo 'ERROR - restart shell')"
   echo "  Volta: $(volta --version 2>/dev/null || echo 'ERROR - restart shell')"
   echo ""
   echo "🎯 Next steps:"
-  echo "  1. Restart your shell or run: source ~/.bashrc"
+  [[ "$IS_CI" == "true" ]] || echo "  1. Restart your shell or run: source ~/.bashrc"
   echo "  2. Run: pnpm dev"
   echo ""
-  echo "📝 Setup completed in ${duration}s"
+  echo "📝 Setup completed in $((end_time - start_time))s"
   echo "📋 Logs: $LOG_FILE"
   echo ""
-  
-  return 0
 }
 
-# Run main function
 main "$@"
