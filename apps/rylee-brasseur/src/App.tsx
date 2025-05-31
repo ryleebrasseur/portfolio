@@ -1,12 +1,12 @@
 import HeroSectionWebGL from './components/Hero/HeroSectionWebGL'
 import CustomCursor from './components/CustomCursor/CustomCursor'
-import ThemeSwitcher from './components/ThemeSwitcher/ThemeSwitcher'
+import Header from './components/Header/Header'
 
 function App() {
   return (
     <>
       <CustomCursor />
-      <ThemeSwitcher />
+      <Header />
       <main>
         <HeroSectionWebGL />
       </main>
