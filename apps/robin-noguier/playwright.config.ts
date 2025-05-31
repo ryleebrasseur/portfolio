@@ -23,15 +23,15 @@ export default defineConfig({
 
     {
       name: 'firefox',
-      use: { 
+      use: {
         ...devices['Desktop Firefox'],
         launchOptions: {
           firefoxUserPrefs: {
             // Disable GPU acceleration for better stability in CI
             'layers.acceleration.disabled': true,
             'gfx.webrender.all': false,
-          }
-        }
+          },
+        },
       },
     },
 
