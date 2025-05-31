@@ -388,6 +388,40 @@ install_dependencies() {
   return 0
 }
 
+install_playwright_deps() {
+  log INFO "Checking Playwright browser dependencies..."
+  
+  # Check if playwright is installed
+  if command_exists playwright || [[ -f "node_modules/.bin/playwright" ]]; then
+    log INFO "Attempting to install Playwright system dependencies..."
+    
+    # Try with sudo first (will fail in CI/containers)
+    if command_exists sudo; then
+      log INFO "Trying with sudo (you may be prompted for password)..."
+      if sudo npx playwright install-deps >/dev/null 2>&1; then
+        log SUCCESS "Playwright dependencies installed with sudo"
+        return 0
+      fi
+    fi
+    
+    # Try without sudo (for CI environments)
+    log INFO "Trying without sudo..."
+    if npx playwright install-deps >/dev/null 2>&1; then
+      log SUCCESS "Playwright dependencies installed"
+      return 0
+    fi
+    
+    # If both fail, just warn
+    log WARNING "Could not install Playwright system dependencies"
+    log WARNING "You may need to run manually: sudo npx playwright install-deps"
+    log WARNING "Tests may only work with Chromium instead of all browsers"
+  else
+    log DEBUG "Playwright not found, skipping dependency check"
+  fi
+  
+  return 0
+}
+
 # ============================================================================
 # Main
 # ============================================================================
@@ -444,6 +478,7 @@ main() {
   setup_node || exit 1
   setup_pnpm || exit 1
   install_dependencies || exit 1
+  install_playwright_deps || log WARNING "Playwright deps installation failed (non-critical)"
   
   # Success!
   local end_time=$(date +%s)
