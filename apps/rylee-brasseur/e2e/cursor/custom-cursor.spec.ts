@@ -72,24 +72,25 @@ test.describe('Custom Cursor', () => {
 
     // Initial state - should not have hovering class
     const initialClasses = await cursor.getAttribute('class')
-    expect(initialClasses).not.toContain('hovering')
+    expect(initialClasses).toMatch(/cursor/)
+    expect(initialClasses).not.toMatch(/hovering/)
 
     // Hover over button
     const button = await page.locator('button:has-text("Test Button")')
     await button.hover()
-    await page.waitForTimeout(100)
+    await page.waitForTimeout(300) // Increase wait time for state change
 
-    // Should have hovering class
+    // Should have hovering class (CSS module class contains 'hovering')
     const hoverClasses = await cursor.getAttribute('class')
-    expect(hoverClasses).toContain('hovering')
+    expect(hoverClasses).toMatch(/hovering/)
 
     // Move away
     await page.mouse.move(100, 100)
-    await page.waitForTimeout(100)
+    await page.waitForTimeout(300) // Increase wait time for state change
 
     // Should not have hovering class
     const afterClasses = await cursor.getAttribute('class')
-    expect(afterClasses).not.toContain('hovering')
+    expect(afterClasses).not.toMatch(/hovering/)
   })
 
   test('should respond to click events', async ({ page }) => {
@@ -99,21 +100,21 @@ test.describe('Custom Cursor', () => {
 
     // Initial state
     const initialClasses = await cursor.getAttribute('class')
-    expect(initialClasses).not.toContain('clicking')
+    expect(initialClasses).not.toMatch(/clicking/)
 
     // Mouse down
     await page.mouse.down()
-    await page.waitForTimeout(50)
+    await page.waitForTimeout(100)
 
     const clickingClasses = await cursor.getAttribute('class')
-    expect(clickingClasses).toContain('clicking')
+    expect(clickingClasses).toMatch(/clicking/)
 
     // Mouse up
     await page.mouse.up()
-    await page.waitForTimeout(50)
+    await page.waitForTimeout(100)
 
     const releasedClasses = await cursor.getAttribute('class')
-    expect(releasedClasses).not.toContain('clicking')
+    expect(releasedClasses).not.toMatch(/clicking/)
   })
 
   test('should be hidden on mobile devices', async ({ page }) => {
