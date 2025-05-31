@@ -9,14 +9,17 @@ interface SceneContentProps {
   projects: Project[]
 }
 
-export const SceneContent: React.FC<SceneContentProps> = ({ scrollData, projects }) => {
+export const SceneContent: React.FC<SceneContentProps> = ({
+  scrollData,
+  projects,
+}) => {
   const { viewport } = useThree()
 
   return (
     <>
       <ambientLight intensity={0.5} />
       <directionalLight position={[10, 10, 5]} intensity={1} />
-      
+
       {projects.map((project, index) => (
         <ImagePlane
           key={project.id}

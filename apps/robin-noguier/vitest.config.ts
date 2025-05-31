@@ -12,10 +12,7 @@ export default defineConfig({
     exclude: ['node_modules', 'dist', 'e2e'],
     coverage: {
       reporter: ['text', 'json', 'html', 'lcov'],
-      exclude: [
-        'node_modules/',
-        'src/test/',
-      ],
+      exclude: ['node_modules/', 'src/test/'],
     },
   },
   resolve: {

@@ -8,10 +8,10 @@ export default defineConfig({
     host: true,
     watch: {
       usePolling: true,
-      interval: 10000
+      interval: 10000,
     },
     hmr: {
-      overlay: true
-    }
+      overlay: true,
+    },
   },
 })

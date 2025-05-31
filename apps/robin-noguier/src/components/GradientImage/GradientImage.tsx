@@ -19,11 +19,14 @@ const gradients: Record<string, string> = {
   'gradient-10': 'linear-gradient(135deg, #ff6a88 0%, #ff99ac 100%)',
 }
 
-const GradientImage: React.FC<GradientImageProps> = ({ gradient, className = '' }) => {
+const GradientImage: React.FC<GradientImageProps> = ({
+  gradient,
+  className = '',
+}) => {
   const gradientStyle = gradients[gradient] || gradients['gradient-1']
-  
+
   return (
-    <div 
+    <div
       className={`${styles.gradientImage} ${className}`}
       style={{ background: gradientStyle }}
     >

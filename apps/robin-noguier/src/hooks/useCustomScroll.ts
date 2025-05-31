@@ -13,9 +13,9 @@ export const useCustomScroll = (): MutableRefObject<ScrollData> => {
     current: 0,
     target: 0,
     velocity: 0,
-    progress: 0
+    progress: 0,
   })
-  
+
   const lenisRef = useRef<Lenis | null>(null)
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export const useCustomScroll = (): MutableRefObject<ScrollData> => {
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       touchMultiplier: 2,
-      infinite: false
+      infinite: false,
     })
 
     lenisRef.current = lenis
@@ -33,12 +33,21 @@ export const useCustomScroll = (): MutableRefObject<ScrollData> => {
       requestAnimationFrame(raf)
     }
 
-    lenis.on('scroll', (e: { scroll: number; targetScroll: number; velocity: number; direction: number; progress: number }) => {
-      scrollData.current.current = e.scroll
-      scrollData.current.target = e.targetScroll
-      scrollData.current.velocity = e.velocity
-      scrollData.current.progress = e.progress
-    })
+    lenis.on(
+      'scroll',
+      (e: {
+        scroll: number
+        targetScroll: number
+        velocity: number
+        direction: number
+        progress: number
+      }) => {
+        scrollData.current.current = e.scroll
+        scrollData.current.target = e.targetScroll
+        scrollData.current.velocity = e.velocity
+        scrollData.current.progress = e.progress
+      }
+    )
 
     requestAnimationFrame(raf)
 

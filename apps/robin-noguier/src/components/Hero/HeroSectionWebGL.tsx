@@ -18,7 +18,7 @@ const HeroSectionWebGL = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [currentProjectIndex, setCurrentProjectIndex] = useState(0)
-  
+
   useEffect(() => {
     console.log('Modal state changed:', { isModalOpen, selectedProject })
   }, [isModalOpen, selectedProject])
@@ -35,19 +35,22 @@ const HeroSectionWebGL = () => {
           end: 'bottom bottom',
           scrub: 1,
           pin: false,
-        }
+        },
       })
-      
+
       // Animate overlay content based on scroll - faster timing
       tl.to(`.${styles.overlayContent}`, {
         opacity: 0,
-        duration: 0.3
-      })
-      .to(`.${styles.scrollIndicator}`, {
-        opacity: 0,
-        duration: 0.2
-      }, '<')
-      
+        duration: 0.3,
+      }).to(
+        `.${styles.scrollIndicator}`,
+        {
+          opacity: 0,
+          duration: 0.2,
+        },
+        '<'
+      )
+
       // Animate project previews and track current index
       projects.forEach((_, index) => {
         ScrollTrigger.create({
@@ -58,16 +61,16 @@ const HeroSectionWebGL = () => {
             setCurrentProjectIndex(index)
             gsap.to(`.${styles.previewSection}:nth-child(${index + 1})`, {
               opacity: 1,
-              duration: 0.8
+              duration: 0.8,
             })
           },
           onLeaveBack: () => {
             if (index > 0) setCurrentProjectIndex(index - 1)
             gsap.to(`.${styles.previewSection}:nth-child(${index + 1})`, {
               opacity: 0,
-              duration: 0.8
+              duration: 0.8,
             })
-          }
+          },
         })
       })
     }, containerRef)
@@ -76,7 +79,7 @@ const HeroSectionWebGL = () => {
   }, [])
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className={styles.heroContainer}
       style={{ height: `${projects.length * 100}vh` }}
@@ -84,10 +87,10 @@ const HeroSectionWebGL = () => {
       <div className={styles.canvasWrapper}>
         <Canvas
           camera={{ position: [0, 0, 5], fov: 75 }}
-          gl={{ 
+          gl={{
             antialias: true,
             alpha: true,
-            powerPreference: 'high-performance'
+            powerPreference: 'high-performance',
           }}
         >
           <Suspense fallback={null}>
@@ -95,26 +98,28 @@ const HeroSectionWebGL = () => {
           </Suspense>
         </Canvas>
       </div>
-      
+
       <div className={styles.overlayContent}>
         <h1 className={styles.heroTitle}>Rylee Brasseur</h1>
         <p className={styles.heroSubtitle}>International Relations Student</p>
-        <p className={styles.heroInstitution}>Michigan State University | James Madison College</p>
+        <p className={styles.heroInstitution}>
+          Michigan State University | James Madison College
+        </p>
       </div>
-      
+
       <div className={styles.scrollIndicator}>
         <span>Scroll to explore</span>
         <div className={styles.scrollLine}></div>
       </div>
-      
+
       <div className={styles.projectPreviews}>
         {projects.map((project, index) => (
-          <div 
-            key={project.id} 
+          <div
+            key={project.id}
             className={styles.previewSection}
-            style={{ 
-              top: `${100 + (index * 100)}vh`,
-              backgroundColor: project.color + '10'
+            style={{
+              top: `${100 + index * 100}vh`,
+              backgroundColor: project.color + '10',
             }}
           >
             <div className={styles.previewContent}>
@@ -130,7 +135,7 @@ const HeroSectionWebGL = () => {
         ))}
       </div>
 
-      <PinnedNav 
+      <PinnedNav
         onProjectClick={(project) => {
           setSelectedProject(project)
           setIsModalOpen(true)

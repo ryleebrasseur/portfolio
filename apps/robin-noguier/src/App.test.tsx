@@ -4,11 +4,11 @@ import App from './App'
 
 // Mock the components
 vi.mock('./components/Hero/HeroSectionWebGL', () => ({
-  default: () => <div data-testid="hero-section">Hero Section</div>
+  default: () => <div data-testid="hero-section">Hero Section</div>,
 }))
 
 vi.mock('./components/CustomCursor/CustomCursor', () => ({
-  default: () => <div data-testid="custom-cursor">Custom Cursor</div>
+  default: () => <div data-testid="custom-cursor">Custom Cursor</div>,
 }))
 
 describe('App', () => {
