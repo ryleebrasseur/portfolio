@@ -17,11 +17,13 @@ test.describe('Hero Section with WebGL', () => {
   })
 
   test('should display hero title and subtitle', async ({ page }) => {
-    const title = await page.locator('h1:has-text("Creative Portfolio")')
-    const subtitle = await page.locator('p:has-text("Scroll to explore")')
+    const title = await page.locator('h1:has-text("Rylee Brasseur")')
+    const subtitle = await page.locator('text=International Relations Student')
+    const institution = await page.locator('text=Michigan State University')
     
     await expect(title).toBeVisible()
     await expect(subtitle).toBeVisible()
+    await expect(institution).toBeVisible()
   })
 
   test('should respond to scroll interactions', async ({ page }) => {

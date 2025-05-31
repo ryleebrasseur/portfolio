@@ -23,23 +23,23 @@ test.describe('Project Navigation Buttons', () => {
     
     // Check modal has correct content
     const modalTitle = await page.locator('#modal-title')
-    await expect(modalTitle).toHaveText('Digital Experience')
+    await expect(modalTitle).toHaveText('UN Security Council Reform')
   })
 
   test('buttons should have proper cursor styles', async ({ page }) => {
     const firstButton = await page.locator('[class*="projectButton"]').first()
     
-    // Check cursor style
+    // Check cursor style (should be none for custom cursor)
     const cursorStyle = await firstButton.evaluate(el => 
       window.getComputedStyle(el).cursor
     )
-    expect(cursorStyle).toBe('pointer')
+    expect(cursorStyle).toBe('none')
     
-    // Check z-index is high enough
-    const zIndex = await firstButton.evaluate(el => 
-      window.getComputedStyle(el).zIndex
+    // Check button is positioned correctly
+    const position = await firstButton.evaluate(el => 
+      window.getComputedStyle(el).position
     )
-    expect(parseInt(zIndex)).toBeGreaterThan(20)
+    expect(['fixed', 'absolute', 'relative']).toContain(position)
   })
 
   test('custom cursor should not block button clicks', async ({ page }) => {

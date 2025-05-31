@@ -18,7 +18,7 @@ test.describe('Project Detail Modal', () => {
     // Check modal content
     const modalTitle = await page.locator('#modal-title')
     await expect(modalTitle).toBeVisible()
-    await expect(modalTitle).toHaveText('Digital Experience')
+    await expect(modalTitle).toHaveText('UN Security Council Reform')
   })
 
   test('should close modal when clicking close button', async ({ page }) => {
@@ -78,10 +78,10 @@ test.describe('Project Detail Modal', () => {
     
     // Check content
     const modalTitle = await page.locator('#modal-title')
-    await expect(modalTitle).toHaveText('Brand Identity')
+    await expect(modalTitle).toHaveText('Climate Diplomacy in the Pacific')
     
     const category = await page.locator('[class*="category"]')
-    await expect(category).toHaveText('Branding')
+    await expect(category).toHaveText('Dissertation')
     
     const year = await page.locator('[class*="year"]')
     await expect(year).toHaveText('2024')

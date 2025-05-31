@@ -55,7 +55,9 @@ export const ImagePlane: React.FC<ImagePlaneProps> = ({
     
     // Opacity based on distance - fade distant planes
     const opacity = Math.max(0, 1 - Math.abs(distanceFromCurrent) * 0.5)
-    meshRef.current.material.opacity = opacity
+    if (materialRef.current) {
+      materialRef.current.opacity = opacity
+    }
     
     // Scale for focus effect
     const scale = 1 - Math.min(Math.abs(distanceFromCurrent) * 0.2, 0.5)

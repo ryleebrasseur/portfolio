@@ -33,7 +33,7 @@ export const useCustomScroll = (): MutableRefObject<ScrollData> => {
       requestAnimationFrame(raf)
     }
 
-    lenis.on('scroll', (e: any) => {
+    lenis.on('scroll', (e: { scroll: number; targetScroll: number; velocity: number; direction: number; progress: number }) => {
       scrollData.current.current = e.scroll
       scrollData.current.target = e.targetScroll
       scrollData.current.velocity = e.velocity

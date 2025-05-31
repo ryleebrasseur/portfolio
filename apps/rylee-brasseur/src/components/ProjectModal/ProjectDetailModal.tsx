@@ -80,7 +80,7 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ project, isOpen
       document.body.style.position = ''
       document.body.style.width = ''
     }
-  }, [isOpen])
+  }, [isOpen, project?.title])
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -125,18 +125,18 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ project, isOpen
         </button>
 
         <div className={styles.hero}>
-          <GradientImage gradient={project.image} />
+          <GradientImage gradient={project?.image || 'gradient-1'} />
           <div className={styles.heroContent}>
-            <span className={styles.category}>{project.category}</span>
-            <h1 id="modal-title" className={styles.title}>{project.title}</h1>
-            <p className={styles.year}>{project.year}</p>
+            <span className={styles.category}>{project?.category}</span>
+            <h1 id="modal-title" className={styles.title}>{project?.title}</h1>
+            <p className={styles.year}>{project?.year}</p>
           </div>
         </div>
 
         <div className={styles.body} onWheel={(e) => e.stopPropagation()}>
           <section className={styles.section}>
             <h2>Overview</h2>
-            <p>{project.description}</p>
+            <p>{project?.description}</p>
           </section>
 
           <section className={styles.section}>
@@ -159,16 +159,16 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ project, isOpen
 
           <div className={styles.imageGrid}>
             <div className={styles.projectImage}>
-              <GradientImage gradient={project.image} />
+              <GradientImage gradient={project?.image || 'gradient-1'} />
             </div>
-            {project.secondaryImage && (
+            {project?.secondaryImage && (
               <div className={styles.projectImage}>
                 <GradientImage gradient={project.secondaryImage} />
               </div>
             )}
           </div>
           
-          {project.videoPreview && (
+          {project?.videoPreview && (
             <section className={styles.section}>
               <h2>Video Preview</h2>
               <video 
