@@ -247,7 +247,9 @@ jobs:
         run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
 
       - name: Run E2E tests
-        run: pnpm test:e2e --project=${{ matrix.browser }} --app=${{ matrix.app }}
+        run: |
+          cd apps/${{ matrix.app }}
+          pnpm playwright test --project=${{ matrix.browser }}
         env:
           CI: true
 
