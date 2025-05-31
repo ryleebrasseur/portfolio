@@ -7,6 +7,7 @@ import { projects, Project } from '../../data/projects'
 import { SceneContent } from './SceneContent'
 import ProjectDetailModal from '../ProjectModal/ProjectDetailModal'
 import GradientImage from '../GradientImage/GradientImage'
+import PinnedNav from '../PinnedNav/PinnedNav'
 import styles from './HeroSection.module.css'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -16,6 +17,7 @@ const HeroSectionWebGL = () => {
   const containerRef = useRef<HTMLDivElement>(null)
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [currentProjectIndex, setCurrentProjectIndex] = useState(0)
   
   useEffect(() => {
     console.log('Modal state changed:', { isModalOpen, selectedProject })
@@ -36,40 +38,31 @@ const HeroSectionWebGL = () => {
         }
       })
       
-      // Animate overlay content based on scroll
-      tl.to(`.${styles.heroTitle}`, {
-        y: -300,
-        opacity: 0,
-        duration: 0.5
-      })
-      .to(`.${styles.heroSubtitle}`, {
-        y: -200,
-        opacity: 0,
-        duration: 0.5
-      }, '<0.1')
-      .to(`.${styles.heroInstitution}`, {
-        y: -150,
-        opacity: 0,
-        duration: 0.5
-      }, '<0.05')
-      .to(`.${styles.scrollIndicator}`, {
+      // Animate overlay content based on scroll - faster timing
+      tl.to(`.${styles.overlayContent}`, {
         opacity: 0,
         duration: 0.3
+      })
+      .to(`.${styles.scrollIndicator}`, {
+        opacity: 0,
+        duration: 0.2
       }, '<')
       
-      // Animate project previews
+      // Animate project previews and track current index
       projects.forEach((_, index) => {
         ScrollTrigger.create({
           trigger: containerRef.current,
           start: `${index * 100}vh top`,
           end: `${(index + 1) * 100}vh top`,
           onEnter: () => {
+            setCurrentProjectIndex(index)
             gsap.to(`.${styles.previewSection}:nth-child(${index + 1})`, {
               opacity: 1,
               duration: 0.8
             })
           },
           onLeaveBack: () => {
+            if (index > 0) setCurrentProjectIndex(index - 1)
             gsap.to(`.${styles.previewSection}:nth-child(${index + 1})`, {
               opacity: 0,
               duration: 0.8
@@ -137,24 +130,13 @@ const HeroSectionWebGL = () => {
         ))}
       </div>
 
-      <div className={styles.projectNav}>
-        {projects.map((project, index) => (
-          <button
-            key={project.id}
-            className={styles.projectButton}
-            onClick={() => {
-              console.log('Button clicked:', project.title)
-              setSelectedProject(project)
-              setIsModalOpen(true)
-            }}
-            data-magnetic
-            data-hover
-          >
-            <span className={styles.projectNumber}>0{index + 1}</span>
-            <span className={styles.projectTitle}>{project.title}</span>
-          </button>
-        ))}
-      </div>
+      <PinnedNav 
+        onProjectClick={(project) => {
+          setSelectedProject(project)
+          setIsModalOpen(true)
+        }}
+        currentProjectIndex={currentProjectIndex}
+      />
 
       <ProjectDetailModal
         project={selectedProject}
