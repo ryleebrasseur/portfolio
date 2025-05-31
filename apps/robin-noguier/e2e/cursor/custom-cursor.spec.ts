@@ -54,39 +54,37 @@ test.describe('Custom Cursor', () => {
   test('should change state on hover over interactive elements', async ({
     page,
   }) => {
+    // Wait for cursor to be ready
     const cursor = await page.locator(
       '[class*="cursor"]:not([class*="cursorDot"])'
     )
+    await expect(cursor).toBeAttached()
 
-    // Create a button to test hover
-    await page.evaluate(() => {
-      const button = document.createElement('button')
-      button.textContent = 'Test Button'
-      button.style.position = 'fixed'
-      button.style.top = '50%'
-      button.style.left = '50%'
-      button.style.transform = 'translate(-50%, -50%)'
-      button.style.padding = '20px'
-      document.body.appendChild(button)
-    })
+    // Wait for project buttons to be visible
+    await page.waitForTimeout(2000) // Give time for animations
+    const projectButton = await page.locator('[class*="projectButton"]').first()
+    await expect(projectButton).toBeVisible()
+
+    // Move mouse to a neutral position first
+    await page.mouse.move(50, 50)
+    await page.waitForTimeout(100)
 
     // Initial state - should not have hovering class
     const initialClasses = await cursor.getAttribute('class')
     expect(initialClasses).toMatch(/cursor/)
     expect(initialClasses).not.toMatch(/hovering/)
 
-    // Hover over button
-    const button = await page.locator('button:has-text("Test Button")')
-    await button.hover()
-    await page.waitForTimeout(300) // Increase wait time for state change
+    // Hover over project button
+    await projectButton.hover()
+    await page.waitForTimeout(100)
 
     // Should have hovering class (CSS module class contains 'hovering')
     const hoverClasses = await cursor.getAttribute('class')
     expect(hoverClasses).toMatch(/hovering/)
 
     // Move away
-    await page.mouse.move(100, 100)
-    await page.waitForTimeout(300) // Increase wait time for state change
+    await page.mouse.move(50, 50)
+    await page.waitForTimeout(100)
 
     // Should not have hovering class
     const afterClasses = await cursor.getAttribute('class')
