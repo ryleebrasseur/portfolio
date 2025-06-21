@@ -105,17 +105,47 @@ test_environment_configuration() {
     fi
 }
 
+test_automatic_domain_detection() {
+    echo -e "\n${YELLOW}Testing automatic domain detection logic...${NC}"
+    
+    # Test the workflow logic by simulating the conditions
+    if grep -q 'github.repository.*ryleebrasseur/portfolio' .github/workflows/deploy.yml; then
+        echo -e "✅ ${GREEN}Automatic detection for ryleebrasseur/portfolio repository${NC}"
+    else
+        echo -e "❌ ${RED}Missing automatic detection logic${NC}"
+        return 1
+    fi
+    
+    if grep -q 'CUSTOM_DOMAIN=ryleeworks.com' .github/workflows/deploy.yml; then
+        echo -e "✅ ${GREEN}Automatic domain setting for main portfolio${NC}"
+    else
+        echo -e "❌ ${RED}Missing automatic domain configuration${NC}"
+        return 1
+    fi
+    
+    if grep -q 'vars.CUSTOM_DOMAIN' .github/workflows/deploy.yml; then
+        echo -e "✅ ${GREEN}Fallback to repository variable for other repos${NC}"
+    else
+        echo -e "❌ ${RED}Missing fallback configuration${NC}"
+        return 1
+    fi
+}
+
 # Run tests
 echo "Running deployment configuration tests..."
 
-if test_subdirectory_deployment && test_custom_domain_deployment && test_environment_configuration; then
+if test_subdirectory_deployment && test_custom_domain_deployment && test_environment_configuration && test_automatic_domain_detection; then
     echo -e "\n🎉 ${GREEN}All deployment tests passed!${NC}"
     echo -e "\n${GREEN}Deployment Summary:${NC}"
     echo "• Subdirectory deployment: Ready ✅"
     echo "• Custom domain deployment: Ready ✅"
     echo "• Environment configuration: Ready ✅"
+    echo "• Automatic domain detection: Ready ✅"
     echo "• Documentation: Complete ✅"
-    echo -e "\n${YELLOW}Next steps:${NC}"
+    echo -e "\n${YELLOW}Automatic Configuration:${NC}"
+    echo "• ryleebrasseur/portfolio → automatically deploys to ryleeworks.com"
+    echo "• Other repositories → use CUSTOM_DOMAIN variable or default to subdirectory"
+    echo -e "\n${YELLOW}Next steps for other repositories:${NC}"
     echo "1. Set CUSTOM_DOMAIN repository variable for custom domain deployment"
     echo "2. Configure DNS if using custom domain"
     echo "3. Push changes to trigger deployment"
