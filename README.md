@@ -75,11 +75,19 @@ GitHub Actions workflow runs on every push and PR:
 
 ## Deployment
 
-The portfolio supports flexible deployment to GitHub Pages:
+The portfolio supports automated deployment to GitHub Pages with intelligent domain detection:
 
-### Quick Deployment
+### Automatic Configuration
 
-- **Subdirectory (default)**: Push to main branch → `https://username.github.io/portfolio/`
+- **Main Portfolio (ryleebrasseur/portfolio)**: Automatically deploys to `https://ryleeworks.com`
+- **Other Repositories**: Deploy to subdirectory by default (`https://username.github.io/repository/`)
+- **Custom Domain Override**: Set `CUSTOM_DOMAIN` repository variable for other repositories
+
+### Manual Domain Configuration (Other Repositories)
+
+For repositories other than the main portfolio, you can still configure custom domains:
+
+- **Subdirectory (default)**: Push to main branch → `https://username.github.io/repository/`
 - **Custom Domain**: Set `CUSTOM_DOMAIN` repository variable → `https://yourdomain.com`
 
 ### Test Deployment Configuration
