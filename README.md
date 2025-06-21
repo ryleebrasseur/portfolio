@@ -72,3 +72,18 @@ GitHub Actions workflow runs on every push and PR:
 - E2E tests (Chromium, Firefox, WebKit)
 - Build verification
 - Windows WSL2 compatibility check
+
+## Deployment
+
+The portfolio supports flexible deployment to GitHub Pages:
+
+### Quick Deployment
+- **Subdirectory (default)**: Push to main branch → `https://username.github.io/portfolio/`
+- **Custom Domain**: Set `CUSTOM_DOMAIN` repository variable → `https://yourdomain.com`
+
+### Test Deployment Configuration
+```bash
+./test-deployment.sh
+```
+
+See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed configuration guide.
