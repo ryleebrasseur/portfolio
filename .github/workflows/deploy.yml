@@ -14,6 +14,13 @@ concurrency:
   group: "pages"
   cancel-in-progress: false
 
+env:
+  # Configuration for GitHub Pages deployment
+  # Set CUSTOM_DOMAIN to your domain name (e.g., example.com) or leave empty for GitHub Pages subdirectory
+  CUSTOM_DOMAIN: ${{ vars.CUSTOM_DOMAIN || '' }}
+  # Deployment environment configuration
+  NODE_ENV: production
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -35,8 +42,28 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Set deployment environment variables
+        run: |
+          if [ -n "${{ env.CUSTOM_DOMAIN }}" ]; then
+            echo "VITE_BASE_PATH=/" >> $GITHUB_ENV
+            echo "Using custom domain: ${{ env.CUSTOM_DOMAIN }}"
+            echo "Setting base path to root (/)"
+          else
+            echo "VITE_BASE_PATH=/portfolio/" >> $GITHUB_ENV
+            echo "Using GitHub Pages subdirectory"
+            echo "Setting base path to /portfolio/"
+          fi
+
       - name: Build
         run: pnpm build --filter=robin-noguier
+        env:
+          NODE_ENV: production
+
+      - name: Create CNAME file for custom domain
+        if: env.CUSTOM_DOMAIN != ''
+        run: |
+          echo "${{ env.CUSTOM_DOMAIN }}" > ./apps/robin-noguier/dist/CNAME
+          echo "Created CNAME file with domain: ${{ env.CUSTOM_DOMAIN }}"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
