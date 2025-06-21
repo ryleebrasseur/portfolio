@@ -30,8 +30,7 @@
     "clean": "turbo run clean && rm -rf node_modules",
     "typecheck": "turbo run typecheck",
     "prepare": "husky",
-    "preinstall": "npx only-allow pnpm",
-    "postinstall": "playwright install"
+    "preinstall": "npx only-allow pnpm"
   },
   "dependencies": {
     "@react-three/drei": "9.99.0",
