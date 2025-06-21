@@ -5,6 +5,7 @@ This document explains how to configure the portfolio for deployment to GitHub P
 ## Overview
 
 The deployment system supports two main scenarios:
+
 1. **GitHub Pages Subdirectory**: Deploys to `https://username.github.io/repository-name/`
 2. **Custom Domain**: Deploys to your custom domain (e.g., `https://yourdomain.com`)
 
@@ -15,17 +16,20 @@ The deployment system supports two main scenarios:
 The deployment behavior is controlled by environment variables:
 
 #### `VITE_BASE_PATH`
+
 - **For subdirectory deployment**: `/portfolio/`
 - **For custom domain**: `/`
 - **Default**: `/portfolio/`
 
 #### `CUSTOM_DOMAIN` (GitHub repository variable)
+
 - **For subdirectory deployment**: Leave empty
 - **For custom domain**: Set to your domain name (e.g., `example.com`)
 
 ### GitHub Repository Configuration
 
 1. **For subdirectory deployment** (default):
+
    - No additional configuration needed
    - The workflow will automatically use `/portfolio/` as the base path
 
@@ -57,10 +61,12 @@ The GitHub Actions workflow (`.github/workflows/deploy.yml`) automatically:
 ### Common Issues
 
 1. **Assets not loading after custom domain setup**
+
    - Ensure the `CUSTOM_DOMAIN` repository variable is set correctly
    - Check that the CNAME file is being created in the deployment
 
 2. **404 errors on custom domain**
+
    - Verify your domain's DNS is pointing to GitHub Pages
    - Check that the CNAME file contains the correct domain
 
@@ -103,6 +109,7 @@ VITE_BASE_PATH=/portfolio/ pnpm build --filter=robin-noguier
 ## Support
 
 If you encounter issues:
+
 1. Check the GitHub Actions logs for deployment details
 2. Verify your DNS configuration for custom domains
 3. Ensure repository variables are set correctly
