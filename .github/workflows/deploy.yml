@@ -18,8 +18,8 @@ env:
   # Configuration for GitHub Pages deployment
   # Set CUSTOM_DOMAIN to your domain name (e.g., example.com) or leave empty for GitHub Pages subdirectory
   CUSTOM_DOMAIN: ${{ vars.CUSTOM_DOMAIN || '' }}
-  # Deployment environment configuration
-  NODE_ENV: production
+  # Skip Git hooks in CI environment
+  HUSKY: 0
 
 jobs:
   build:
