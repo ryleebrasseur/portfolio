@@ -37,6 +37,11 @@ jobs:
 
       - name: Build
         run: pnpm build --filter=robin-noguier
+        env:
+          # Set VITE_BASE_PATH='/' for custom domain deployment
+          # Set VITE_BASE_PATH='/portfolio/' for repository-based deployment (default)
+          # Change this based on your GitHub Pages configuration
+          VITE_BASE_PATH: '/'
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
