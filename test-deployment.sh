@@ -22,7 +22,18 @@ test_subdirectory_deployment() {
     rm -rf apps/robin-noguier/dist
     
     # Build with subdirectory configuration (using npx to avoid turbo caching)
-    cd apps/robin-noguier && VITE_BASE_PATH=/portfolio/ npx vite build > /dev/null 2>&1 && cd ../..
+    cd apps/robin-noguier
+    VITE_BASE_PATH=/portfolio/ npx vite build > build.log 2>&1
+    if [ $? -ne 0 ]; then
+        echo -e "❌ ${RED}Build failed!${NC}"
+        echo "Build log:"
+        cat build.log
+        rm -f build.log
+        cd ../..
+        return 1
+    fi
+    rm -f build.log
+    cd ../..
     
     # Check if assets are properly referenced
     if grep -q '"/portfolio/assets/' apps/robin-noguier/dist/index.html; then
