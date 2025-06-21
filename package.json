@@ -29,7 +29,7 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "clean": "turbo run clean && rm -rf node_modules",
     "typecheck": "turbo run typecheck",
-    "prepare": "husky",
+    "prepare": "node scripts/prepare.cjs",
     "preinstall": "npx only-allow pnpm"
   },
   "dependencies": {
