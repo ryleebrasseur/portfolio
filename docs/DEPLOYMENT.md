@@ -1,13 +1,33 @@
 # GitHub Pages Deployment Configuration
 
-This document explains how to configure the portfolio for deployment to GitHub Pages with support for both subdirectory and custom domain scenarios.
+This document explains how to configure the portfolio for deployment to GitHub Pages with automated domain detection and support for both subdirectory and custom domain scenarios.
 
 ## Overview
 
-The deployment system supports two main scenarios:
+The deployment system supports automatic configuration based on the repository:
 
-1. **GitHub Pages Subdirectory**: Deploys to `https://username.github.io/repository-name/`
-2. **Custom Domain**: Deploys to your custom domain (e.g., `https://yourdomain.com`)
+1. **Main Portfolio (`ryleebrasseur/portfolio`)**: Automatically deploys to `https://ryleeworks.com`
+2. **Other Repositories**: Deploy to subdirectory by default (`https://username.github.io/repository-name/`)
+3. **Custom Domain Override**: Can be configured for other repositories via repository variables
+
+## Automatic Domain Detection
+
+### Main Portfolio Repository
+
+For the `ryleebrasseur/portfolio` repository, the deployment workflow automatically:
+
+- Sets `CUSTOM_DOMAIN=ryleeworks.com`
+- Uses `VITE_BASE_PATH=/` for root path deployment
+- Creates CNAME file for custom domain
+- No manual configuration required
+
+### Other Repositories
+
+For other repositories using this workflow:
+
+- Defaults to subdirectory deployment
+- Uses `VITE_BASE_PATH=/portfolio/` 
+- Can be overridden with `CUSTOM_DOMAIN` repository variable
 
 ## Configuration
 
@@ -23,10 +43,21 @@ The deployment behavior is controlled by environment variables:
 
 #### `CUSTOM_DOMAIN` (GitHub repository variable)
 
-- **For subdirectory deployment**: Leave empty
+**Note**: This is only needed for repositories other than `ryleebrasseur/portfolio`, which automatically uses `ryleeworks.com`.
+
+- **For subdirectory deployment**: Leave empty or not set
 - **For custom domain**: Set to your domain name (e.g., `example.com`)
 
 ### GitHub Repository Configuration
+
+#### Main Portfolio (`ryleebrasseur/portfolio`)
+
+No configuration needed! The workflow automatically:
+- Detects the repository name
+- Sets `CUSTOM_DOMAIN=ryleeworks.com`
+- Configures for custom domain deployment
+
+#### Other Repositories
 
 1. **For subdirectory deployment** (default):
 
@@ -48,10 +79,12 @@ For local development, the environment is automatically configured to use root p
 
 The GitHub Actions workflow (`.github/workflows/deploy.yml`) automatically:
 
-1. **Detects deployment type** based on the `CUSTOM_DOMAIN` variable
+1. **Detects repository and sets domain**:
+   - For `ryleebrasseur/portfolio`: automatically sets `CUSTOM_DOMAIN=ryleeworks.com`
+   - For other repositories: uses `vars.CUSTOM_DOMAIN` or defaults to subdirectory
 2. **Sets appropriate base path**:
-   - If `CUSTOM_DOMAIN` is set: uses `VITE_BASE_PATH=/`
-   - If `CUSTOM_DOMAIN` is empty: uses `VITE_BASE_PATH=/portfolio/`
+   - If custom domain is detected/configured: uses `VITE_BASE_PATH=/`
+   - If no custom domain: uses `VITE_BASE_PATH=/portfolio/`
 3. **Builds the application** with the correct configuration
 4. **Creates CNAME file** when deploying to a custom domain
 5. **Deploys to GitHub Pages**
@@ -62,7 +95,8 @@ The GitHub Actions workflow (`.github/workflows/deploy.yml`) automatically:
 
 1. **Assets not loading after custom domain setup**
 
-   - Ensure the `CUSTOM_DOMAIN` repository variable is set correctly
+   - For main portfolio: This should work automatically with `ryleeworks.com`
+   - For other repositories: Ensure the `CUSTOM_DOMAIN` repository variable is set correctly
    - Check that the CNAME file is being created in the deployment
 
 2. **404 errors on custom domain**
@@ -70,9 +104,13 @@ The GitHub Actions workflow (`.github/workflows/deploy.yml`) automatically:
    - Verify your domain's DNS is pointing to GitHub Pages
    - Check that the CNAME file contains the correct domain
 
-3. **Subdirectory deployment broken**
+3. **Subdirectory deployment broken for other repositories**
    - Ensure `CUSTOM_DOMAIN` repository variable is empty or not set
    - Verify the base path is set to `/portfolio/`
+
+4. **Main portfolio not deploying to ryleeworks.com**
+   - Check that the repository name is exactly `ryleebrasseur/portfolio`
+   - Verify the workflow logs show "Auto-detected repository: ryleebrasseur/portfolio"
 
 ### Manual Build Testing
 
