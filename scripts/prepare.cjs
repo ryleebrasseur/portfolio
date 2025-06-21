@@ -68,7 +68,7 @@ if (!huskyAvailable) {
 
 try {
   console.log('🐕 Setting up husky...');
-  execSync('husky', { stdio: 'inherit' });
+  execSync('husky install', { stdio: 'inherit' });
   console.log('✅ Husky setup completed successfully');
 } catch (error) {
   console.warn('⚠️  Husky setup failed, but continuing...');
