@@ -50,8 +50,8 @@ if (huskyDisabled) {
   process.exit(0);
 }
 
-if (isCI && isProduction) {
-  console.log('✅ Skipping husky setup in CI production environment');
+if (isCI) {
+  console.log('✅ Skipping husky setup in CI environment');
   process.exit(0);
 }
 
