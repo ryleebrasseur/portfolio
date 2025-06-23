@@ -6,6 +6,7 @@ import { projects, Project } from '../../data/projects'
 import ProjectDetailModal from '../ProjectModal/ProjectDetailModal'
 import GradientImage from '../GradientImage/GradientImage'
 import PinnedNav from '../PinnedNav/PinnedNav'
+import { KineticPhone } from '../KineticPhone'
 import styles from './HeroSection.module.css'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -25,6 +26,38 @@ const HeroSectionWebGL = () => {
     if (!containerRef.current) return
 
     const ctx = gsap.context(() => {
+      // Magnetic hover effect for email link
+      const magneticElements =
+        containerRef.current!.querySelectorAll('[data-magnetic]')
+
+      magneticElements.forEach((el) => {
+        const element = el as HTMLElement
+
+        const handleMouseMove = (e: MouseEvent) => {
+          const rect = element.getBoundingClientRect()
+          const x = e.clientX - rect.left - rect.width / 2
+          const y = e.clientY - rect.top - rect.height / 2
+
+          gsap.to(element, {
+            x: x * 0.3,
+            y: y * 0.3,
+            duration: 0.3,
+            ease: 'power2.out',
+          })
+        }
+
+        const handleMouseLeave = () => {
+          gsap.to(element, {
+            x: 0,
+            y: 0,
+            duration: 0.5,
+            ease: 'elastic.out(1, 0.5)',
+          })
+        }
+
+        element.addEventListener('mousemove', handleMouseMove)
+        element.addEventListener('mouseleave', handleMouseLeave)
+      })
       // Create cinematic scroll timeline
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -108,6 +141,17 @@ const HeroSectionWebGL = () => {
         <p className={styles.heroInstitution}>
           Michigan State University | James Madison College
         </p>
+        <div className={styles.heroContact}>
+          <KineticPhone className={styles.contactPhone} />
+          <span className={styles.contactDivider}>|</span>
+          <a
+            href="mailto:hello@rysdesigns.com"
+            className={styles.contactLink}
+            data-magnetic
+          >
+            hello@rysdesigns.com
+          </a>
+        </div>
       </div>
 
       <div className={styles.scrollIndicator}>

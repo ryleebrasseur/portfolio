@@ -22,7 +22,7 @@
   transform: translate(-50%, -50%);
   text-align: center;
   z-index: 10;
-  pointer-events: none;
+  pointer-events: auto;
   color: var(--text-primary);
   text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
 }
@@ -56,6 +56,45 @@
   font-style: italic;
 }
 
+.heroContact {
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.contactPhone {
+  /* Inherits styles from KineticPhone component */
+}
+
+.contactLink {
+  font-family: var(--font-subtitle);
+  font-size: clamp(0.875rem, 1.25vw, 1.125rem);
+  color: var(--text-primary);
+  text-decoration: none;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+  letter-spacing: 0.025em;
+  font-weight: 400;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.contactLink:hover {
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.contactDivider {
+  color: var(--text-secondary);
+  opacity: 0.4;
+  font-size: clamp(0.875rem, 1.25vw, 1.125rem);
+  font-weight: 300;
+}
+
 @media (max-width: 768px) {
   .heroTitle {
     font-size: clamp(2rem, 10vw, 4rem);
@@ -68,6 +107,20 @@
 
   .heroInstitution {
     font-size: clamp(1rem, 3vw, 1.25rem);
+  }
+
+  .heroContact {
+    margin-top: 1rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .contactDivider {
+    display: none;
+  }
+
+  .contactLink {
+    font-size: clamp(0.875rem, 2.5vw, 1rem);
   }
 }
 

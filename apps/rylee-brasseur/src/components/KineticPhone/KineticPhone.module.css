@@ -1,0 +1,51 @@
+.container {
+  position: relative;
+  display: inline-block;
+}
+
+.phoneLink {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  font-family: var(--font-subtitle);
+  font-size: clamp(0.875rem, 1.25vw, 1.125rem);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--text-primary);
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.phoneLink:hover {
+  opacity: 1;
+}
+
+/* Individual character container */
+.flipContainer {
+  display: inline-block;
+  position: relative;
+  height: 1.2em;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  perspective: 300px;
+}
+
+/* The flipping character */
+.flipper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-width: 0.5ch;
+  transform-origin: center center;
+  transform-style: preserve-3d;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .phoneLink {
+    font-size: clamp(0.9rem, 2.5vw, 1.125rem);
+  }
+}
