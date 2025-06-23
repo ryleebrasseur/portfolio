@@ -1,305 +1,178 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { gsap } from 'gsap'
-import { Flip } from 'gsap/Flip'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { Observer } from 'gsap/Observer'
+import { useGSAP } from '@gsap/react'
 import { useMotion } from '../providers/MotionProvider'
 
-gsap.registerPlugin(Flip, ScrollTrigger)
+gsap.registerPlugin(Observer, useGSAP)
 
-interface HeroToContactHeaderOrchestratorProps {
-  // Element IDs to track for morphing
-  nameHeroId?: string
-  nameHeaderId?: string
-  titleHeroId?: string
-  titleHeaderId?: string
-  emailHeroId?: string
-  emailHeaderId?: string
-  phoneHeroId?: string
-  phoneHeaderId?: string
-}
+const sections = ['hero', 'header'] as const
+type Section = typeof sections[number]
 
-export const HeroToContactHeaderOrchestrator: React.FC<
-  HeroToContactHeaderOrchestratorProps
-> = ({
-  nameHeroId = 'hero-name',
-  nameHeaderId = 'header-name',
-  titleHeroId = 'hero-title',
-  titleHeaderId = 'header-title',
-  emailHeroId = 'hero-email',
-  emailHeaderId = 'header-email',
-  phoneHeroId = 'hero-phone',
-  phoneHeaderId = 'header-phone',
-}) => {
-  const { currentChapter, getElement } = useMotion()
-  const timelineRef = useRef<gsap.core.Timeline | null>(null)
+export const HeroToContactHeaderOrchestrator: React.FC = () => {
+  const { getElement } = useMotion()
+  const headerRef = useRef<HTMLDivElement | null>(null)
+  
+  const wrap = gsap.utils.wrap(0, sections.length)
+  let animating = false
+  let currentIndex = 0
 
-  useEffect(() => {
-    // Get registered elements
-    const heroName = getElement(nameHeroId)?.current
-    const headerName = getElement(nameHeaderId)?.current
-    const heroTitle = getElement(titleHeroId)?.current
-    const headerTitle = getElement(titleHeaderId)?.current
-    const heroEmail = getElement(emailHeroId)?.current
-    const headerEmail = getElement(emailHeaderId)?.current
-    const heroPhone = getElement(phoneHeroId)?.current
-    const headerPhone = getElement(phoneHeaderId)?.current
+  useGSAP(() => {
+    const heroName = getElement('hero-name')?.current
+    const heroTitle = getElement('hero-title')?.current
+    const heroEmail = getElement('hero-email')?.current
+    const heroInstitution = getElement('hero-institution')?.current
+    const heroContact = getElement('hero-contact')?.current
 
-    if (!heroName || !headerName) {
-      console.warn('Required elements not found for orchestration')
+    if (!heroName || !heroTitle || !heroEmail) {
       return
     }
 
-    // Create main timeline
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: '.hero-section',
-        start: 'top top',
-        end: '150% top',
-        scrub: 1,
-        pin: false,
-        markers: false,
+    const heroElements = [heroName, heroTitle, heroEmail, heroInstitution, heroContact].filter(Boolean)
+
+    // Create header element once
+    if (!headerRef.current) {
+      headerRef.current = document.createElement('div')
+      headerRef.current.id = 'sticky-header-container'
+      headerRef.current.innerHTML = `
+        <div class="header-left">
+          <h1 id="header-name">ry designs ❤️</h1>
+          <span id="header-title">IR Student • MSU</span>
+        </div>
+        <div class="header-right">
+          <a id="header-email" href="mailto:hello@rysdesigns.com">hello@rysdesigns.com</a>
+          <div id="header-phone"></div>
+        </div>
+      `
+      
+      // Set initial states following gist pattern
+      gsap.set(heroElements, { zIndex: 1, autoAlpha: 1 })
+      gsap.set(headerRef.current, {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: 80,
+        background: 'var(--bg-primary)',
+        borderBottom: '1px solid var(--border)',
+        zIndex: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0 2rem',
+        autoAlpha: 0
+      })
+      
+      document.body.appendChild(headerRef.current)
+      
+      // Clone phone element
+      const phoneElement = heroContact?.querySelector('.kineticPhone')
+      if (phoneElement) {
+        const headerPhone = headerRef.current.querySelector('#header-phone')
+        if (headerPhone) {
+          headerPhone.appendChild(phoneElement.cloneNode(true))
+        }
+      }
+    }
+
+    function gotoSection(index: number, direction: number) {
+      console.log('gotoSection called:', index, 'direction:', direction, 'currentIndex:', currentIndex, 'animating:', animating)
+      
+      // CRITICAL: Block if animating or same section (following gist pattern exactly)
+      if (animating) {
+        console.log('BLOCKED: Animation in progress')
+        return
+      }
+      
+      animating = true
+      index = wrap(index)
+
+      let tl = gsap.timeline({
+        defaults: { duration: 1, ease: "expo.inOut" },
+        onComplete: () => {
+          animating = false
+          console.log('Animation complete, currentIndex now:', index)
+        }
+      })
+
+      // EXACTLY like the gist: Set ALL sections to base state first
+      gsap.set([heroElements, headerRef.current], { zIndex: 0, autoAlpha: 0 })
+      
+      if (index === 1) { // Going to header
+        // Set current (hero) visible, next (header) ready to animate in
+        gsap.set(heroElements, { zIndex: 1, autoAlpha: 1 })
+        gsap.set(headerRef.current, { zIndex: 2, autoAlpha: 1 })
+        
+        tl.to(heroElements, {
+          autoAlpha: 0,
+          y: -20,
+          stagger: 0.05
+        }, 0)
+        .fromTo(headerRef.current, 
+          { y: -100, autoAlpha: 0 },
+          { y: 0, autoAlpha: 1 }, 0.2)
+      } else { // Going to hero
+        // Set current (header) visible, next (hero) ready to animate in  
+        gsap.set(headerRef.current, { zIndex: 1, autoAlpha: 1 })
+        gsap.set(heroElements, { zIndex: 2, autoAlpha: 1 })
+        
+        tl.to(headerRef.current, {
+          y: -100,
+          autoAlpha: 0
+        }, 0)
+        .fromTo(heroElements,
+          { y: -20, autoAlpha: 0 },
+          { y: 0, autoAlpha: 1, stagger: 0.05 }, 0.2)
+      }
+
+      currentIndex = index
+    }
+
+    Observer.create({
+      type: "wheel,touch,pointer",
+      preventDefault: true,
+      wheelSpeed: -1,
+      onUp: () => {
+        console.log("Observer: scroll down detected")
+        if (animating) {
+          console.log("Observer: blocked - animation in progress")
+          return
+        }
+        if (currentIndex >= sections.length - 1) {
+          console.log("Observer: blocked - already at last section")
+          return
+        }
+        gotoSection(currentIndex + 1, +1)
       },
+      onDown: () => {
+        console.log("Observer: scroll up detected")
+        if (animating) {
+          console.log("Observer: blocked - animation in progress")
+          return
+        }
+        if (currentIndex <= 0) {
+          console.log("Observer: blocked - already at first section")
+          return
+        }
+        gotoSection(currentIndex - 1, -1)
+      },
+      tolerance: 10,
+      debounce: true // Prevent rapid firing
     })
 
-    // Phase 1: Prepare elements (0-10% of scroll)
-    tl.set(
-      [headerName, headerTitle, headerEmail, headerPhone].filter(Boolean),
-      {
-        visibility: 'hidden',
-        opacity: 0,
-      },
-      0
-    )
-
-    // Phase 2: Start morphing (10-50% of scroll)
-    if (heroName && headerName) {
-      // Create curved motion path for name
-      tl.to(
-        heroName,
-        {
-          motionPath: {
-            path: [
-              { x: 0, y: 0 },
-              { x: -100, y: -50 },
-              { x: -150, y: -150 },
-              { x: -100, y: -250 },
-              { x: 0, y: -300 },
-            ],
-            curviness: 1.25,
-            autoRotate: false,
-          },
-          scale: 0.7,
-          duration: 0.4,
-          ease: 'power3.inOut',
-        },
-        0.1
-      )
-
-      // Morph text content
-      tl.to(
-        heroName,
-        {
-          onUpdate: function () {
-            const progress = this.progress()
-            if (progress > 0.5 && heroName.textContent !== 'ry designs ❤️') {
-              // Use FLIP for smooth text change
-              const state = Flip.getState(heroName)
-              heroName.textContent = 'ry designs ❤️'
-              heroName.style.fontFamily = 'var(--font-display)'
-              heroName.style.fontSize = '1.5rem'
-              heroName.style.fontWeight = '700'
-              Flip.from(state, {
-                duration: 0.3,
-                ease: 'power2.inOut',
-                scale: true,
-                onComplete: () => {
-                  gsap.set(heroName, { clearProps: 'all' })
-                },
-              })
-            }
-          },
-          duration: 0.4,
-        },
-        0.1
-      )
+    // Expose for testing
+    ;(window as any).testGotoSection = (section: string) => {
+      const targetIndex = section === 'header' ? 1 : 0
+      const direction = targetIndex > currentIndex ? 1 : -1
+      gotoSection(targetIndex, direction)
     }
-
-    // Title morphing with physics
-    if (heroTitle && headerTitle) {
-      tl.to(
-        heroTitle,
-        {
-          y: -280,
-          x: 200,
-          scale: 0.6,
-          duration: 0.4,
-          ease: 'back.out(1.2)',
-          onUpdate: function () {
-            const progress = this.progress()
-            if (
-              progress > 0.5 &&
-              heroTitle.textContent !== 'IR Student • MSU'
-            ) {
-              const state = Flip.getState(heroTitle)
-              heroTitle.textContent = 'IR Student • MSU'
-              heroTitle.style.fontSize = '0.875rem'
-              heroTitle.style.opacity = '0.7'
-              Flip.from(state, {
-                duration: 0.2,
-                ease: 'power2.inOut',
-              })
-            }
-          },
-        },
-        0.15
-      )
-    }
-
-    // Email with elastic motion
-    if (heroEmail && headerEmail) {
-      tl.to(
-        heroEmail,
-        {
-          y: -260,
-          x: 400,
-          scale: 0.8,
-          duration: 0.4,
-          ease: 'elastic.out(1, 0.5)',
-        },
-        0.2
-      )
-    }
-
-    // Phone slides in from side
-    if (heroPhone && headerPhone) {
-      tl.to(
-        heroPhone,
-        {
-          y: -260,
-          x: 600,
-          scale: 0.9,
-          duration: 0.4,
-          ease: 'power3.out',
-        },
-        0.25
-      )
-    }
-
-    // Phase 3: Final positioning (50-75% of scroll)
-    tl.to(
-      [heroName, heroTitle, heroEmail, heroPhone].filter(Boolean),
-      {
-        opacity: 0,
-        duration: 0.2,
-        stagger: 0.05,
-        onComplete: () => {
-          // Show header elements
-          gsap.set(
-            [headerName, headerTitle, headerEmail, headerPhone].filter(Boolean),
-            {
-              visibility: 'visible',
-              opacity: 0,
-            }
-          )
-          gsap.to(
-            [headerName, headerTitle, headerEmail, headerPhone].filter(Boolean),
-            {
-              opacity: 1,
-              duration: 0.3,
-              stagger: 0.05,
-              ease: 'power2.out',
-            }
-          )
-        },
-      },
-      0.5
-    )
-
-    timelineRef.current = tl
 
     return () => {
-      tl.kill()
-      ScrollTrigger.getAll().forEach((st) => st.kill())
+      if (headerRef.current?.parentNode) {
+        headerRef.current.parentNode.removeChild(headerRef.current)
+      }
     }
-  }, [
-    getElement,
-    nameHeroId,
-    nameHeaderId,
-    titleHeroId,
-    titleHeaderId,
-    emailHeroId,
-    emailHeaderId,
-    phoneHeroId,
-    phoneHeaderId,
-  ])
+  }, [getElement])
 
-  // Handle chapter-based visibility
-  useEffect(() => {
-    if (currentChapter === 'hero') {
-      // Ensure hero elements are visible
-      const heroElements = [
-        getElement(nameHeroId)?.current,
-        getElement(titleHeroId)?.current,
-        getElement(emailHeroId)?.current,
-        getElement(phoneHeroId)?.current,
-      ].filter(Boolean)
-
-      gsap.set(heroElements, {
-        visibility: 'visible',
-        opacity: 1,
-      })
-
-      // Hide header elements
-      const headerElements = [
-        getElement(nameHeaderId)?.current,
-        getElement(titleHeaderId)?.current,
-        getElement(emailHeaderId)?.current,
-        getElement(phoneHeaderId)?.current,
-      ].filter(Boolean)
-
-      gsap.set(headerElements, {
-        visibility: 'hidden',
-        opacity: 0,
-      })
-    } else if (currentChapter === 'sticky' || currentChapter === 'footer') {
-      // Ensure header elements are visible
-      const headerElements = [
-        getElement(nameHeaderId)?.current,
-        getElement(titleHeaderId)?.current,
-        getElement(emailHeaderId)?.current,
-        getElement(phoneHeaderId)?.current,
-      ].filter(Boolean)
-
-      gsap.set(headerElements, {
-        visibility: 'visible',
-        opacity: 1,
-      })
-
-      // Hide hero elements
-      const heroElements = [
-        getElement(nameHeroId)?.current,
-        getElement(titleHeroId)?.current,
-        getElement(emailHeroId)?.current,
-        getElement(phoneHeroId)?.current,
-      ].filter(Boolean)
-
-      gsap.set(heroElements, {
-        visibility: 'hidden',
-        opacity: 0,
-      })
-    }
-  }, [
-    currentChapter,
-    getElement,
-    nameHeroId,
-    nameHeaderId,
-    titleHeroId,
-    titleHeaderId,
-    emailHeroId,
-    emailHeaderId,
-    phoneHeroId,
-    phoneHeaderId,
-  ])
-
-  return null // This is a pure orchestrator component
+  return null
 }

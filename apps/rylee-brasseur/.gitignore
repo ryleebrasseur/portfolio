@@ -1,9 +1,6 @@
-# Screenshots
-screenshots/
-*.png
-
-# Test results
-test-results/
+# Test results (excluding screenshots)
+test-results/*
+!test-results/screenshots/
 playwright-report/
 
 # Build output

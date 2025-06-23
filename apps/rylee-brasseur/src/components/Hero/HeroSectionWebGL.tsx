@@ -1,10 +1,26 @@
 import React, { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { KineticPhone } from '../KineticPhone'
+import { useMotion } from '@ryleebrasseur/motion-system'
 import styles from './HeroSection.module.css'
 
 const HeroSectionWebGL = () => {
   const containerRef = useRef<HTMLDivElement>(null)
+  const { registerElement } = useMotion()
+  const titleRef = useRef<HTMLHeadingElement>(null)
+  const subtitleRef = useRef<HTMLParagraphElement>(null)
+  const institutionRef = useRef<HTMLParagraphElement>(null)
+  const emailRef = useRef<HTMLAnchorElement>(null)
+  const contactRef = useRef<HTMLDivElement>(null)
+
+  // Register elements with motion system
+  useEffect(() => {
+    if (titleRef.current) registerElement('hero-name', titleRef)
+    if (subtitleRef.current) registerElement('hero-title', subtitleRef)
+    if (institutionRef.current) registerElement('hero-institution', institutionRef)
+    if (emailRef.current) registerElement('hero-email', emailRef)
+    if (contactRef.current) registerElement('hero-contact', contactRef)
+  }, [registerElement])
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -92,17 +108,18 @@ const HeroSectionWebGL = () => {
   return (
     <div ref={containerRef} className={styles.heroContainer}>
       <div className={styles.overlayContent}>
-        <h1 className={`${styles.heroTitle} heroTitle`}>Rylee Brasseur</h1>
-        <p className={`${styles.heroSubtitle} heroSubtitle`}>
+        <h1 ref={titleRef} className={`${styles.heroTitle} heroTitle`}>Rylee Brasseur</h1>
+        <p ref={subtitleRef} className={`${styles.heroSubtitle} heroSubtitle`}>
           International Relations Student
         </p>
-        <p className={`${styles.heroInstitution} heroInstitution`}>
+        <p ref={institutionRef} className={`${styles.heroInstitution} heroInstitution`}>
           Michigan State University | James Madison College
         </p>
-        <div className={`${styles.heroContact} heroContact`}>
+        <div ref={contactRef} className={`${styles.heroContact} heroContact`}>
           <KineticPhone className={styles.contactPhone} />
           <span className={styles.contactDivider}>|</span>
           <a
+            ref={emailRef}
             href="mailto:hello@rysdesigns.com"
             className={styles.contactLink}
             data-magnetic

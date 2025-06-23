@@ -6,9 +6,9 @@ test('capture initial viewport', async ({ page }) => {
   await page.waitForTimeout(2000) // Wait for animations
 
   await page.screenshot({
-    path: 'viewport-screenshot.png',
+    path: './test-results/screenshots/viewport-screenshot.png',
     fullPage: false,
   })
 
-  console.log('Screenshot saved to viewport-screenshot.png')
+  console.log('Screenshot saved to ./test-results/screenshots/viewport-screenshot.png')
 })

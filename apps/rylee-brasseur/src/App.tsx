@@ -7,9 +7,6 @@ import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
 import {
   MotionProvider,
   HeroToContactHeaderOrchestrator,
-  ContactHeader,
-  KineticText,
-  useMotion,
 } from '@ryleebrasseur/motion-system'
 import HeroSectionWebGL from './components/Hero/HeroSectionWebGL'
 import CustomCursor from './components/CustomCursor/CustomCursor'
@@ -101,7 +98,6 @@ function App() {
   return (
     <MotionProvider>
       <CustomCursor />
-      <ContactHeader onThemeClick={() => setShowThemeMenu(!showThemeMenu)} />
       <HeroToContactHeaderOrchestrator />
       <main>
         <HeroSectionWebGL />
@@ -114,13 +110,6 @@ function App() {
         </section>
         {currentSection !== 'hero' && renderSection()} */}
 
-        {/* Spacer for scroll */}
-        <div
-          style={{
-            height: '100vh',
-            background: 'var(--color-background, #fff)',
-          }}
-        />
       </main>
     </MotionProvider>
   )
