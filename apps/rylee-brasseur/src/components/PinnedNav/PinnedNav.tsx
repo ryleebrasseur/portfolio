@@ -18,6 +18,8 @@ const themes = [
   { name: 'sunset', label: 'Sunset' },
   { name: 'monochrome', label: 'Mono' },
   { name: 'forest', label: 'Forest' },
+  { name: 'att', label: 'AT&T' },
+  { name: 'msu', label: 'MSU' },
 ]
 
 const PinnedNav: React.FC<PinnedNavProps> = ({

@@ -21,8 +21,8 @@
   text-align: center;
   z-index: 10;
   pointer-events: none;
-  color: white;
-  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.8);
+  color: var(--text-primary);
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
 }
 
 .heroTitle {
