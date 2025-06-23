@@ -2,6 +2,8 @@ import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: './e2e',
+  // Ignore manual test files by default
+  testIgnore: '**/*.manual.ts',
   fullyParallel: false, // Run tests sequentially in CI to avoid resource issues
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

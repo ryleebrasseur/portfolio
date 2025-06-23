@@ -10,6 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Platform**: macOS, Linux, or WSL2 (native Windows not supported)
 - **Git**: Required for version control and pre-commit hooks
 - **Disk Space**: Minimum 1GB free space recommended
+- **Playwright Dependencies**: System libraries for WebKit browser testing (automatically installed by setup script on Linux/WSL)
 
 ## Development Environment Setup
 
@@ -21,7 +22,7 @@ Run the automated setup script:
 ./dev_setup.sh
 ```
 
-The script (v2.0.0) provides:
+The script (v2.2.1) provides:
 
 - **Idempotent execution**: Safe to run multiple times
 - **Cross-platform support**: macOS, Linux, WSL2, and CI environments
@@ -38,6 +39,7 @@ The script (v2.0.0) provides:
 - Properly exports paths for current shell session
 - Updates shell profiles for future sessions
 - Verifies installations actually work before proceeding
+- Installs Playwright browsers and system dependencies (for WebKit testing)
 
 ### Important Notes
 
@@ -61,7 +63,10 @@ The script (v2.0.0) provides:
 - `pnpm dev` - Start Vite dev server on port 5173
 - `pnpm build` - Create production build in dist/
 - `pnpm preview` - Preview production build locally
-- `pnpm test` - Run Playwright E2E tests
+- `pnpm test` - Run all tests (excludes manual screenshot tests)
+- `pnpm test:screenshots` - Run essential screenshots only (~20 images)
+- `pnpm test:screenshots:all` - Run ALL screenshot tests including exhaustive suite (145+ images)
+- `pnpm playwright test --project=chromium` - Run tests in Chromium only
 - `pnpm lint` - Lint source files
 
 ## Architecture
@@ -125,6 +130,7 @@ The development environment setup is managed by `dev_setup.sh`. Related document
 - **Container persistence**: Volta installations may not persist across container restarts
 - **Volta pnpm support**: Volta's pnpm support is experimental. The setup script works around this by falling back to npm global install when needed
 - **pnpm workspace config**: Use `pnpm-workspace.yaml`, not package.json `workspaces` field
+- **WebKit dependencies**: On Linux/WSL, WebKit tests require system libraries. The setup script attempts to install these, but may need sudo access
 
 ### Troubleshooting
 

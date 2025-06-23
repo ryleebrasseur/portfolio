@@ -11,6 +11,8 @@
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:screenshots": "playwright test capture-essential-screenshots.spec.ts",
+    "test:screenshots:all": "playwright test --grep '\\.(manual|spec)\\.ts$'",
     "lint": "eslint src --cache --cache-location .eslintcache",
     "lint:fix": "eslint src --fix --cache --cache-location .eslintcache",
     "typecheck": "tsc --noEmit"
