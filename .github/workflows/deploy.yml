@@ -41,23 +41,17 @@ jobs:
 
       - name: Set deployment environment variables
         run: |
-          # Automatically detect custom domain for ryleebrasseur/portfolio
-          if [ "${{ github.repository }}" = "ryleebrasseur/portfolio" ]; then
-            echo "CUSTOM_DOMAIN=ryleeworks.com" >> $GITHUB_ENV
-            echo "VITE_BASE_PATH=/" >> $GITHUB_ENV
-            echo "Auto-detected repository: ryleebrasseur/portfolio"
-            echo "Using custom domain: ryleeworks.com"
-            echo "Setting base path to root (/)"
-          elif [ -n "${{ vars.CUSTOM_DOMAIN }}" ]; then
+          # Check for repository variable first, then fall back to defaults
+          if [ -n "${{ vars.CUSTOM_DOMAIN }}" ]; then
             echo "CUSTOM_DOMAIN=${{ vars.CUSTOM_DOMAIN }}" >> $GITHUB_ENV
             echo "VITE_BASE_PATH=/" >> $GITHUB_ENV
             echo "Using configured custom domain: ${{ vars.CUSTOM_DOMAIN }}"
             echo "Setting base path to root (/)"
           else
             echo "CUSTOM_DOMAIN=" >> $GITHUB_ENV
-            echo "VITE_BASE_PATH=/portfolio/" >> $GITHUB_ENV
-            echo "Using GitHub Pages subdirectory"
-            echo "Setting base path to /portfolio/"
+            echo "VITE_BASE_PATH=/" >> $GITHUB_ENV
+            echo "No custom domain configured"
+            echo "Setting base path to root (/)"
           fi
 
       - name: Build
