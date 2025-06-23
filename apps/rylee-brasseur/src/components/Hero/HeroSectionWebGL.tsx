@@ -1,26 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { useTheme } from '../../hooks/useTheme'
-import { projects, Project } from '../../data/projects'
-import ProjectDetailModal from '../ProjectModal/ProjectDetailModal'
-import GradientImage from '../GradientImage/GradientImage'
-import PinnedNav from '../PinnedNav/PinnedNav'
 import { KineticPhone } from '../KineticPhone'
 import styles from './HeroSection.module.css'
 
-gsap.registerPlugin(ScrollTrigger)
-
 const HeroSectionWebGL = () => {
-  const { colors } = useTheme()
   const containerRef = useRef<HTMLDivElement>(null)
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [currentProjectIndex, setCurrentProjectIndex] = useState(0)
-
-  useEffect(() => {
-    console.log('Modal state changed:', { isModalOpen, selectedProject })
-  }, [isModalOpen, selectedProject])
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -50,59 +34,55 @@ const HeroSectionWebGL = () => {
           gsap.to(element, {
             x: 0,
             y: 0,
-            duration: 0.5,
-            ease: 'elastic.out(1, 0.5)',
+            duration: 0.3,
+            ease: 'power2.out',
           })
         }
 
         element.addEventListener('mousemove', handleMouseMove)
         element.addEventListener('mouseleave', handleMouseLeave)
-      })
-      // Create cinematic scroll timeline
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: 'top top',
-          end: 'bottom bottom',
-          scrub: 1,
-          pin: false,
-        },
+
+        // Cleanup
+        return () => {
+          element.removeEventListener('mousemove', handleMouseMove)
+          element.removeEventListener('mouseleave', handleMouseLeave)
+        }
       })
 
-      // Animate overlay content based on scroll - faster timing
-      tl.to(`.${styles.overlayContent}`, {
+      // Animate hero content on load
+      gsap.from('.heroTitle', {
+        y: 50,
         opacity: 0,
-        duration: 0.3,
-      }).to(
-        `.${styles.scrollIndicator}`,
-        {
-          opacity: 0,
-          duration: 0.2,
-        },
-        '<'
-      )
+        duration: 1,
+        ease: 'power3.out',
+        delay: 0.2,
+      })
 
-      // Animate project previews and track current index
-      projects.forEach((_, index) => {
-        ScrollTrigger.create({
-          trigger: containerRef.current,
-          start: `${index * 100}vh top`,
-          end: `${(index + 1) * 100}vh top`,
-          onEnter: () => {
-            setCurrentProjectIndex(index)
-            gsap.to(`.${styles.previewSection}:nth-child(${index + 1})`, {
-              opacity: 1,
-              duration: 0.8,
-            })
-          },
-          onLeaveBack: () => {
-            if (index > 0) setCurrentProjectIndex(index - 1)
-            gsap.to(`.${styles.previewSection}:nth-child(${index + 1})`, {
-              opacity: 0,
-              duration: 0.8,
-            })
-          },
-        })
+      gsap.from('.heroSubtitle, .heroInstitution', {
+        y: 30,
+        opacity: 0,
+        duration: 1,
+        stagger: 0.1,
+        ease: 'power3.out',
+        delay: 0.4,
+      })
+
+      gsap.from('.heroContact', {
+        y: 20,
+        opacity: 0,
+        duration: 1,
+        ease: 'power3.out',
+        delay: 0.7,
+      })
+
+      // Animate scroll indicator
+      gsap.to('.scrollLine', {
+        scaleY: 0,
+        transformOrigin: 'top',
+        duration: 2,
+        ease: 'power2.inOut',
+        repeat: -1,
+        yoyo: true,
       })
     }, containerRef)
 
@@ -110,38 +90,16 @@ const HeroSectionWebGL = () => {
   }, [])
 
   return (
-    <div
-      ref={containerRef}
-      className={styles.heroContainer}
-      style={{ height: `${projects.length * 100}vh` }}
-    >
-      {/* Canvas disabled for now - to re-enable, uncomment this block
-      <div className={styles.canvasWrapper}>
-        <Canvas
-          camera={{ position: [0, 0, 5], fov: 75 }}
-          gl={{
-            antialias: true,
-            alpha: true,
-            powerPreference: 'high-performance',
-          }}
-        >
-          <Suspense fallback={null}>
-            <SceneContent scrollData={scrollData} projects={projects} />
-          </Suspense>
-        </Canvas>
-      </div>
-      */}
-      <div className={styles.canvasWrapper}>
-        {/* Canvas placeholder - maintains layout */}
-      </div>
-
+    <div ref={containerRef} className={styles.heroContainer}>
       <div className={styles.overlayContent}>
-        <h1 className={styles.heroTitle}>Rylee Brasseur</h1>
-        <p className={styles.heroSubtitle}>International Relations Student</p>
-        <p className={styles.heroInstitution}>
+        <h1 className={`${styles.heroTitle} heroTitle`}>Rylee Brasseur</h1>
+        <p className={`${styles.heroSubtitle} heroSubtitle`}>
+          International Relations Student
+        </p>
+        <p className={`${styles.heroInstitution} heroInstitution`}>
           Michigan State University | James Madison College
         </p>
-        <div className={styles.heroContact}>
+        <div className={`${styles.heroContact} heroContact`}>
           <KineticPhone className={styles.contactPhone} />
           <span className={styles.contactDivider}>|</span>
           <a
@@ -156,45 +114,8 @@ const HeroSectionWebGL = () => {
 
       <div className={styles.scrollIndicator}>
         <span>Scroll to explore</span>
-        <div className={styles.scrollLine}></div>
+        <div className={`${styles.scrollLine} scrollLine`}></div>
       </div>
-
-      <div className={styles.projectPreviews}>
-        {projects.map((project, index) => (
-          <div
-            key={project.id}
-            className={styles.previewSection}
-            style={{
-              top: `${100 + index * 100}vh`,
-              backgroundColor: colors.accent + '15',
-            }}
-          >
-            <div className={styles.previewContent}>
-              <span className={styles.previewNumber}>0{index + 1}</span>
-              <h2 className={styles.previewTitle}>{project.title}</h2>
-              <p className={styles.previewCategory}>{project.category}</p>
-              <p className={styles.previewDesc}>{project.description}</p>
-            </div>
-            <div className={styles.previewImage}>
-              <GradientImage gradient={project.image} />
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <PinnedNav
-        onProjectClick={(project) => {
-          setSelectedProject(project)
-          setIsModalOpen(true)
-        }}
-        currentProjectIndex={currentProjectIndex}
-      />
-
-      <ProjectDetailModal
-        project={selectedProject}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
     </div>
   )
 }

@@ -119,6 +119,10 @@ importers:
         version: 1.4.0(@types/node@20.11.30)(jsdom@26.1.0)(sass@1.72.0)
 
   apps/robin-noguier:
+    dependencies:
+      gsap:
+        specifier: 3.12.5
+        version: 3.12.5
     devDependencies:
       '@testing-library/jest-dom':
         specifier: ^6.6.3
@@ -1706,7 +1710,7 @@ packages:
     resolution: {integrity: sha512-WIGk8wiV2ABm/T7M+NC+tAV8fjzNJD1J4z11aZ3mTtx7WAZX/4QdCNhBO0g/TqXISA+/3hTbzrPC4FW1nhoNMQ==}
     peerDependencies:
       '@nuxt/kit': '>=3.0.0'
-      react: 18.2.0
+      react: '>=17.0.0'
       vue: '>=3.0.0'
     peerDependenciesMeta:
       '@nuxt/kit':
