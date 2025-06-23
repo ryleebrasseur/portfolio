@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { gsap } from 'gsap'
 import styles from './CustomCursor.module.css'
 
 interface Position {
@@ -29,32 +28,16 @@ const CustomCursor: React.FC = () => {
     let rafId: number
 
     const updateCursor = () => {
-      gsap.to(cursor, {
-        x: position.current.x,
-        y: position.current.y,
-        duration: 0.15,
-        ease: 'power2.out',
-      })
-
-      gsap.to(cursorDot, {
-        x: position.current.x,
-        y: position.current.y,
-        duration: 0.05,
-      })
+      // Use transform for better performance
+      cursor.style.transform = `translate3d(${position.current.x}px, ${position.current.y}px, 0) translate(-50%, -50%)`
+      cursorDot.style.transform = `translate3d(${position.current.x}px, ${position.current.y}px, 0) translate(-50%, -50%)`
     }
 
     const onMouseMove = (e: MouseEvent) => {
       position.current = { x: e.clientX, y: e.clientY }
 
-      // Disable magnetic effect for now - it's causing lag
-      // We can re-enable with better performance later
-
-      if (!rafId) {
-        rafId = requestAnimationFrame(() => {
-          updateCursor()
-          rafId = 0
-        })
-      }
+      // Direct update for instant response
+      updateCursor()
     }
 
     const onMouseEnter = (e: MouseEvent) => {
@@ -83,11 +66,13 @@ const CustomCursor: React.FC = () => {
     const onMouseUp = () => setIsClicking(false)
 
     const onMouseEnterWindow = () => {
-      gsap.to([cursor, cursorDot], { opacity: 1, duration: 0.3 })
+      cursor.style.opacity = '0.8'
+      cursorDot.style.opacity = '0.9'
     }
 
     const onMouseLeaveWindow = () => {
-      gsap.to([cursor, cursorDot], { opacity: 0, duration: 0.3 })
+      cursor.style.opacity = '0'
+      cursorDot.style.opacity = '0'
     }
 
     // Event listeners
@@ -99,12 +84,9 @@ const CustomCursor: React.FC = () => {
     document.addEventListener('mouseenter', onMouseEnterWindow)
     document.addEventListener('mouseleave', onMouseLeaveWindow)
 
-    // Initial position
-    gsap.set([cursor, cursorDot], {
-      xPercent: -50,
-      yPercent: -50,
-      opacity: 0,
-    })
+    // Initial setup
+    cursor.style.opacity = '0'
+    cursorDot.style.opacity = '0'
 
     return () => {
       document.body.style.cursor = 'auto'

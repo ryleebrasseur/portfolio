@@ -1,10 +1,8 @@
-import React, { Suspense, useEffect, useRef, useState } from 'react'
-import { Canvas } from '@react-three/fiber'
+import React, { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { useCustomScroll } from '../../hooks/useCustomScroll'
+import { useTheme } from '../../hooks/useTheme'
 import { projects, Project } from '../../data/projects'
-import { SceneContent } from './SceneContent'
 import ProjectDetailModal from '../ProjectModal/ProjectDetailModal'
 import GradientImage from '../GradientImage/GradientImage'
 import PinnedNav from '../PinnedNav/PinnedNav'
@@ -13,7 +11,7 @@ import styles from './HeroSection.module.css'
 gsap.registerPlugin(ScrollTrigger)
 
 const HeroSectionWebGL = () => {
-  const scrollData = useCustomScroll()
+  const { colors } = useTheme()
   const containerRef = useRef<HTMLDivElement>(null)
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -84,6 +82,7 @@ const HeroSectionWebGL = () => {
       className={styles.heroContainer}
       style={{ height: `${projects.length * 100}vh` }}
     >
+      {/* Canvas disabled for now - to re-enable, uncomment this block
       <div className={styles.canvasWrapper}>
         <Canvas
           camera={{ position: [0, 0, 5], fov: 75 }}
@@ -97,6 +96,10 @@ const HeroSectionWebGL = () => {
             <SceneContent scrollData={scrollData} projects={projects} />
           </Suspense>
         </Canvas>
+      </div>
+      */}
+      <div className={styles.canvasWrapper}>
+        {/* Canvas placeholder - maintains layout */}
       </div>
 
       <div className={styles.overlayContent}>
@@ -119,7 +122,7 @@ const HeroSectionWebGL = () => {
             className={styles.previewSection}
             style={{
               top: `${100 + index * 100}vh`,
-              backgroundColor: project.color + '10',
+              backgroundColor: colors.accent + '15',
             }}
           >
             <div className={styles.previewContent}>
