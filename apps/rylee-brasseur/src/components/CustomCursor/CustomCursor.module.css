@@ -6,9 +6,15 @@
   border-radius: 50%;
   pointer-events: none;
   z-index: 99999;
-  transition: all 0.15s ease-out;
+  transition:
+    width 0.2s ease,
+    height 0.2s ease,
+    border-width 0.2s ease,
+    border-color 0.2s ease,
+    opacity 0.3s ease;
   opacity: 0.8;
   mix-blend-mode: difference;
+  will-change: transform;
 }
 
 .cursor.hovering {
@@ -33,6 +39,7 @@
   pointer-events: none;
   z-index: 99999;
   opacity: 0.9;
+  will-change: transform;
 }
 
 /* Hide default cursor on buttons */

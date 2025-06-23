@@ -1,8 +1,9 @@
-import React, { useRef, MutableRefObject } from 'react'
+import React, { useRef, MutableRefObject, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Mesh, ShaderMaterial, Color } from 'three'
 import { Project } from '../../data/projects'
 import { ScrollData } from '../../hooks/useCustomScroll'
+import { useTheme } from '../../hooks/useTheme'
 import { vertexShader, fragmentShader } from './shaders/shaders'
 
 interface ImagePlaneProps {
@@ -14,7 +15,7 @@ interface ImagePlaneProps {
 }
 
 export const ImagePlane: React.FC<ImagePlaneProps> = ({
-  project,
+  project: _project,
   index,
   totalProjects,
   scrollData,
@@ -22,6 +23,63 @@ export const ImagePlane: React.FC<ImagePlaneProps> = ({
 }) => {
   const meshRef = useRef<Mesh>(null)
   const materialRef = useRef<ShaderMaterial>(null)
+  const { theme, colors } = useTheme()
+
+  // Create visually appealing theme colors with careful attention to contrast
+  const themeColors = useMemo(() => {
+    if (theme === 'cyberpunk' || theme === 'cyber') {
+      // Cyber: High contrast neon - bright cyan to deep magenta
+      return {
+        color1: new Color('#00ffff'), // Pure cyan
+        color2: new Color('#ff00ff'), // Pure magenta
+        color3: new Color('#001133'), // Deep blue-black
+        intensity: 1.2,
+      }
+    } else if (theme === 'sunset') {
+      // Sunset: Smooth warm gradient - coral to gold to purple
+      return {
+        color1: new Color('#ff7b9c'), // Soft coral pink
+        color2: new Color('#ffd700'), // Rich gold
+        color3: new Color('#4a148c'), // Deep purple
+        intensity: 1.1,
+      }
+    } else if (theme === 'att') {
+      // AT&T: Professional blue gradient - light to brand blue to navy
+      return {
+        color1: new Color('#7dd3ff'), // Light sky blue
+        color2: new Color('#00a8e0'), // AT&T brand blue
+        color3: new Color('#001f3f'), // Navy blue
+        intensity: 1.2,
+      }
+    } else if (theme === 'msu') {
+      // MSU: Clean contrast - white to spartan green with depth
+      return {
+        color1: new Color('#ffffff'), // Pure white
+        color2: new Color('#18453b'), // Spartan green
+        color3: new Color('#0a1f1a'), // Deep forest
+        intensity: 1.0,
+      }
+    }
+
+    // Default fallback
+    return {
+      color1: new Color(colors.accent),
+      color2: new Color(colors.text),
+      color3: new Color(colors.secondary),
+      intensity: 1.0,
+    }
+  }, [theme, colors])
+
+  // Update material uniforms when theme changes
+  useEffect(() => {
+    if (materialRef.current && materialRef.current.uniforms) {
+      materialRef.current.uniforms.uColor1.value = themeColors.color1
+      materialRef.current.uniforms.uColor2.value = themeColors.color2
+      materialRef.current.uniforms.uColor3.value = themeColors.color3
+      materialRef.current.uniforms.uIntensity.value = themeColors.intensity
+      materialRef.current.needsUpdate = true
+    }
+  }, [themeColors])
 
   useFrame(() => {
     if (!meshRef.current || !materialRef.current) return
@@ -69,6 +127,11 @@ export const ImagePlane: React.FC<ImagePlaneProps> = ({
     if (materialRef.current.uniforms) {
       materialRef.current.uniforms.uTime.value += 0.01
       materialRef.current.uniforms.uScrollProgress.value = distanceFromCurrent
+
+      // Update theme colors in real-time
+      materialRef.current.uniforms.uColor1.value = themeColors.color1
+      materialRef.current.uniforms.uColor2.value = themeColors.color2
+      materialRef.current.uniforms.uColor3.value = themeColors.color3
     }
   })
 
@@ -78,13 +141,17 @@ export const ImagePlane: React.FC<ImagePlaneProps> = ({
         args={[viewport.width * 0.8, viewport.height * 0.6, 32, 32]}
       />
       <shaderMaterial
+        key={theme} // Force re-creation when theme changes
         ref={materialRef}
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}
         uniforms={{
           uTime: { value: 0 },
           uScrollProgress: { value: 0 },
-          uColor: { value: new Color(project.color) },
+          uColor1: { value: themeColors.color1 },
+          uColor2: { value: themeColors.color2 },
+          uColor3: { value: themeColors.color3 },
+          uIntensity: { value: themeColors.intensity },
         }}
         transparent
       />

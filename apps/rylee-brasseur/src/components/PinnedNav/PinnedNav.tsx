@@ -12,12 +12,8 @@ interface PinnedNavProps {
 }
 
 const themes = [
-  { name: 'default', label: 'Dark' },
-  { name: 'cyberpunk', label: 'Cyber' },
-  { name: 'ocean', label: 'Ocean' },
   { name: 'sunset', label: 'Sunset' },
-  { name: 'monochrome', label: 'Mono' },
-  { name: 'forest', label: 'Forest' },
+  { name: 'cyberpunk', label: 'Cyber' },
   { name: 'att', label: 'AT&T' },
   { name: 'msu', label: 'MSU' },
 ]
@@ -27,11 +23,11 @@ const PinnedNav: React.FC<PinnedNavProps> = ({
   currentProjectIndex,
 }) => {
   const [visibleTitles, setVisibleTitles] = useState<number[]>([])
-  const [currentTheme, setCurrentTheme] = useState('default')
+  const [currentTheme, setCurrentTheme] = useState('sunset')
 
   useEffect(() => {
     // Load saved theme
-    const savedTheme = localStorage.getItem('portfolio-theme') || 'default'
+    const savedTheme = localStorage.getItem('portfolio-theme') || 'sunset'
     setCurrentTheme(savedTheme)
     document.documentElement.setAttribute('data-theme', savedTheme)
 

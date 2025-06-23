@@ -11,6 +11,8 @@
   width: 100%;
   height: 100vh;
   z-index: 1;
+  background-color: var(--bg-primary);
+  transition: background-color 0.3s ease;
 }
 
 .overlayContent {
@@ -76,7 +78,7 @@
   align-items: center;
   gap: 1rem;
   z-index: 10;
-  color: white;
+  color: var(--text-primary);
   font-size: 0.875rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -86,7 +88,7 @@
 .scrollLine {
   width: 1px;
   height: 60px;
-  background: linear-gradient(to bottom, white, transparent);
+  background: linear-gradient(to bottom, var(--text-primary), transparent);
   animation: scrollPulse 2s infinite;
 }
 
@@ -128,7 +130,7 @@
 .previewContent {
   flex: 1;
   max-width: 600px;
-  color: white;
+  color: var(--text-primary);
 }
 
 .previewNumber {
@@ -166,7 +168,7 @@
   height: 600px;
   overflow: hidden;
   border-radius: 8px;
-  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.3);
 }
 
 .previewImage img {
