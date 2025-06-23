@@ -22,7 +22,36 @@
   gap: 1.5rem;
 }
 
+.nameButton {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.nameButton::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--text-primary);
+  transition: width 0.3s ease;
+}
+
+.nameButton:hover::after {
+  width: 100%;
+}
+
+.nameButton:hover {
+  transform: translateX(2px);
+}
+
 .name {
+  font-family: var(--font-heading);
   font-size: 1.125rem;
   font-weight: 600;
   margin: 0;
@@ -31,6 +60,7 @@
 }
 
 .title {
+  font-family: var(--font-subtitle);
   font-size: 0.875rem;
   font-weight: 400;
   color: var(--text-secondary);

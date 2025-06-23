@@ -28,6 +28,7 @@
 }
 
 .heroTitle {
+  font-family: var(--font-heading);
   font-size: clamp(3rem, 8vw, 7rem);
   font-weight: 700;
   margin: 0;
@@ -37,6 +38,7 @@
 }
 
 .heroSubtitle {
+  font-family: var(--font-subtitle);
   font-size: clamp(1rem, 2vw, 1.5rem);
   margin-top: 2rem;
   opacity: 0.8;
@@ -45,11 +47,13 @@
 }
 
 .heroInstitution {
+  font-family: var(--font-subtitle);
   font-size: clamp(0.875rem, 1.5vw, 1.125rem);
   margin-top: 0.5rem;
   opacity: 0.6;
   font-weight: 300;
   letter-spacing: 0.02em;
+  font-style: italic;
 }
 
 @media (max-width: 768px) {

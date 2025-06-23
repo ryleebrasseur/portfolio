@@ -198,6 +198,16 @@ main() {
   log INFO "Installing Playwright browsers..."
   pnpm exec playwright install || { log ERROR "Failed to install Playwright browsers"; exit 1; }
   log SUCCESS "Playwright browsers installed"
+  
+  # Install Playwright system dependencies for all browsers (including WebKit)
+  if [[ "$os" == "Linux" || "$os" == "WSL" ]]; then
+    log INFO "Installing Playwright system dependencies..."
+    if command_exists sudo; then
+      pnpm exec playwright install-deps || { log WARNING "Failed to install some Playwright system dependencies - WebKit tests may not work"; }
+    else
+      log WARNING "sudo not available - cannot install Playwright system dependencies. WebKit tests may fail."
+    fi
+  fi
   # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   local end_time=$(date +%s)

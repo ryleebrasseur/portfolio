@@ -63,9 +63,9 @@
   margin-left: 0.5rem;
 }
 
-/* Theme section */
+/* Theme section - hidden as controls moved to header panel */
 .themeSection {
-  position: relative;
+  display: none;
 }
 
 .themeWrapper {

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { projects, Project } from '../../data/projects'
+import { themes } from '../../config/themes'
 import styles from './PinnedNav.module.css'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -10,13 +11,6 @@ interface PinnedNavProps {
   onProjectClick: (project: Project) => void
   currentProjectIndex: number
 }
-
-const themes = [
-  { name: 'sunset', label: 'Sunset' },
-  { name: 'cyberpunk', label: 'Cyber' },
-  { name: 'att', label: 'AT&T' },
-  { name: 'msu', label: 'MSU' },
-]
 
 const PinnedNav: React.FC<PinnedNavProps> = ({
   onProjectClick,
@@ -104,13 +98,13 @@ const PinnedNav: React.FC<PinnedNavProps> = ({
           <div className={styles.themeOptions}>
             {themes.map((theme) => (
               <button
-                key={theme.name}
-                className={`${styles.themeOption} ${currentTheme === theme.name ? styles.activeTheme : ''}`}
-                onClick={() => handleThemeChange(theme.name)}
+                key={theme.id}
+                className={`${styles.themeOption} ${currentTheme === theme.id ? styles.activeTheme : ''}`}
+                onClick={() => handleThemeChange(theme.id)}
                 aria-label={`Switch to ${theme.label} theme`}
                 data-hover
               >
-                <div className={styles.themePreview} data-theme={theme.name} />
+                <div className={styles.themePreview} data-theme={theme.id} />
                 <span className={styles.themeName}>{theme.label}</span>
               </button>
             ))}
