@@ -24,6 +24,7 @@
     "jsdom": "^26.1.0"
   },
   "dependencies": {
-    "gsap": "3.12.5"
+    "gsap": "3.12.5",
+    "@ryleebrasseur/motion-system": "workspace:*"
   }
 }

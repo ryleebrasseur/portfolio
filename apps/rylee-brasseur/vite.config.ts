@@ -1,10 +1,19 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import path from 'path'
 
 export default defineConfig({
   // Use environment variable for base path, default to root
   base: process.env.VITE_BASE_PATH || '/',
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@ryleebrasseur/motion-system': path.resolve(
+        __dirname,
+        '../../packages/motion-system/src'
+      ),
+    },
+  },
   server: {
     port: 5173,
     host: '0.0.0.0',

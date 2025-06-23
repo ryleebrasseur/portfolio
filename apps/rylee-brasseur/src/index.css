@@ -31,6 +31,12 @@
   --font-heading: var(--font-serif-fashion);
   --font-subtitle: var(--font-sans-modern);
   --font-body: var(--font-system);
+  --font-display: var(--font-serif-fashion);
+
+  /* Motion system colors */
+  --color-background: var(--bg-primary);
+  --color-text: var(--text-primary);
+  --color-border: var(--border);
 
   font-family: var(--font-body);
   line-height: 1.5;

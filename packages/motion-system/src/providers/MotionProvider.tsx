@@ -1,0 +1,197 @@
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+  ReactNode,
+  RefObject,
+  useCallback,
+} from 'react'
+import Lenis from '@studio-freight/lenis'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { MotionState, MotionContextType, Chapter } from '../types'
+
+gsap.registerPlugin(ScrollTrigger)
+
+const MotionContext = createContext<MotionContextType | undefined>(undefined)
+
+// Define chapter configuration for the scroll narrative
+const DEFAULT_CHAPTERS: Chapter[] = [
+  { id: 'hero', start: 0, end: 0.25 },
+  { id: 'morph', start: 0.25, end: 0.5 },
+  { id: 'sticky', start: 0.5, end: 0.75 },
+  { id: 'footer', start: 0.75, end: 1.0 },
+]
+
+interface MotionProviderProps {
+  children: ReactNode
+  chapters?: Chapter[]
+}
+
+export const MotionProvider: React.FC<MotionProviderProps> = ({
+  children,
+  chapters = DEFAULT_CHAPTERS,
+}) => {
+  const [motionState, setMotionState] = useState<MotionState>({
+    scrollProgress: 0,
+    velocity: 0,
+    currentChapter: 'hero',
+    chapterProgress: 0,
+  })
+
+  const elementRegistry = useRef<Map<string, RefObject<HTMLElement>>>(new Map())
+  const lenisRef = useRef<Lenis | null>(null)
+
+  const registerElement = useCallback(
+    (id: string, ref: RefObject<HTMLElement>) => {
+      elementRegistry.current.set(id, ref)
+    },
+    []
+  )
+
+  const getElement = useCallback((id: string) => {
+    return elementRegistry.current.get(id)
+  }, [])
+
+  useEffect(() => {
+    // Initialize Lenis for smooth scrolling
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      touchMultiplier: 2,
+      infinite: false,
+    })
+
+    lenisRef.current = lenis
+
+    // Handle scroll updates
+    lenis.on('scroll', (e: { progress: number; velocity: number }) => {
+      const scrollProgress = e.progress
+      const velocity = e.velocity
+
+      // Find active chapter
+      const activeChapter =
+        chapters.find(
+          (chapter) =>
+            scrollProgress >= chapter.start && scrollProgress < chapter.end
+        ) || chapters[chapters.length - 1]
+
+      // Calculate progress within chapter
+      const chapterDuration = activeChapter.end - activeChapter.start
+      const progressInChapter =
+        chapterDuration > 0
+          ? (scrollProgress - activeChapter.start) / chapterDuration
+          : 0
+
+      setMotionState({
+        scrollProgress,
+        velocity,
+        currentChapter: activeChapter.id,
+        chapterProgress: Math.max(0, Math.min(1, progressInChapter)),
+      })
+    })
+
+    // Animation frame loop
+    function raf(time: number) {
+      lenis.raf(time)
+      requestAnimationFrame(raf)
+    }
+
+    requestAnimationFrame(raf)
+
+    // Integrate Lenis with GSAP ScrollTrigger
+    ScrollTrigger.scrollerProxy(document.body, {
+      scrollTop(value?: number) {
+        if (arguments.length) {
+          lenis.scrollTo(value!, { immediate: true })
+        }
+        return lenis.scroll
+      },
+      getBoundingClientRect() {
+        return {
+          top: 0,
+          left: 0,
+          width: window.innerWidth,
+          height: window.innerHeight,
+        }
+      },
+    })
+
+    // Handle resize
+    const handleResize = () => {
+      lenis.resize()
+      ScrollTrigger.refresh()
+    }
+
+    window.addEventListener('resize', handleResize)
+    ScrollTrigger.addEventListener('refresh', () => lenis.resize())
+    ScrollTrigger.refresh()
+
+    // Handle page visibility for performance
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        lenis.stop()
+      } else {
+        lenis.start()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    // Cleanup
+    return () => {
+      lenis.destroy()
+      window.removeEventListener('resize', handleResize)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      ScrollTrigger.removeEventListener('refresh', () => lenis.resize())
+    }
+  }, [chapters])
+
+  // Persist scroll position on refresh
+  useEffect(() => {
+    const saveScrollPosition = () => {
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('scroll-position', String(window.scrollY))
+      }
+    }
+
+    window.addEventListener('beforeunload', saveScrollPosition)
+
+    // Restore scroll position
+    const savedPosition = sessionStorage.getItem('scroll-position')
+    if (savedPosition && lenisRef.current) {
+      const position = parseFloat(savedPosition)
+      setTimeout(() => {
+        lenisRef.current?.scrollTo(position, { immediate: true })
+        sessionStorage.removeItem('scroll-position')
+      }, 100)
+    }
+
+    return () => {
+      window.removeEventListener('beforeunload', saveScrollPosition)
+    }
+  }, [])
+
+  const contextValue: MotionContextType = {
+    ...motionState,
+    registerElement,
+    getElement,
+  }
+
+  return (
+    <MotionContext.Provider value={contextValue}>
+      {children}
+    </MotionContext.Provider>
+  )
+}
+
+// Custom hook for consuming motion context
+export const useMotion = () => {
+  const context = useContext(MotionContext)
+  if (context === undefined) {
+    throw new Error('useMotion must be used within a MotionProvider')
+  }
+  return context
+}

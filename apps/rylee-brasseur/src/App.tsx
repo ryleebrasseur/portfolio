@@ -1,17 +1,26 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
+import {
+  MotionProvider,
+  HeroToContactHeaderOrchestrator,
+  ContactHeader,
+  KineticText,
+  useMotion,
+} from '@ryleebrasseur/motion-system'
 import HeroSectionWebGL from './components/Hero/HeroSectionWebGL'
 import CustomCursor from './components/CustomCursor/CustomCursor'
 import InteractiveMenu from './components/InteractiveMenu/InteractiveMenu'
+import { KineticPhone } from './components/KineticPhone/KineticPhone'
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin)
 
 function App() {
   const [currentSection, setCurrentSection] = useState<string>('hero')
+  const [showThemeMenu, setShowThemeMenu] = useState(false)
 
   const handleMenuItemClick = (item: any) => {
     // Animate transition to new section
@@ -90,8 +99,10 @@ function App() {
   }
 
   return (
-    <>
+    <MotionProvider>
       <CustomCursor />
+      <ContactHeader onThemeClick={() => setShowThemeMenu(!showThemeMenu)} />
+      <HeroToContactHeaderOrchestrator />
       <main>
         <HeroSectionWebGL />
         {/* Temporarily disabled InteractiveMenu
@@ -102,8 +113,16 @@ function App() {
           />
         </section>
         {currentSection !== 'hero' && renderSection()} */}
+
+        {/* Spacer for scroll */}
+        <div
+          style={{
+            height: '100vh',
+            background: 'var(--color-background, #fff)',
+          }}
+        />
       </main>
-    </>
+    </MotionProvider>
   )
 }
 

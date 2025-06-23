@@ -120,6 +120,9 @@ importers:
 
   apps/robin-noguier:
     dependencies:
+      '@ryleebrasseur/motion-system':
+        specifier: workspace:*
+        version: link:../../packages/motion-system
       gsap:
         specifier: 3.12.5
         version: 3.12.5
@@ -136,6 +139,31 @@ importers:
       jsdom:
         specifier: ^26.1.0
         version: 26.1.0
+
+  packages/motion-system:
+    dependencies:
+      '@studio-freight/lenis':
+        specifier: ^1.0.42
+        version: 1.0.42
+      framer-motion:
+        specifier: ^11.0.24
+        version: 11.0.24(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      gsap:
+        specifier: ^3.12.5
+        version: 3.12.5
+      react:
+        specifier: ^18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.2.0(react@18.2.0)
+    devDependencies:
+      '@types/react':
+        specifier: ^18.2.66
+        version: 18.2.79
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
 
 packages:
 
@@ -661,6 +689,10 @@ packages:
 
   '@sinclair/typebox@0.27.8':
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
+
+  '@studio-freight/lenis@1.0.42':
+    resolution: {integrity: sha512-HJAGf2DeM+BTvKzHv752z6Z7zy6bA643nZM7W88Ft9tnw2GsJSp6iJ+3cekjyMIWH+cloL2U9X82dKXgdU8kPg==}
+    deprecated: 'The ''@studio-freight/lenis'' package has been renamed to ''lenis''. Please update your dependencies: npm install lenis and visit the documentation: https://www.npmjs.com/package/lenis'
 
   '@testing-library/dom@10.4.0':
     resolution: {integrity: sha512-pemlzrSESWbdAloYml3bAJMEfNh1Z7EduzqPKprCH5S341frlpYnUEW0H72dLxa6IsYr+mPno20GiSm+h9dEdQ==}
@@ -2503,6 +2535,11 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
+  typescript@5.8.3:
+    resolution: {integrity: sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
   ufo@1.6.1:
     resolution: {integrity: sha512-9a4/uxlTWJ4+a5i0ooc1rU7C7YOw3wT+UGqdeNNHWnOF9qcMBgLRS+4IYUqbczewFx4mLEig6gawh7X6mFlEkA==}
 
@@ -3171,6 +3208,8 @@ snapshots:
     optional: true
 
   '@sinclair/typebox@0.27.8': {}
+
+  '@studio-freight/lenis@1.0.42': {}
 
   '@testing-library/dom@10.4.0':
     dependencies:
@@ -5269,6 +5308,8 @@ snapshots:
       - supports-color
 
   typescript@5.5.4: {}
+
+  typescript@5.8.3: {}
 
   ufo@1.6.1: {}
 

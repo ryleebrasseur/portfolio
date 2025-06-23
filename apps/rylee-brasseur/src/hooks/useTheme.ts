@@ -25,7 +25,7 @@ export const useTheme = () => {
 
   useEffect(() => {
     // Get initial theme
-    const savedTheme = localStorage.getItem('portfolio-theme') || 'sunset'
+    const savedTheme = localStorage.getItem('theme') || 'sunset'
     setTheme(savedTheme)
     setColors(getThemeColors(savedTheme))
 
