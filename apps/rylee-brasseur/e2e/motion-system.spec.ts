@@ -1,6 +1,5 @@
 import { test, expect } from './support/test-with-logging'
 import siteConfig from '../src/config/site-config.json' assert { type: 'json' }
-import './support/test-window'
 
 test.describe('Motion System - Discrete State Transitions', () => {
   test('should transition between hero and header states', async ({
