@@ -1,13 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Rylee Brasseur - International Relations Portfolio</title>
+    <!-- Essential SEO -->
+    <meta charset="UTF-8">
+    <title>Research Portfolio | Finance Research | Rylee Brasseur</title>
+    <meta name="description" content="Explore Rylee Brasseur's finance-rooted research portfolio. Michigan State University student showcasing developing research skills.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://rysdesigns.com/">
+
+    <!-- Mobile First -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Open Graph Tags -->
+    <meta property="og:url" content="https://rysdesigns.com/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Rylee Brasseur – Research Portfolio">
+    <meta property="og:description" content="Explore Rylee Brasseur's finance-rooted research portfolio. Michigan State University student showcasing developing research skills.">
+    <meta property="og:image" content="https://rysdesigns.com/og-image.jpg">
+    <meta property="og:image:alt" content="Homepage screenshot of Rylee Brasseur's research portfolio">
+    <meta property="og:site_name" content="Rylee Brasseur Portfolio">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:updated_time" content="2025-06-23T14:00:00Z">
+
+    <!-- Twitter/X Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@RyleeBrasseur">
+    <meta name="twitter:title" content="Rylee Brasseur – Research Portfolio">
+    <meta name="twitter:description" content="Explore Rylee Brasseur's finance-rooted research portfolio. Michigan State University student showcasing developing research skills.">
+    <meta name="twitter:image" content="https://rysdesigns.com/og-image.jpg">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Rylee Brasseur",
+      "affiliation": {
+        "@type": "CollegeOrUniversity",
+        "name": "Michigan State University, James Madison College"
+      },
+      "url": "https://rysdesigns.com/",
+      "sameAs": ["mailto:hello@rysdesigns.com"],
+      "knowsAbout": ["research", "finance", "international relations"]
+    }
+    </script>
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Bodoni+Moda:opsz,wght@6..96,400;6..96,700;6..96,900&family=Lora:wght@400;600;700&family=Montserrat:wght@400;600;700;800;900&family=Oswald:wght@400;500;600;700&family=Bebas+Neue&family=Russo+One&family=Archivo+Black&display=swap" rel="stylesheet">
+    
+    <!-- Disable scroll restoration before anything loads -->
+    <script>
+      console.log('[HTML] Initial scroll position:', window.scrollY);
+      window.history.scrollRestoration = 'manual';
+      window.scrollTo(0, 0);
+      console.log('[HTML] After manual scrollTo(0,0):', window.scrollY);
+      
+      // Monitor scroll changes
+      let scrollCount = 0;
+      window.addEventListener('scroll', function() {
+        scrollCount++;
+        console.log(`[HTML] Scroll event #${scrollCount}, scrollY:`, window.scrollY, 'at', new Date().toISOString());
+      }, { passive: true });
+    </script>
   </head>
   <body>
     <div id="root"></div>

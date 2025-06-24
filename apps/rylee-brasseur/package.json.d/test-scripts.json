@@ -1,0 +1,9 @@
+{
+  "test": "playwright test",
+  "test:json": "playwright test",
+  "test:html": "PLAYWRIGHT_REPORTER=html playwright test",
+  "test:list": "PLAYWRIGHT_REPORTER=list playwright test",
+  "test:line": "PLAYWRIGHT_REPORTER=line playwright test",
+  "test:dot": "PLAYWRIGHT_REPORTER=dot playwright test",
+  "test:junit": "PLAYWRIGHT_REPORTER=junit playwright test"
+}

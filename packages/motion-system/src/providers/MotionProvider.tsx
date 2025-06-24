@@ -34,6 +34,7 @@ export const MotionProvider: React.FC<MotionProviderProps> = ({
   children,
   chapters = DEFAULT_CHAPTERS,
 }) => {
+  console.log('[MotionProvider] Initializing')
   const [motionState, setMotionState] = useState<MotionState>({
     scrollProgress: 0,
     velocity: 0,
@@ -46,6 +47,7 @@ export const MotionProvider: React.FC<MotionProviderProps> = ({
 
   const registerElement = useCallback(
     (id: string, ref: RefObject<HTMLElement>) => {
+      console.log('[MotionProvider] Registering element:', id)
       elementRegistry.current.set(id, ref)
     },
     []
@@ -56,6 +58,10 @@ export const MotionProvider: React.FC<MotionProviderProps> = ({
   }, [])
 
   useEffect(() => {
+    console.log('[MotionProvider] Setting up Lenis smooth scrolling')
+    // DISABLED: Lenis conflicts with Observer pattern
+    return // EARLY RETURN - skip Lenis setup
+    
     // Initialize Lenis for smooth scrolling
     const lenis = new Lenis({
       duration: 1.2,
@@ -149,8 +155,11 @@ export const MotionProvider: React.FC<MotionProviderProps> = ({
     }
   }, [chapters])
 
-  // Persist scroll position on refresh
+  // DISABLED: Scroll persistence conflicts with Observer pattern
   useEffect(() => {
+    console.log('[MotionProvider] Scroll persistence DISABLED - conflicts with Observer')
+    return // EARLY RETURN - skip scroll persistence
+    
     const saveScrollPosition = () => {
       if (typeof window !== 'undefined') {
         sessionStorage.setItem('scroll-position', String(window.scrollY))

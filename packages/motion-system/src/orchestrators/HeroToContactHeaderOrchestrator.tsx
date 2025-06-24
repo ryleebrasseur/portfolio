@@ -4,20 +4,60 @@ import { Observer } from 'gsap/Observer'
 import { useGSAP } from '@gsap/react'
 import { useMotion } from '../providers/MotionProvider'
 
+// Import config - note: this creates a dependency on the app config
+// In a real implementation, you might want to pass this as props
+let siteConfig: any = null
+try {
+  // Dynamic import to avoid build issues if config doesn't exist
+  const configModule = require('../../../apps/robin-noguier/src/config/site-config.json')
+  siteConfig = configModule
+} catch {
+  // Fallback config
+  siteConfig = {
+    header: {
+      brandName: "rys designs ❤️",
+      tagline: "Research in Progress",
+      email: "hello@rysdesigns.com"
+    },
+    motionSystem: {
+      sections: ["hero", "header"],
+      animationDuration: 1000,
+      easing: "expo.inOut",
+      staggerDelay: 0.05
+    }
+  }
+}
+
 gsap.registerPlugin(Observer, useGSAP)
 
-const sections = ['hero', 'header'] as const
+const sections = siteConfig.motionSystem.sections as const
 type Section = typeof sections[number]
 
 export const HeroToContactHeaderOrchestrator: React.FC = () => {
   const { getElement } = useMotion()
   const headerRef = useRef<HTMLDivElement | null>(null)
+  const currentIndexRef = useRef(0)
+  const animatingRef = useRef(false)
   
   const wrap = gsap.utils.wrap(0, sections.length)
-  let animating = false
-  let currentIndex = 0
 
   useGSAP(() => {
+    console.log('[HeroToContactHeader] Initializing orchestrator')
+    console.log('[HeroToContactHeader] Initial scroll position:', window.scrollY)
+    console.log('[HeroToContactHeader] Current index:', currentIndexRef.current)
+    console.log('[HeroToContactHeader] React.StrictMode:', 'root' in React ? 'enabled' : 'disabled')
+    
+    // Clean up any existing header from previous StrictMode render
+    const existingHeader = document.getElementById('sticky-header-container')
+    if (existingHeader) {
+      console.log('[HeroToContactHeader] Removing existing header from previous render')
+      existingHeader.remove()
+    }
+    
+    // Force scroll reset using GSAP to bypass Observer
+    gsap.set(window, { scrollTo: 0 })
+    console.log('[HeroToContactHeader] Scroll reset to:', window.scrollY)
+    
     const heroName = getElement('hero-name')?.current
     const heroTitle = getElement('hero-title')?.current
     const heroEmail = getElement('hero-email')?.current
@@ -25,23 +65,30 @@ export const HeroToContactHeaderOrchestrator: React.FC = () => {
     const heroContact = getElement('hero-contact')?.current
 
     if (!heroName || !heroTitle || !heroEmail) {
+      // This is expected on first render before elements register
+      console.log('[HeroToContactHeader] Waiting for elements to register:', {
+        heroName: !!heroName,
+        heroTitle: !!heroTitle,
+        heroEmail: !!heroEmail
+      })
       return
     }
 
     const heroElements = [heroName, heroTitle, heroEmail, heroInstitution, heroContact].filter(Boolean)
 
-    // Create header element once
-    if (!headerRef.current) {
+    // Create header element once - IDEMPOTENT CHECK
+    if (!headerRef.current && !document.getElementById('sticky-header-container')) {
+      console.log('[HeroToContactHeader] Creating header element')
       headerRef.current = document.createElement('div')
       headerRef.current.id = 'sticky-header-container'
       headerRef.current.innerHTML = `
         <div class="header-left">
-          <h1 id="header-name">ry designs ❤️</h1>
-          <span id="header-title">IR Student • MSU</span>
+          <h1 id="header-name">${siteConfig.header.brandName}</h1>
+          <span id="header-title">${siteConfig.header.tagline}</span>
         </div>
-        <div class="header-right">
-          <a id="header-email" href="mailto:hello@rysdesigns.com">hello@rysdesigns.com</a>
+        <div class="header-right" style="display: flex; align-items: center; gap: 1rem;">
           <div id="header-phone"></div>
+          <a id="header-email" href="mailto:${siteConfig.header.email}">${siteConfig.header.email}</a>
         </div>
       `
       
@@ -62,36 +109,205 @@ export const HeroToContactHeaderOrchestrator: React.FC = () => {
         padding: '0 2rem',
         autoAlpha: 0
       })
+
+      // Style the header elements with proper typography
+      const headerName = headerRef.current.querySelector('#header-name') as HTMLElement
+      const headerTitle = headerRef.current.querySelector('#header-title') as HTMLElement
+      const headerEmail = headerRef.current.querySelector('#header-email') as HTMLElement
       
-      document.body.appendChild(headerRef.current)
+      if (headerName) {
+        gsap.set(headerName, {
+          fontFamily: 'var(--font-heading)',
+          fontSize: 'clamp(1.5rem, 3vw, 2rem)',
+          fontWeight: 700,
+          margin: 0,
+          letterSpacing: '-0.02em',
+          lineHeight: 1,
+          textTransform: 'lowercase',
+          color: 'var(--text-primary)'
+        })
+      }
       
-      // Clone phone element
-      const phoneElement = heroContact?.querySelector('.kineticPhone')
-      if (phoneElement) {
-        const headerPhone = headerRef.current.querySelector('#header-phone')
-        if (headerPhone) {
-          headerPhone.appendChild(phoneElement.cloneNode(true))
+      if (headerTitle) {
+        gsap.set(headerTitle, {
+          fontFamily: 'var(--font-subtitle)',
+          fontSize: 'clamp(0.875rem, 1.25vw, 1rem)',
+          fontWeight: 300,
+          margin: 0,
+          marginTop: '0.25rem',
+          letterSpacing: '0.05em',
+          opacity: 0.8,
+          color: 'var(--text-primary)'
+        })
+      }
+      
+      if (headerEmail) {
+        gsap.set(headerEmail, {
+          fontFamily: 'var(--font-subtitle)',
+          fontSize: 'clamp(0.875rem, 1.25vw, 1rem)',
+          fontWeight: 300,
+          color: 'var(--text-primary)',
+          textDecoration: 'none',
+          opacity: 0.8,
+          transition: 'opacity 0.2s ease'
+        })
+      }
+      
+      // Only append if not already in DOM
+      if (!document.getElementById('sticky-header-container')) {
+        console.log('[HeroToContactHeader] Appending header to DOM')
+        document.body.appendChild(headerRef.current)
+      } else {
+        console.log('[HeroToContactHeader] Header already in DOM, skipping append')
+      }
+      
+      // CREATE ACTUAL KINETIC PHONE STRUCTURE - not just text
+      const headerPhone = headerRef.current.querySelector('#header-phone')
+      if (headerPhone) {
+        // Create container with proper classes
+        const container = document.createElement('div')
+        container.className = 'container' // Match KineticPhone CSS
+        container.style.cssText = `
+          position: relative;
+          display: inline-block;
+          margin-right: 1rem;
+        `
+        
+        // Create phone link
+        const phoneLink = document.createElement('a')
+        phoneLink.href = 'tel:3322879533'
+        phoneLink.className = 'phoneLink' // Match KineticPhone CSS
+        phoneLink.style.cssText = `
+          display: inline-flex;
+          align-items: center;
+          text-decoration: none;
+          color: var(--text-primary);
+          font-family: var(--font-subtitle);
+          font-size: clamp(0.875rem, 1.25vw, 1rem);
+          font-weight: 400;
+          letter-spacing: 0;
+          opacity: 0.8;
+          transition: opacity 0.3s ease;
+        `
+        
+        const stages = ['332 287-9533', '332 AT-RYLEE', 'NYC @ RYLEE ']
+        let currentStage = 0
+        
+        // CREATE FLIP CONTAINERS AND FLIPPERS
+        const createFlipStructure = (text: string) => {
+          phoneLink.innerHTML = ''
+          text.split('').forEach((char, index) => {
+            // Create flip container
+            const flipContainer = document.createElement('span')
+            flipContainer.className = 'flipContainer' // CRITICAL: This class must exist for test
+            flipContainer.style.cssText = `
+              display: inline-block;
+              position: relative;
+              height: 1.2em;
+              overflow: hidden;
+              transform-style: preserve-3d;
+              perspective: 300px;
+            `
+            
+            // Create flipper
+            const flipper = document.createElement('span')
+            flipper.className = 'flipper' // CRITICAL: This class must exist for test
+            flipper.style.cssText = `
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              height: 100%;
+              min-width: 0.5ch;
+              transform-origin: center center;
+              transform-style: preserve-3d;
+              font-variant-numeric: tabular-nums;
+            `
+            flipper.textContent = char
+            
+            flipContainer.appendChild(flipper)
+            phoneLink.appendChild(flipContainer)
+          })
         }
+        
+        // Initial structure
+        createFlipStructure(stages[0])
+        
+        // Animation function with actual FLIP effect
+        const animateFlip = () => {
+          const prevStage = currentStage
+          currentStage = (currentStage + 1) % stages.length
+          const prevText = stages[prevStage]
+          const newText = stages[currentStage]
+          const flippers = phoneLink.querySelectorAll('.flipper')
+          
+          newText.split('').forEach((char, index) => {
+            if (flippers[index]) {
+              const flipper = flippers[index] as HTMLElement
+              const prevChar = prevText[index]
+              
+              // Only flip if character actually changes
+              if (char !== prevChar) {
+                const delay = index * 0.03
+                
+                // GSAP 3D flip animation using rotateX (not rotationX)
+                gsap.to(flipper, {
+                  rotateX: -90,
+                  duration: 0.3,
+                  delay,
+                  ease: 'power2.in',
+                  onComplete: () => {
+                    flipper.textContent = char
+                    gsap.to(flipper, {
+                      rotateX: 0,
+                      duration: 0.3,
+                      ease: 'power2.out'
+                    })
+                  }
+                })
+              }
+            }
+          })
+        }
+        
+        // Start animation loop
+        console.log('[HeroToContactHeader] Starting kinetic phone animation')
+        setInterval(animateFlip, 3000)
+        
+        container.appendChild(phoneLink)
+        headerPhone.appendChild(container)
       }
     }
 
     function gotoSection(index: number, direction: number) {
-      console.log('gotoSection called:', index, 'direction:', direction, 'currentIndex:', currentIndex, 'animating:', animating)
+      console.log('[HeroToContactHeader] gotoSection called:', {
+        targetIndex: index,
+        direction: direction > 0 ? 'down' : 'up',
+        currentIndex: currentIndexRef.current,
+        animating: animatingRef.current,
+        timestamp: new Date().toISOString()
+      })
       
       // CRITICAL: Block if animating or same section (following gist pattern exactly)
-      if (animating) {
-        console.log('BLOCKED: Animation in progress')
+      if (animatingRef.current) {
+        console.warn('[HeroToContactHeader] BLOCKED: Animation already in progress')
         return
       }
       
-      animating = true
+      animatingRef.current = true
       index = wrap(index)
 
       let tl = gsap.timeline({
-        defaults: { duration: 1, ease: "expo.inOut" },
+        defaults: { 
+          duration: siteConfig.motionSystem.animationDuration / 1000, 
+          ease: siteConfig.motionSystem.easing 
+        },
         onComplete: () => {
-          animating = false
-          console.log('Animation complete, currentIndex now:', index)
+          animatingRef.current = false
+          console.log('[HeroToContactHeader] Animation complete:', {
+            newIndex: index,
+            section: index === 0 ? 'hero' : 'header',
+            timestamp: new Date().toISOString()
+          })
         }
       })
 
@@ -99,6 +315,7 @@ export const HeroToContactHeaderOrchestrator: React.FC = () => {
       gsap.set([heroElements, headerRef.current], { zIndex: 0, autoAlpha: 0 })
       
       if (index === 1) { // Going to header
+        console.log('[HeroToContactHeader] Transitioning: hero -> header')
         // Set current (hero) visible, next (header) ready to animate in
         gsap.set(heroElements, { zIndex: 1, autoAlpha: 1 })
         gsap.set(headerRef.current, { zIndex: 2, autoAlpha: 1 })
@@ -106,69 +323,113 @@ export const HeroToContactHeaderOrchestrator: React.FC = () => {
         tl.to(heroElements, {
           autoAlpha: 0,
           y: -20,
-          stagger: 0.05
+          stagger: siteConfig.motionSystem.staggerDelay
         }, 0)
         .fromTo(headerRef.current, 
           { y: -100, autoAlpha: 0 },
           { y: 0, autoAlpha: 1 }, 0.2)
       } else { // Going to hero
+        console.log('[HeroToContactHeader] Transitioning: header -> hero')
         // Set current (header) visible, next (hero) ready to animate in  
         gsap.set(headerRef.current, { zIndex: 1, autoAlpha: 1 })
         gsap.set(heroElements, { zIndex: 2, autoAlpha: 1 })
         
-        tl.to(headerRef.current, {
+        // Animate scroll to top as part of the transition
+        console.log('[HeroToContactHeader] Animating scroll to top')
+        tl.to(window, {
+          scrollTo: 0,
+          duration: siteConfig.motionSystem.animationDuration / 1000,
+          ease: siteConfig.motionSystem.easing
+        }, 0)
+        .to(headerRef.current, {
           y: -100,
           autoAlpha: 0
         }, 0)
         .fromTo(heroElements,
           { y: -20, autoAlpha: 0 },
-          { y: 0, autoAlpha: 1, stagger: 0.05 }, 0.2)
+          { y: 0, autoAlpha: 1, stagger: siteConfig.motionSystem.staggerDelay }, 0.2)
       }
 
-      currentIndex = index
+      currentIndexRef.current = index
     }
 
-    Observer.create({
+    // Store observer instance for cleanup
+    let observer: any = null
+    
+    // Delay Observer creation to allow browser scroll restoration to complete
+    const observerTimeout = setTimeout(() => {
+      console.log('[HeroToContactHeader] Creating Observer after delay')
+      console.log('[HeroToContactHeader] Pre-Observer scroll position:', window.scrollY)
+      
+      // Force scroll to top AGAIN before creating Observer
+      window.scrollTo(0, 0)
+      console.log('[HeroToContactHeader] Force reset scroll to:', window.scrollY)
+      
+      observer = Observer.create({
       type: "wheel,touch,pointer",
       preventDefault: true,
       wheelSpeed: -1,
       onUp: () => {
-        console.log("Observer: scroll down detected")
-        if (animating) {
-          console.log("Observer: blocked - animation in progress")
+        console.log('[Observer] Scroll DOWN detected:', {
+          scrollY: window.scrollY,
+          currentIndex: currentIndexRef.current,
+          animating: animatingRef.current,
+          timestamp: new Date().toISOString()
+        })
+        if (animatingRef.current) {
+          console.warn('[Observer] BLOCKED: Animation in progress')
           return
         }
-        if (currentIndex >= sections.length - 1) {
-          console.log("Observer: blocked - already at last section")
+        if (currentIndexRef.current >= sections.length - 1) {
+          console.warn('[Observer] BLOCKED: Already at last section')
           return
         }
-        gotoSection(currentIndex + 1, +1)
+        gotoSection(currentIndexRef.current + 1, +1)
       },
       onDown: () => {
-        console.log("Observer: scroll up detected")
-        if (animating) {
-          console.log("Observer: blocked - animation in progress")
+        console.log('[Observer] Scroll UP detected:', {
+          scrollY: window.scrollY,
+          currentIndex: currentIndexRef.current,
+          animating: animatingRef.current,
+          timestamp: new Date().toISOString()
+        })
+        if (animatingRef.current) {
+          console.warn('[Observer] BLOCKED: Animation in progress')
           return
         }
-        if (currentIndex <= 0) {
-          console.log("Observer: blocked - already at first section")
+        if (currentIndexRef.current <= 0) {
+          console.warn('[Observer] BLOCKED: Already at first section')
           return
         }
-        gotoSection(currentIndex - 1, -1)
+        gotoSection(currentIndexRef.current - 1, -1)
       },
       tolerance: 10,
       debounce: true // Prevent rapid firing
     })
+      console.log('[HeroToContactHeader] Observer created successfully')
+    }, 100) // 100ms delay to let browser restore scroll
 
     // Expose for testing
     ;(window as any).testGotoSection = (section: string) => {
       const targetIndex = section === 'header' ? 1 : 0
-      const direction = targetIndex > currentIndex ? 1 : -1
+      const direction = targetIndex > currentIndexRef.current ? 1 : -1
       gotoSection(targetIndex, direction)
     }
 
     return () => {
+      console.log('[HeroToContactHeader] Cleaning up orchestrator')
+      
+      // Clear timeout if still pending
+      clearTimeout(observerTimeout)
+      
+      // Kill observer
+      if (observer) {
+        console.log('[HeroToContactHeader] Killing Observer')
+        observer.kill()
+      }
+      
       if (headerRef.current?.parentNode) {
+        console.log('[HeroToContactHeader] Removing header from DOM')
         headerRef.current.parentNode.removeChild(headerRef.current)
       }
     }

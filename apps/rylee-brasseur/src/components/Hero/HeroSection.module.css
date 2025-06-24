@@ -1,7 +1,7 @@
 .heroContainer {
   position: relative;
   width: 100%;
-  min-height: 200vh; /* Allow scroll for motion */
+  height: 100vh; /* Single viewport height - no scrollbar */
   overflow: hidden;
 }
 
@@ -141,6 +141,24 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   opacity: 0.6;
+}
+
+.scrollTextDesktop {
+  display: block;
+}
+
+.scrollTextMobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .scrollTextDesktop {
+    display: none;
+  }
+  
+  .scrollTextMobile {
+    display: block;
+  }
 }
 
 .scrollLine {

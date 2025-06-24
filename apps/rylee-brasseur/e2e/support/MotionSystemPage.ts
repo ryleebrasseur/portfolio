@@ -1,4 +1,5 @@
 import { Page, Locator, expect } from '@playwright/test'
+import siteConfig from '../../src/config/site-config.json' assert { type: 'json' }
 
 export class MotionSystemPage {
   readonly page: Page
@@ -19,9 +20,9 @@ export class MotionSystemPage {
     
     // Hero elements
     this.heroTitle = page.locator('.heroTitle')
-    this.heroSubtitle = page.getByText('International Relations Student')
-    this.heroInstitution = page.getByText('Michigan State University | James Madison College')
-    this.heroEmail = page.locator('.heroContact a[href="mailto:hello@rysdesigns.com"]')
+    this.heroSubtitle = page.getByText(siteConfig.hero.title)
+    this.heroInstitution = page.getByText(siteConfig.hero.institution)
+    this.heroEmail = page.locator(`.heroContact a[href="mailto:${siteConfig.hero.email}"]`)
     this.heroContact = page.locator('.heroContact')
     
     // Header elements
@@ -84,7 +85,7 @@ export class MotionSystemPage {
   // Custom Assertions
   async expectHeroState() {
     await expect(this.heroTitle).toBeVisible()
-    await expect(this.heroTitle).toHaveText('Rylee Brasseur')
+    await expect(this.heroTitle).toHaveText(siteConfig.hero.name)
     await expect(this.heroSubtitle).toBeVisible()
     await expect(this.heroInstitution).toBeVisible()
     await expect(this.heroEmail).toBeVisible()
@@ -101,7 +102,7 @@ export class MotionSystemPage {
   async expectHeaderState() {
     await expect(this.headerContainer).toBeVisible()
     await expect(this.headerName).toBeVisible()
-    await expect(this.headerName).toHaveText('ry designs ❤️')
+    await expect(this.headerName).toHaveText(siteConfig.header.brandName)
     await expect(this.headerEmail).toBeVisible()
     
     const headerOpacity = await this.getHeaderOpacity()

@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { KineticPhone } from '../KineticPhone'
 import { useMotion } from '@ryleebrasseur/motion-system'
+import { config } from '../../config'
 import styles from './HeroSection.module.css'
 
 const HeroSectionWebGL = () => {
@@ -108,29 +109,30 @@ const HeroSectionWebGL = () => {
   return (
     <div ref={containerRef} className={styles.heroContainer}>
       <div className={styles.overlayContent}>
-        <h1 ref={titleRef} className={`${styles.heroTitle} heroTitle`}>Rylee Brasseur</h1>
+        <h1 ref={titleRef} className={`${styles.heroTitle} heroTitle`}>{config.hero.name}</h1>
         <p ref={subtitleRef} className={`${styles.heroSubtitle} heroSubtitle`}>
-          International Relations Student
+          {config.hero.title}
         </p>
         <p ref={institutionRef} className={`${styles.heroInstitution} heroInstitution`}>
-          Michigan State University | James Madison College
+          {config.hero.institution}
         </p>
         <div ref={contactRef} className={`${styles.heroContact} heroContact`}>
           <KineticPhone className={styles.contactPhone} />
           <span className={styles.contactDivider}>|</span>
           <a
             ref={emailRef}
-            href="mailto:hello@rysdesigns.com"
+            href={`mailto:${config.hero.email}`}
             className={styles.contactLink}
             data-magnetic
           >
-            hello@rysdesigns.com
+            {config.hero.email}
           </a>
         </div>
       </div>
 
       <div className={styles.scrollIndicator}>
-        <span>Scroll to explore</span>
+        <span className={styles.scrollTextDesktop}>Scroll / Drag to explore</span>
+        <span className={styles.scrollTextMobile}>Swipe to explore</span>
         <div className={`${styles.scrollLine} scrollLine`}></div>
       </div>
     </div>

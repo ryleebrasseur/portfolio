@@ -11,6 +11,8 @@
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:e2e:html": "PLAYWRIGHT_REPORTER=html playwright test",
+    "test:e2e:list": "PLAYWRIGHT_REPORTER=list playwright test",
     "test:screenshots": "playwright test capture-essential-screenshots.spec.ts",
     "test:screenshots:all": "playwright test --grep '\\.(manual|spec)\\.ts$'",
     "lint": "eslint src --cache --cache-location .eslintcache",
@@ -18,10 +20,13 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@playwright/test": "1.52.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
-    "jsdom": "^26.1.0"
+    "@vitest/coverage-v8": "^3.2.4",
+    "jsdom": "^26.1.0",
+    "v8-to-istanbul": "^9.3.0"
   },
   "dependencies": {
     "@ryleebrasseur/motion-system": "workspace:*",
