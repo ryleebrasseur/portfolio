@@ -84,6 +84,12 @@ export class EnhancedLogger {
   async startCoverage() {
     if (!this.options.enableCoverage) return
 
+    // Coverage API is not available in all browsers (e.g., WebKit)
+    if (!this.page.coverage) {
+      console.log('[Coverage] Coverage API not available in this browser')
+      return
+    }
+
     console.log('[Coverage] Starting JS coverage collection')
     await this.page.coverage.startJSCoverage({
       resetOnNavigation: false,
@@ -93,6 +99,12 @@ export class EnhancedLogger {
 
   async stopCoverage() {
     if (!this.options.enableCoverage) return
+
+    // Coverage API is not available in all browsers (e.g., WebKit)
+    if (!this.page.coverage) {
+      console.log('[Coverage] Coverage API not available in this browser')
+      return
+    }
 
     const coverage = await this.page.coverage.stopJSCoverage()
     this.coverage = coverage

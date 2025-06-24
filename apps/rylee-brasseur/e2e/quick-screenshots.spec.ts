@@ -99,14 +99,9 @@ test('verify no duplicate headers and animation works', async ({
     hasFlipperElements: flipperCount > 0,
   })
 
-  // THIS WILL FAIL - no kinetic structure exists in header
-  // TODO: Enable these assertions once kinetic animation is implemented
-  // expect(containerCount).toBeGreaterThan(0) // Should have flip containers
-  // expect(flipperCount).toBeGreaterThan(0) // Should have flipper elements
-
-  // For now, we document that the kinetic animation is not yet implemented
-  expect(containerCount).toBe(0) // Currently no flip containers
-  expect(flipperCount).toBe(0) // Currently no flipper elements
+  // Kinetic animation is implemented - verify the structure
+  expect(containerCount).toBe(12) // Should have 12 flip containers for phone number
+  expect(flipperCount).toBe(12) // Should have 12 flipper elements
 
   await logger.captureFullState('quick-screenshots-complete')
 })
