@@ -1,0 +1,12 @@
+{
+  "testTitle": "should follow mouse movement",
+  "testFile": "/home/will/local_dev/portfolio/apps/robin-noguier/e2e/cursor/custom-cursor.spec.ts",
+  "duration": 1008,
+  "status": "interrupted",
+  "errors": [],
+  "artifacts": {
+    "logs": "/home/will/local_dev/portfolio/apps/robin-noguier/html/cursor-custom-cursor-Custo-0e454-hould-follow-mouse-movement-chromium/artifacts/browser-logs.json",
+    "coverage": "coverage.json",
+    "screenshots": ["artifacts", "test-failed-1.png"]
+  }
+}

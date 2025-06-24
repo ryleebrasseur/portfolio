@@ -1,0 +1,15 @@
+{
+  "testTitle": "should hide default cursor and show custom cursor",
+  "testFile": "/home/will/local_dev/portfolio/apps/robin-noguier/e2e/cursor/custom-cursor.spec.ts",
+  "duration": 1146,
+  "status": "passed",
+  "errors": [],
+  "artifacts": {
+    "logs": "/home/will/local_dev/portfolio/apps/robin-noguier/html/cursor-custom-cursor-Custo-de5ba-rsor-and-show-custom-cursor-chromium/artifacts/browser-logs.json",
+    "coverage": "coverage.json",
+    "screenshots": [
+      "artifacts",
+      "state-cursor-visibility-test-1750727630446.png"
+    ]
+  }
+}

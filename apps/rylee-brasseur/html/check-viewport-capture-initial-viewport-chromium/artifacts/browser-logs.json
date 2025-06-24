@@ -1,0 +1,819 @@
+{
+  "capturedAt": "2025-06-24T01:13:49.211Z",
+  "url": "http://localhost:5173/",
+  "logs": [
+    {
+      "type": "log",
+      "text": "[Runtime Log] [HTML] Initial scroll position: 0 \n  at at http://localhost:5173/:65:15",
+      "timestamp": "2025-06-24T01:13:45.953Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@260624ded9f2ea32e9b30ebbc16aee70"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@c93f910f043188d588715bc6d283bdfb"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@de1f94d13b5c9217f713a0f75c234007"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@83a9894cb5d389cf47598d78e47cb321"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [HTML] After manual scrollTo(0,0): 0 \n  at at http://localhost:5173/:68:15",
+      "timestamp": "2025-06-24T01:13:45.954Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@8a9e497f493be2b3c470cf785a10b575"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@8f722e90783eb3f2a9be2b2b101ba7ee"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@a0d270a4acd7a25de1ee83d2e08bc854"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@d6363d5ee895d2e0770bc458a424f833"
+        }
+      ]
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting...",
+      "timestamp": "2025-06-24T01:13:45.956Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@8a9d50983bea8bcf02c334ea8fcac5e6"
+        }
+      ]
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected.",
+      "timestamp": "2025-06-24T01:13:45.997Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@c44440bf4a1c329c48b45f2e5d6d78d2"
+        }
+      ]
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+      "timestamp": "2025-06-24T01:13:46.131Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@828bff534f7c60ee8e595dbaab5acb3a"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@7312b3e589645e7cd6c9fd58084a976e"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [MotionProvider] Initializing \n  at at MotionProvider (http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/providers/MotionProvider.tsx?t=1750724128976:42:11)",
+      "timestamp": "2025-06-24T01:13:46.152Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@2da5ff9fd866bfea150796a2ba466308"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@6869b12f47609dde396a5ddbefb77189"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@82b8ebcfd0cd1d4c0aec0bfa238df7d2"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [MotionProvider] Initializing \n  at at MotionProvider (http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/providers/MotionProvider.tsx?t=1750724128976:42:11)",
+      "timestamp": "2025-06-24T01:13:46.153Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@347c3ed510e889c15f718b645fcfa1b8"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@13b2cdf39e7433cdbecca15821413320"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@c3f981fe7eb85f48c7a95c413fdd7353"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [HeroToContactHeader] Initializing orchestrator \n  at at Context2.<anonymous> (http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/orchestrators/HeroToContactHeaderOrchestrator.tsx?t=1750724128976:51:13)",
+      "timestamp": "2025-06-24T01:13:46.161Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@59415df091f93aa452982d9b48127c44"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@0584f7ee75f2711d460797e2fa88d09f"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@4b4882c9de2b89482c626e6c889bb71d"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [HeroToContactHeader] Initial scroll position: 0 \n  at at Context2.<anonymous> (http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/orchestrators/HeroToContactHeaderOrchestrator.tsx?t=1750724128976:52:13)",
+      "timestamp": "2025-06-24T01:13:46.179Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@d44cabc7d3f457fa7517928e2451462f"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@8d9dfe7d81d48bd34b80d8e34ae8a299"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@9c53eee69d3a3e83d9278d2bfad2454f"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@899c161acc0410487da8c0b53b1f4501"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [HeroToContactHeader] Current index: 0 \n  at at Context2.<anonymous> (http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/orchestrators/HeroToContactHeaderOrchestrator.tsx?t=1750724128976:53:13)",
+      "timestamp": "2025-06-24T01:13:46.179Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@4d02e6bdee9b3e8febfed07db8c8abe1"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@9b72fad7ca32d5d4c12749427ced452a"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@dfec5c94b4b4b220794a2b30b22fd8ba"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@89fb094e74b02a20022c56bc672ddb51"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [HeroToContactHeader] React.StrictMode: disabled \n  at at Context2.<anonymous> (http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/orchestrators/HeroToContactHeaderOrchestrator.tsx?t=1750724128976:54:13)",
+      "timestamp": "2025-06-24T01:13:46.179Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@9520b988cbe9cafa50d680b4c8598d11"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@5f34e2c98d34960d9f8821a850ed3f52"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@1bbfe64ec5ac58a090a682629479c53b"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@c60956e6efd59aeb14924bf86e0abb1b"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [HeroToContactHeader] Scroll reset to: 0 \n  at at Context2.<anonymous> (http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/orchestrators/HeroToContactHeaderOrchestrator.tsx?t=1750724128976:61:13)",
+      "timestamp": "2025-06-24T01:13:46.180Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@36b89778586c447db9b3f61209026301"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@bd5257cf12d6d66b598048d575c85139"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@b6dc6905da445e5814232eac5317481f"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@317ea12a71353462d7c11345170a6ad4"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [HeroToContactHeader] Waiting for elements to register: {heroName: false, heroTitle: false, heroEmail: false} \n  at at Context2.<anonymous> (http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/orchestrators/HeroToContactHeaderOrchestrator.tsx?t=1750724128976:68:15)",
+      "timestamp": "2025-06-24T01:13:46.180Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@08a2c5a9e21eee8035ecaa3e8ba7872d"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@9067f20c17bceb232887c6dba17d1953"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@c70daaf4ec7d0b1d6e2c41514b305c6d"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@aed6bd21106b8c541ac4a92b6027fa7c"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [MotionProvider] Registering element: hero-name \n  at at http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/providers/MotionProvider.tsx?t=1750724128976:53:15",
+      "timestamp": "2025-06-24T01:13:46.185Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@85603e237ce330b960d8fac1827e7669"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@2c8e420d71971211a9410ea40ba22405"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@dd477f70ed1ad2aadf2e7befffed00dd"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@125c0fcab3456e97f9a20417ff5af60a"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [MotionProvider] Registering element: hero-title \n  at at http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/providers/MotionProvider.tsx?t=1750724128976:53:15",
+      "timestamp": "2025-06-24T01:13:46.185Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@d238a1aae02fa7c45f419f707e8ef80f"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@8e76641d70b2b134671e9e3079f7064a"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@b4dce46a87055004213c97dfdddcf117"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@be7d380c2006d3c75a7fde1190849913"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [MotionProvider] Registering element: hero-institution \n  at at http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/providers/MotionProvider.tsx?t=1750724128976:53:15",
+      "timestamp": "2025-06-24T01:13:46.186Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@958dee80db5133f04148a12ae3216ff5"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@5081ad42ca2db4aeac72dcc930cea3ab"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@777c467e8076a18febf61ea8655ab2d7"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@46b4f736b6af900c10f477f4f5b53230"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [MotionProvider] Registering element: hero-email \n  at at http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/providers/MotionProvider.tsx?t=1750724128976:53:15",
+      "timestamp": "2025-06-24T01:13:46.186Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@8c974ba7fc11674af105c48c987c5502"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@d181883abb2ab808fb70fb6527b72904"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@996749bf8d5f31b585c1fff7fa2f817a"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@2ce675f9b9009a8aef5576b5131d8ee0"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [MotionProvider] Registering element: hero-contact \n  at at http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/providers/MotionProvider.tsx?t=1750724128976:53:15",
+      "timestamp": "2025-06-24T01:13:46.186Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@6f0ab593e25cced6bda7c8cbdf5cc965"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@6a607323f4ea0f67133a5280d1876e13"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@6e6a1af5c43de89de910ff89d061fde2"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@0b74eaa9f13e7f8808c1cdf9fccded00"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [MotionProvider] Setting up Lenis smooth scrolling \n  at at http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/providers/MotionProvider.tsx?t=1750724128976:62:13",
+      "timestamp": "2025-06-24T01:13:46.189Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@12f0009ff7954a03d767c2bb3a9b12b8"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@d6141dcb805819cd27efeecfcd1a581c"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@d1311c02d682ac25c9a030a47ce5e1f1"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [MotionProvider] Scroll persistence DISABLED - conflicts with Observer \n  at at http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/providers/MotionProvider.tsx?t=1750724128976:130:13",
+      "timestamp": "2025-06-24T01:13:46.190Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@b636479b905d01a14b6d7c51791e1044"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@d31196170c5c572991cf6ed6ba19a256"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@d355df09dcae3b0b1f210ab1b75336ac"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [HeroToContactHeader] Initializing orchestrator \n  at at Context2.<anonymous> (http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/orchestrators/HeroToContactHeaderOrchestrator.tsx?t=1750724128976:51:13)",
+      "timestamp": "2025-06-24T01:13:46.190Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@ad650388b701d2c7020bcfc408d1db1f"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@5a8b952258106c267aa47a81f19c0e20"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@4e7c29427e7ca85822f84c7c7916c077"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [HeroToContactHeader] Initial scroll position: 0 \n  at at Context2.<anonymous> (http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/orchestrators/HeroToContactHeaderOrchestrator.tsx?t=1750724128976:52:13)",
+      "timestamp": "2025-06-24T01:13:46.191Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@b7104f4b21af99ebac577735f61b72a1"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@af68273b9f3fdc5c9217ca1fabb495aa"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@4eccb198acb077e5e582ccfaeeddca5c"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@a76f40a3286a897b8af4532a313bef17"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [HeroToContactHeader] Current index: 0 \n  at at Context2.<anonymous> (http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/orchestrators/HeroToContactHeaderOrchestrator.tsx?t=1750724128976:53:13)",
+      "timestamp": "2025-06-24T01:13:46.191Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@96050bec1e377b631d200a949d6ce020"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@11160f3f14e6c5d34bb243c9b43aed42"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@d9a87b8d3a11c0e6188ef015c7ed795a"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@47bd915a5259fd99781adbc2ff7beb34"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [HeroToContactHeader] React.StrictMode: disabled \n  at at Context2.<anonymous> (http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/orchestrators/HeroToContactHeaderOrchestrator.tsx?t=1750724128976:54:13)",
+      "timestamp": "2025-06-24T01:13:46.191Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@af60727cde49b6225c58c2002d95c0ed"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@9622b93a7deafd3c6b693810aed2d6da"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@7df5ddfdeb82b5b48cc6deeb6d989b13"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@226fec9986cbebba6f1401cc8e1c9587"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [HeroToContactHeader] Scroll reset to: 0 \n  at at Context2.<anonymous> (http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/orchestrators/HeroToContactHeaderOrchestrator.tsx?t=1750724128976:61:13)",
+      "timestamp": "2025-06-24T01:13:46.192Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@30ca2a4cc6b9b343676ef8de5fa4851d"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@6b7321cfb209cddd818edeed443948f2"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@e89ce71048625e59a40a7a72194043cc"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@6bbede1abb4d8e7b772166921c208c98"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [HeroToContactHeader] Creating header element \n  at at Context2.<anonymous> (http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/orchestrators/HeroToContactHeaderOrchestrator.tsx?t=1750724128976:77:15)",
+      "timestamp": "2025-06-24T01:13:46.192Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@adc2a6331e5f23be9e7bf3ef1f0cfdf6"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@45571208c16de9cb5f4c9f66aecf7ced"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@9336632d36872bf15d03fd5b9f42c84b"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [HeroToContactHeader] Appending header to DOM \n  at at Context2.<anonymous> (http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/orchestrators/HeroToContactHeaderOrchestrator.tsx?t=1750724128976:145:17)",
+      "timestamp": "2025-06-24T01:13:46.193Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@e82b577982f1c7aad15206ac98f864f6"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@6ae955be5a7694bf0be948dc0bc019b5"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@f053b21379a7ca74d65a0eb0a49f6e5e"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [HeroToContactHeader] Starting kinetic phone animation \n  at at Context2.<anonymous> (http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/orchestrators/HeroToContactHeaderOrchestrator.tsx?t=1750724128976:237:17)",
+      "timestamp": "2025-06-24T01:13:46.194Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@424703c94328d745099492078b42e6c0"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@0eb0f1e1c9883954fb4f7a4b29e5c58c"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@af10a5831a1e8d670d2b634d6f63db6f"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [MotionProvider] Registering element: hero-name \n  at at http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/providers/MotionProvider.tsx?t=1750724128976:53:15",
+      "timestamp": "2025-06-24T01:13:46.194Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@b284529376a7868ecddbf8550ae430b9"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@ddaf2968abe6b74fe477d8d09b40a20c"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@67cc90cfc8f7bf18349b5b042735bc61"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@2620e752d3121c91c1dff5b063b6f03a"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [MotionProvider] Registering element: hero-title \n  at at http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/providers/MotionProvider.tsx?t=1750724128976:53:15",
+      "timestamp": "2025-06-24T01:13:46.195Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@dae0a760d5c32b891eae847dee85cb25"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@805eb0323a7426b5a75641c572bf4456"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@4331174149253bc61694952daa921847"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@c714de81a888ae030671f183b601a46e"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [MotionProvider] Registering element: hero-institution \n  at at http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/providers/MotionProvider.tsx?t=1750724128976:53:15",
+      "timestamp": "2025-06-24T01:13:46.195Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@77e18432d405c1261632594be5dc062b"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@9ef43b649a10a3f327caf7e716dfe49d"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@152a6e5eab844eff55b2356c8d319638"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@bf49ff0c6e89351a6fe8efcae02aebaa"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [MotionProvider] Registering element: hero-email \n  at at http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/providers/MotionProvider.tsx?t=1750724128976:53:15",
+      "timestamp": "2025-06-24T01:13:46.199Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@267344676f6a721886e44a5f8de69815"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@fcc8dcbdf64b0a81dbf4db7252d33b2f"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@1d00530d64837feed3e69bfb2cf0697e"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@44b51780189bcdbda45e34edc8e7eb79"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [MotionProvider] Registering element: hero-contact \n  at at http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/providers/MotionProvider.tsx?t=1750724128976:53:15",
+      "timestamp": "2025-06-24T01:13:46.199Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@94db89baf581834ec14f2f42400bd80a"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@33208963e5caf35613a17f9f6af429ad"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@952eeab8c43c0018efaa972b7e11b021"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@e14d4f22d3e0fad7d08f95bf6a2af073"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [MotionProvider] Setting up Lenis smooth scrolling \n  at at http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/providers/MotionProvider.tsx?t=1750724128976:62:13",
+      "timestamp": "2025-06-24T01:13:46.206Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@3a0acf53e82a57b5f2ea2e7ca32430b3"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@07896dda15c3b5f4241d46c52105ba50"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@2e67abbd98cb1e56412115f8ea0a45d0"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [MotionProvider] Scroll persistence DISABLED - conflicts with Observer \n  at at http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/providers/MotionProvider.tsx?t=1750724128976:130:13",
+      "timestamp": "2025-06-24T01:13:46.206Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@678220be728d9639b6008b71b60f90a2"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@47d4b6e6998aa403fa015d385494b8b7"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@fefb7b816d4ca68e6345bce3beb6ce3d"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [HeroToContactHeader] Creating Observer after delay \n  at at http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/orchestrators/HeroToContactHeaderOrchestrator.tsx?t=1750724128976:309:15",
+      "timestamp": "2025-06-24T01:13:46.296Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@4e4e67ee9fc990ce25fbddd54f644297"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@54e43732ac75d66a4d0d60e5f04f8e92"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@81106800549ce2939b637dc4856dfc29"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [HeroToContactHeader] Pre-Observer scroll position: 0 \n  at at http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/orchestrators/HeroToContactHeaderOrchestrator.tsx?t=1750724128976:310:15",
+      "timestamp": "2025-06-24T01:13:46.297Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@d0b13ffa786378ad2d4e463af5507eb1"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@b55739df33064a396b19d6466fe56bd3"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@be574a22b27e937e038279665d2a2cce"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@fd63a1746937372f15784c02a902d2a5"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [HeroToContactHeader] Force reset scroll to: 0 \n  at at http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/orchestrators/HeroToContactHeaderOrchestrator.tsx?t=1750724128976:312:15",
+      "timestamp": "2025-06-24T01:13:46.297Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@36aca08603b180a4d0af0688c1f1cc3b"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@8b38bb4f189da9b856eb423f0405c041"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@f194537e75ea2e3cfd691145a5a89481"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@5ada24e780d8faafd3bf0bfff6a5b26f"
+        }
+      ]
+    },
+    {
+      "type": "log",
+      "text": "[Runtime Log] [HeroToContactHeader] Observer created successfully \n  at at http://localhost:5173/@fs/home/will/local_dev/portfolio/packages/motion-system/src/orchestrators/HeroToContactHeaderOrchestrator.tsx?t=1750724128976:355:15",
+      "timestamp": "2025-06-24T01:13:46.297Z",
+      "args": [
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@32ac004653e561a9f5fc71896c3bb9b7"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@15965dc0e11e7f0567079fa27091074a"
+        },
+        {
+          "_type": "JSHandle",
+          "_guid": "handle@9b658aa6fed8ea54bcaf8327218fb031"
+        }
+      ]
+    }
+  ]
+}

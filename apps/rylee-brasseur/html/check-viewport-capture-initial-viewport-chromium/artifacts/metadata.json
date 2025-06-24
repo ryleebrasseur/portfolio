@@ -1,0 +1,15 @@
+{
+  "testTitle": "capture initial viewport",
+  "testFile": "/home/will/local_dev/portfolio/apps/robin-noguier/e2e/check-viewport.spec.ts",
+  "duration": 3434,
+  "status": "passed",
+  "errors": [],
+  "artifacts": {
+    "logs": "/home/will/local_dev/portfolio/apps/robin-noguier/html/check-viewport-capture-initial-viewport-chromium/artifacts/browser-logs.json",
+    "coverage": "coverage.json",
+    "screenshots": [
+      "artifacts",
+      "state-viewport-check-complete-1750727628986.png"
+    ]
+  }
+}

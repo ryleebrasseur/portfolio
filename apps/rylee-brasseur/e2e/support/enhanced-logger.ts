@@ -84,32 +84,41 @@ export class EnhancedLogger {
   async startCoverage() {
     if (!this.options.enableCoverage) return
 
-    // Coverage API is not available in all browsers (e.g., WebKit)
-    if (!this.page.coverage) {
-      console.log('[Coverage] Coverage API not available in this browser')
-      return
-    }
+    // Coverage API is not available in all browsers (e.g., WebKit, Firefox)
+    try {
+      if (!this.page.coverage || !this.page.coverage.startJSCoverage) {
+        console.log('[Coverage] Coverage API not available in this browser')
+        return
+      }
 
-    console.log('[Coverage] Starting JS coverage collection')
-    await this.page.coverage.startJSCoverage({
-      resetOnNavigation: false,
-      reportAnonymousScripts: true,
-    })
+      console.log('[Coverage] Starting JS coverage collection')
+      await this.page.coverage.startJSCoverage({
+        resetOnNavigation: false,
+        reportAnonymousScripts: true,
+      })
+    } catch (error) {
+      console.log('[Coverage] Coverage API failed to start:', error)
+    }
   }
 
   async stopCoverage() {
     if (!this.options.enableCoverage) return
 
-    // Coverage API is not available in all browsers (e.g., WebKit)
-    if (!this.page.coverage) {
-      console.log('[Coverage] Coverage API not available in this browser')
+    // Coverage API is not available in all browsers (e.g., WebKit, Firefox)
+    try {
+      if (!this.page.coverage || !this.page.coverage.stopJSCoverage) {
+        console.log('[Coverage] Coverage API not available in this browser')
+        return
+      }
+
+      const coverage = await this.page.coverage.stopJSCoverage()
+      this.coverage = coverage
+
+      console.log(`[Coverage] Collected coverage for ${coverage.length} files`)
+    } catch (error) {
+      console.log('[Coverage] Coverage API failed to stop:', error)
       return
     }
-
-    const coverage = await this.page.coverage.stopJSCoverage()
-    this.coverage = coverage
-
-    console.log(`[Coverage] Collected coverage for ${coverage.length} files`)
 
     // Log coverage summary
     let totalBytes = 0
