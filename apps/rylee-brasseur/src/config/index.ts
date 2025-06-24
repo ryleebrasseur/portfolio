@@ -73,14 +73,14 @@ export const generateMetadataHTML = (config: SiteConfig['metadata']) => `
 
 // Helper function to generate structured data JSON-LD
 export const generateStructuredData = (data: SiteConfig['structuredData']) => ({
-  "@context": "https://schema.org",
-  "@type": "Person",
-  "name": data.personName,
-  "affiliation": {
-    "@type": "CollegeOrUniversity",
-    "name": data.affiliation
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: data.personName,
+  affiliation: {
+    '@type': 'CollegeOrUniversity',
+    name: data.affiliation,
   },
-  "url": data.url,
-  "sameAs": [data.email],
-  "knowsAbout": data.knowsAbout
+  url: data.url,
+  sameAs: [data.email],
+  knowsAbout: data.knowsAbout,
 })
