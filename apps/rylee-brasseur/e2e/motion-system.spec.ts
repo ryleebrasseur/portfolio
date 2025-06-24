@@ -1,5 +1,6 @@
 import { test, expect } from './support/test-with-logging'
 import siteConfig from '../src/config/site-config.json' assert { type: 'json' }
+import './support/test-window'
 
 test.describe('Motion System - Discrete State Transitions', () => {
   test('should transition between hero and header states', async ({
@@ -42,9 +43,7 @@ test.describe('Motion System - Discrete State Transitions', () => {
     // STEP 2: Transition to header state
     await logger.logAction('Triggering transition to header state')
     await page.evaluate(() => {
-      ;(
-        window as unknown as { testGotoSection?: (section: string) => void }
-      ).testGotoSection?.('header')
+      window.testGotoSection?.('header')
     })
     await page.waitForTimeout(2000) // Wait for animation
     await page.screenshot({
@@ -78,9 +77,7 @@ test.describe('Motion System - Discrete State Transitions', () => {
     // STEP 3: Transition back to hero state
     await logger.logAction('Triggering transition back to hero state')
     await page.evaluate(() => {
-      ;(
-        window as unknown as { testGotoSection?: (section: string) => void }
-      ).testGotoSection?.('hero')
+      window.testGotoSection?.('hero')
     })
     await page.waitForTimeout(2000) // Wait for animation
     await page.screenshot({
@@ -97,9 +94,7 @@ test.describe('Motion System - Discrete State Transitions', () => {
     // STEP 4: Test multiple transitions work
     await logger.logAction('Testing multiple rapid transitions')
     await page.evaluate(() => {
-      ;(
-        window as unknown as { testGotoSection?: (section: string) => void }
-      ).testGotoSection?.('header')
+      window.testGotoSection?.('header')
     })
     await page.waitForTimeout(2000)
 
@@ -109,9 +104,7 @@ test.describe('Motion System - Discrete State Transitions', () => {
     })
 
     await page.evaluate(() => {
-      ;(
-        window as unknown as { testGotoSection?: (section: string) => void }
-      ).testGotoSection?.('hero')
+      window.testGotoSection?.('hero')
     })
     await page.waitForTimeout(2000)
 
@@ -143,15 +136,11 @@ test.describe('Motion System - Discrete State Transitions', () => {
     // Rapidly trigger multiple transitions (should be blocked)
     await logger.logAction('Triggering rapid sequential transitions')
     await page.evaluate(() => {
-      ;(
-        window as unknown as { testGotoSection?: (section: string) => void }
-      ).testGotoSection?.('header')
+      window.testGotoSection?.('header')
     })
     // Don't wait - immediately try another transition
     await page.evaluate(() => {
-      ;(
-        window as unknown as { testGotoSection?: (section: string) => void }
-      ).testGotoSection?.('hero')
+      window.testGotoSection?.('hero')
     })
     await logger.logAction('Attempted two rapid transitions without waiting')
 
@@ -186,9 +175,7 @@ test.describe('Motion System - Discrete State Transitions', () => {
     // Transition to header
     await logger.logAction('Transitioning to header state before reload')
     await page.evaluate(() => {
-      ;(
-        window as unknown as { testGotoSection?: (section: string) => void }
-      ).testGotoSection?.('header')
+      window.testGotoSection?.('header')
     })
     await page.waitForTimeout(2000)
 

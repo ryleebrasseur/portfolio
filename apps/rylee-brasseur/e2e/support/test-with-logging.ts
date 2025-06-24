@@ -31,7 +31,8 @@ export const test = base.extend<{
           __motionState?: Record<string, unknown>
           __observerState?: Record<string, unknown>
         }
-      ).__motionState = {}(
+      ).__motionState = {}
+      ;(
         window as unknown as {
           __motionState?: Record<string, unknown>
           __observerState?: Record<string, unknown>
