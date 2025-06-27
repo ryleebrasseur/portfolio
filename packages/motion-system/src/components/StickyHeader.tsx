@@ -7,9 +7,13 @@ interface StickyHeaderProps {
   email: string
 }
 
-export const StickyHeader: React.FC<StickyHeaderProps> = ({ brandName, tagline, email }) => {
+export const StickyHeader: React.FC<StickyHeaderProps> = ({
+  brandName,
+  tagline,
+  email,
+}) => {
   return (
-    <div 
+    <div
       id="sticky-header-container"
       style={{
         position: 'fixed',
@@ -25,11 +29,11 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({ brandName, tagline, 
         justifyContent: 'space-between',
         padding: '0 2rem',
         fontFamily: 'var(--font-heading)',
-        color: 'var(--text-primary)'
+        color: 'var(--text-primary)',
       }}
     >
       <div className="header-left">
-        <h1 
+        <h1
           id="header-name"
           style={{
             fontFamily: 'var(--font-heading)',
@@ -39,12 +43,12 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({ brandName, tagline, 
             letterSpacing: '-0.02em',
             lineHeight: 1,
             textTransform: 'lowercase',
-            color: 'var(--text-primary)'
+            color: 'var(--text-primary)',
           }}
         >
           {brandName}
         </h1>
-        <span 
+        <span
           id="header-title"
           style={{
             fontFamily: 'var(--font-subtitle)',
@@ -55,21 +59,21 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({ brandName, tagline, 
             letterSpacing: '0.05em',
             opacity: 0.8,
             color: 'var(--text-primary)',
-            display: 'block'
+            display: 'block',
           }}
         >
           {tagline}
         </span>
       </div>
-      
-      <div 
-        className="header-right" 
+
+      <div
+        className="header-right"
         style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}
       >
         <div id="header-phone">
           <KineticPhone />
         </div>
-        <a 
+        <a
           id="header-email"
           href={`mailto:${email}`}
           style={{
@@ -79,7 +83,7 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({ brandName, tagline, 
             color: 'var(--text-primary)',
             textDecoration: 'none',
             opacity: 0.8,
-            transition: 'opacity 0.2s ease'
+            transition: 'opacity 0.2s ease',
           }}
         >
           {email}

@@ -4,7 +4,7 @@ import baseConfig from './playwright.config'
 // Coverage configuration extending base config
 export default defineConfig({
   ...baseConfig,
-  
+
   // Coverage-specific settings
   use: {
     ...baseConfig.use,
@@ -13,27 +13,27 @@ export default defineConfig({
       enabled: true,
       include: [
         'src/**/*.{ts,tsx}',
-        '../../../packages/motion-system/src/**/*.{ts,tsx}'
+        '../../../packages/motion-system/src/**/*.{ts,tsx}',
       ],
       exclude: [
         '**/*.test.{ts,tsx}',
         '**/*.spec.{ts,tsx}',
         '**/node_modules/**',
-        '**/dist/**'
+        '**/dist/**',
       ],
       reporter: ['html', 'json', 'lcov'],
-      reportsDirectory: './coverage'
-    }
+      reportsDirectory: './coverage',
+    },
   },
-  
+
   // Add coverage reporter to existing reporters
   reporter: [
     ['json'],
     ['html', { outputFolder: 'playwright-report' }],
-    ['list']
+    ['list'],
   ],
-  
+
   // Global setup to instrument code
   globalSetup: './e2e/support/coverage-setup.ts',
-  globalTeardown: './e2e/support/coverage-teardown.ts'
+  globalTeardown: './e2e/support/coverage-teardown.ts',
 })

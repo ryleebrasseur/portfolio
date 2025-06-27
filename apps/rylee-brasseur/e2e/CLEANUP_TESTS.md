@@ -29,21 +29,25 @@ rm e2e/test-timeline-control.spec.ts
 ## Tests to Keep
 
 ### Core Motion System
+
 - `test-discrete-states.spec.ts` - Discrete state transitions
 - `test-observer-scroll.spec.ts` - Observer pattern validation
 - `test-scroll-reset.spec.ts` - Scroll position reset behavior
 
 ### UI/Animation
+
 - `quick-screenshots.spec.ts` - Kinetic animation & header checks
 - `test-no-scrollbar.spec.ts` - Scrollbar & responsive text
 
 ### Original Features
+
 - `hero/hero-section.spec.ts`
 - `hero/project-navigation.spec.ts`
 - `modal/project-modal.spec.ts`
 - `cursor/custom-cursor.spec.ts`
 
 ## Run cleanup:
+
 ```bash
 # Delete all redundant tests at once
 rm e2e/{debug-*,check-*,0[1-3]-*,motion-system,test-motion-system,test-actual-motion,test-observer-motion,verify-initial-viewport,test-timeline-control}.spec.ts

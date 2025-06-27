@@ -182,7 +182,9 @@ export const HeroToContactHeaderOrchestrator: React.FC<
 
         // Create phone link
         const phoneLink = document.createElement('a')
-        phoneLink.href = 'tel:3322879533'
+        // Format phone number for tel: link (remove dots)
+        const phoneForLink = siteConfig.hero.phoneNumber.replace(/\./g, '')
+        phoneLink.href = `tel:${phoneForLink}`
         phoneLink.className = 'phoneLink' // Match KineticPhone CSS
         phoneLink.style.cssText = `
           display: inline-flex;
@@ -197,7 +199,12 @@ export const HeroToContactHeaderOrchestrator: React.FC<
           transition: opacity 0.3s ease;
         `
 
-        const stages = ['332 287-9533', '332 AT-RYLEE', 'NYC @ RYLEE ']
+        // Use the actual phone number from config for the stages
+        const stages = [
+          siteConfig.hero.phoneNumber,
+          '517 4-RYLEE',
+          'MSU @ RYLEE ',
+        ]
         let currentStage = 0
 
         // CREATE FLIP CONTAINERS AND FLIPPERS

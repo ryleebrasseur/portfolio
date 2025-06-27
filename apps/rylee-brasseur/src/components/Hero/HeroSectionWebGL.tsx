@@ -123,7 +123,10 @@ const HeroSectionWebGL = () => {
           {siteConfig.hero.institution}
         </p>
         <div ref={contactRef} className={`${styles.heroContact} heroContact`}>
-          <KineticPhone className={styles.contactPhone} />
+          <KineticPhone
+            className={styles.contactPhone}
+            phoneNumber={siteConfig.hero.phoneNumber}
+          />
           <span className={styles.contactDivider}>|</span>
           <a
             ref={emailRef}

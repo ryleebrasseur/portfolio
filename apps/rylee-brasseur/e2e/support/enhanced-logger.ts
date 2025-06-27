@@ -21,6 +21,7 @@ export class EnhancedLogger {
     handler: (...args: any[]) => void
   }> = []
   private readonly logLevel: string
+  private readonly coverageEnabled: boolean
 
   constructor(
     page: Page,
@@ -37,7 +38,8 @@ export class EnhancedLogger {
       verboseLevel: 'verbose',
       ...options,
     }
-    this.logLevel = process.env.LOG_LEVEL || 'info'
+    this.logLevel = process.env.LOG_LEVEL || 'error'
+    this.coverageEnabled = process.env.COLLECT_COVERAGE === 'true'
 
     this.setupEnhancedLogging()
   }
@@ -54,7 +56,7 @@ export class EnhancedLogger {
   private setupEnhancedLogging() {
     // Track route changes
     this.page.on('framenavigated', (frame) => {
-      if (frame === this.page.mainFrame()) {
+      if (frame === this.page.mainFrame() && this.coverageEnabled) {
         this.coverageTracker.trackRoute(frame.url())
       }
     })
@@ -87,7 +89,10 @@ export class EnhancedLogger {
       }
 
       // Track interactions from console logs
-      if (text.includes('INTERACTION:') || text.includes('ACTION:')) {
+      if (
+        this.coverageEnabled &&
+        (text.includes('INTERACTION:') || text.includes('ACTION:'))
+      ) {
         const matches = text.match(
           /INTERACTION:\s*(\w+)\s*on\s*(.+)|ACTION:\s*(\w+)\s*(.+)/
         )
@@ -99,7 +104,10 @@ export class EnhancedLogger {
       }
 
       // Track components from console logs
-      if (text.includes('COMPONENT:') || text.includes('Component rendered:')) {
+      if (
+        this.coverageEnabled &&
+        (text.includes('COMPONENT:') || text.includes('Component rendered:'))
+      ) {
         const componentMatch = text.match(
           /COMPONENT:\s*(.+)|Component rendered:\s*(.+)/
         )
@@ -184,17 +192,23 @@ export class EnhancedLogger {
   }
 
   async trackFeature(feature: string) {
-    this.coverageTracker.trackFeature(feature)
+    if (this.coverageEnabled) {
+      this.coverageTracker.trackFeature(feature)
+    }
     await this.log(`FEATURE: ${feature}`, 'debug')
   }
 
   async trackComponent(component: string) {
-    this.coverageTracker.trackComponent(component)
+    if (this.coverageEnabled) {
+      this.coverageTracker.trackComponent(component)
+    }
     await this.log(`COMPONENT: ${component}`, 'debug')
   }
 
   async trackInteraction(type: string, selector: string) {
-    this.coverageTracker.trackInteraction(type, selector)
+    if (this.coverageEnabled) {
+      this.coverageTracker.trackInteraction(type, selector)
+    }
     await this.log(`INTERACTION: ${type} on ${selector}`, 'debug')
   }
 
@@ -245,8 +259,10 @@ export class EnhancedLogger {
     }
 
     // Get coverage information
-    const coverage = this.coverageTracker.generateSummary()
-    if (this.shouldLog('debug')) {
+    const coverage = this.coverageEnabled
+      ? this.coverageTracker.generateSummary()
+      : null
+    if (this.coverageEnabled && this.shouldLog('debug')) {
       console.log('[Coverage Summary]', JSON.stringify(coverage, null, 2))
     }
 
@@ -268,9 +284,12 @@ export class EnhancedLogger {
     await this.logCollector.saveLogs(logsPath)
 
     // Save test coverage
-    const coveragePath = path.join(artifactsDir, 'test-coverage.json')
-    const coverageSummary = this.coverageTracker.generateSummary()
-    await fs.writeFile(coveragePath, JSON.stringify(coverageSummary, null, 2))
+    let coveragePath: string | undefined
+    if (this.coverageEnabled) {
+      coveragePath = path.join(artifactsDir, 'test-coverage.json')
+      const coverageSummary = this.coverageTracker.generateSummary()
+      await fs.writeFile(coveragePath, JSON.stringify(coverageSummary, null, 2))
+    }
 
     // Save test metadata
     const metadata = {
@@ -281,7 +300,7 @@ export class EnhancedLogger {
       errors: this.testInfo.errors,
       artifacts: {
         logs: logsPath,
-        coverage: coveragePath,
+        ...(coveragePath && { coverage: coveragePath }),
         screenshots: await fs.readdir(this.testInfo.outputDir).catch(() => []),
       },
     }
@@ -301,6 +320,8 @@ export class EnhancedLogger {
   }
 
   resetCoverage() {
-    this.coverageTracker.reset()
+    if (this.coverageEnabled) {
+      this.coverageTracker.reset()
+    }
   }
 }

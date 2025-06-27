@@ -12,9 +12,60 @@ export class LogCollector {
   private page: Page
   private readonly MAX_LOGS = 1000
 
+  // Batching mechanism
+  private buffer: LogEntry[] = []
+  private flushTimer: NodeJS.Timeout | null = null
+  private readonly BATCH_SIZE = 100
+  private readonly FLUSH_INTERVAL = 500 // milliseconds
+
   constructor(page: Page) {
     this.page = page
     this.attachListeners()
+  }
+
+  // Add log to buffer instead of immediate storage
+  private addLog(entry: LogEntry) {
+    this.buffer.push(entry)
+
+    // Flush if buffer reaches BATCH_SIZE
+    if (this.buffer.length >= this.BATCH_SIZE) {
+      this.flushBuffer()
+    } else {
+      // Schedule a flush if not already scheduled
+      this.scheduleFlush()
+    }
+  }
+
+  // Schedule a flush after FLUSH_INTERVAL
+  private scheduleFlush() {
+    if (!this.flushTimer) {
+      this.flushTimer = setTimeout(() => {
+        this.flushBuffer()
+      }, this.FLUSH_INTERVAL)
+    }
+  }
+
+  // Flush buffer to logs array
+  private flushBuffer() {
+    if (this.buffer.length === 0) return
+
+    // Clear timer
+    if (this.flushTimer) {
+      clearTimeout(this.flushTimer)
+      this.flushTimer = null
+    }
+
+    // Process buffer
+    for (const entry of this.buffer) {
+      // Implement circular buffer - remove oldest entry if we exceed MAX_LOGS
+      if (this.logs.length >= this.MAX_LOGS) {
+        this.logs.shift() // Remove oldest entry
+      }
+      this.logs.push(entry)
+    }
+
+    // Clear buffer
+    this.buffer = []
   }
 
   private attachListeners() {
@@ -27,12 +78,8 @@ export class LogCollector {
         // Don't store args to avoid memory leaks from object references
       }
 
-      // Implement circular buffer - remove oldest entry if we exceed MAX_LOGS
-      if (this.logs.length >= this.MAX_LOGS) {
-        this.logs.shift() // Remove oldest entry
-      }
-
-      this.logs.push(entry)
+      // Add to buffer instead of direct storage
+      this.addLog(entry)
 
       // Also log to test runner console for real-time visibility
       if (entry.text.includes('[') && entry.text.includes(']')) {
@@ -42,27 +89,30 @@ export class LogCollector {
 
     // Capture page errors
     this.page.on('pageerror', (error) => {
-      // Implement circular buffer for errors too
-      if (this.logs.length >= this.MAX_LOGS) {
-        this.logs.shift() // Remove oldest entry
-      }
-
-      this.logs.push({
+      const entry: LogEntry = {
         type: 'error',
         text: error.message,
         timestamp: new Date(),
-      })
+      }
+
+      // Add to buffer
+      this.addLog(entry)
+
       console.error('[PAGE ERROR]', error.message)
     })
   }
 
   // Get all logs
   getAllLogs(): LogEntry[] {
+    // Flush buffer before returning logs
+    this.flushBuffer()
     return [...this.logs]
   }
 
   // Get logs by filter without clearing
   getFilteredLogs(filter: string | RegExp): LogEntry[] {
+    // Flush buffer before filtering
+    this.flushBuffer()
     if (typeof filter === 'string') {
       return this.logs.filter((log) => log.text.includes(filter))
     }
@@ -71,6 +121,8 @@ export class LogCollector {
 
   // Get logs after a specific timestamp
   getLogsSince(timestamp: Date): LogEntry[] {
+    // Flush buffer before filtering
+    this.flushBuffer()
     return this.logs.filter((log) => log.timestamp > timestamp)
   }
 
@@ -88,6 +140,8 @@ export class LogCollector {
 
   // Dump all logs to console for debugging
   dumpLogs(title?: string) {
+    // Flush buffer before dumping
+    this.flushBuffer()
     console.group(title || '[LogCollector] All logs:')
     this.logs.forEach((log, index) => {
       console.log(
@@ -99,6 +153,9 @@ export class LogCollector {
 
   // Save logs to file for post-mortem analysis
   async saveLogs(filepath: string) {
+    // Flush buffer before saving
+    this.flushBuffer()
+
     // In Playwright tests, use the built-in fs from @playwright/test
     const { writeFile } = await import('fs/promises')
     const logData = {
@@ -112,6 +169,8 @@ export class LogCollector {
 
   // Clear logs (use with caution)
   clear() {
+    // Flush buffer first
+    this.flushBuffer()
     const count = this.logs.length
     this.logs = []
     console.log(`[LogCollector] Cleared ${count} logs`)
@@ -119,6 +178,9 @@ export class LogCollector {
 
   // Get log statistics
   getStats() {
+    // Flush buffer before calculating stats
+    this.flushBuffer()
+
     const stats = {
       total: this.logs.length,
       maxLogs: this.MAX_LOGS,
@@ -139,5 +201,21 @@ export class LogCollector {
     })
 
     return stats
+  }
+
+  // Cleanup method to clear timer and flush remaining logs
+  cleanup() {
+    // Clear any pending timer
+    if (this.flushTimer) {
+      clearTimeout(this.flushTimer)
+      this.flushTimer = null
+    }
+
+    // Flush any remaining logs in buffer
+    this.flushBuffer()
+
+    console.log(
+      `[LogCollector] Cleaned up - flushed ${this.logs.length} total logs`
+    )
   }
 }

@@ -11,7 +11,7 @@ export const TEST_CONFIG = {
   },
   SCREENSHOTS: {
     PATH: './test-results/screenshots/',
-  }
+  },
 } as const
 
 // Extended test fixture with MotionSystemPage
@@ -23,6 +23,7 @@ export const test = base.extend<TestFixtures>({
   motionPage: async ({ page }, use) => {
     const motionPage = new MotionSystemPage(page)
     await motionPage.goto()
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     await use(motionPage)
   },
 })

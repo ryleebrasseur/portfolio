@@ -14,7 +14,6 @@ import InteractiveMenu from './components/InteractiveMenu/InteractiveMenu'
 import { KineticPhone } from './components/KineticPhone/KineticPhone'
 
 import siteConfig from './config/site-config'
-import { SiteConfig } from '@ryleebrasseur/shared-types'
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin)
 

@@ -26,7 +26,7 @@ For the `ryleebrasseur/portfolio` repository, the deployment workflow automatica
 For other repositories using this workflow:
 
 - Defaults to subdirectory deployment
-- Uses `VITE_BASE_PATH=/portfolio/` 
+- Uses `VITE_BASE_PATH=/portfolio/`
 - Can be overridden with `CUSTOM_DOMAIN` repository variable
 
 ## Configuration
@@ -53,6 +53,7 @@ The deployment behavior is controlled by environment variables:
 #### Main Portfolio (`ryleebrasseur/portfolio`)
 
 No configuration needed! The workflow automatically:
+
 - Detects the repository name
 - Sets `CUSTOM_DOMAIN=ryleeworks.com`
 - Configures for custom domain deployment
@@ -105,6 +106,7 @@ The GitHub Actions workflow (`.github/workflows/deploy.yml`) automatically:
    - Check that the CNAME file contains the correct domain
 
 3. **Subdirectory deployment broken for other repositories**
+
    - Ensure `CUSTOM_DOMAIN` repository variable is empty or not set
    - Verify the base path is set to `/portfolio/`
 

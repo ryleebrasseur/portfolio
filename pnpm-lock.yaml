@@ -188,6 +188,16 @@ importers:
 
   packages/shared-types: {}
 
+  packages/shared-utils:
+    dependencies:
+      '@ryleebrasseur/shared-types':
+        specifier: workspace:*
+        version: link:../shared-types
+    devDependencies:
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
+
 packages:
 
   '@adobe/css-tools@4.4.3':
