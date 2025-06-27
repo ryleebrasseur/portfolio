@@ -14,14 +14,19 @@ const HeroSectionWebGL = () => {
   const emailRef = useRef<HTMLAnchorElement>(null)
   const contactRef = useRef<HTMLDivElement>(null)
 
-  // Register elements with motion system
+  // Register elements with motion system after DOM is ready
   useEffect(() => {
-    if (titleRef.current) registerElement('hero-name', titleRef)
-    if (subtitleRef.current) registerElement('hero-title', subtitleRef)
-    if (institutionRef.current)
-      registerElement('hero-institution', institutionRef)
-    if (emailRef.current) registerElement('hero-email', emailRef)
-    if (contactRef.current) registerElement('hero-contact', contactRef)
+    // Use RAF to ensure DOM is painted before registering
+    const raf = requestAnimationFrame(() => {
+      if (titleRef.current) registerElement('hero-name', titleRef)
+      if (subtitleRef.current) registerElement('hero-title', subtitleRef)
+      if (institutionRef.current)
+        registerElement('hero-institution', institutionRef)
+      if (emailRef.current) registerElement('hero-email', emailRef)
+      if (contactRef.current) registerElement('hero-contact', contactRef)
+    })
+
+    return () => cancelAnimationFrame(raf)
   }, [registerElement])
 
   useEffect(() => {

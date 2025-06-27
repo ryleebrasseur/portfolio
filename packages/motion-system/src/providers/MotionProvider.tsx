@@ -15,6 +15,10 @@ import { MotionState, MotionContextType, Chapter } from '../types'
 
 gsap.registerPlugin(ScrollTrigger)
 
+// Global flag and instance to prevent multiple Lenis instances across ALL MotionProvider instances
+let globalLenisInitialized = false
+let globalLenisInstance: Lenis | null = null
+
 const MotionContext = createContext<MotionContextType | undefined>(undefined)
 
 // Define chapter configuration for the scroll narrative
@@ -58,9 +62,14 @@ export const MotionProvider: React.FC<MotionProviderProps> = ({
   }, [])
 
   useEffect(() => {
+    if (globalLenisInitialized && globalLenisInstance) {
+      console.log('[MotionProvider] Reusing existing global Lenis instance')
+      lenisRef.current = globalLenisInstance
+      return
+    }
+
+    globalLenisInitialized = true
     console.log('[MotionProvider] Setting up Lenis smooth scrolling')
-    // DISABLED: Lenis conflicts with Observer pattern
-    return // EARLY RETURN - skip Lenis setup
 
     // Initialize Lenis for smooth scrolling
     const lenis = new Lenis({
@@ -71,6 +80,7 @@ export const MotionProvider: React.FC<MotionProviderProps> = ({
     })
 
     lenisRef.current = lenis
+    globalLenisInstance = lenis
 
     // Handle scroll updates
     lenis.on('scroll', (e: { progress: number; velocity: number }) => {
@@ -99,31 +109,14 @@ export const MotionProvider: React.FC<MotionProviderProps> = ({
       })
     })
 
-    // Animation frame loop
-    function raf(time: number) {
-      lenis.raf(time)
-      requestAnimationFrame(raf)
+    // Modern Lenis + GSAP integration (no scrollerProxy needed)
+    lenis.on('scroll', ScrollTrigger.update)
+
+    const update = (time: number) => {
+      lenis.raf(time * 1000) // Convert seconds to milliseconds
     }
-
-    requestAnimationFrame(raf)
-
-    // Integrate Lenis with GSAP ScrollTrigger
-    ScrollTrigger.scrollerProxy(document.body, {
-      scrollTop(value?: number) {
-        if (arguments.length) {
-          lenis.scrollTo(value!, { immediate: true })
-        }
-        return lenis.scroll
-      },
-      getBoundingClientRect() {
-        return {
-          top: 0,
-          left: 0,
-          width: window.innerWidth,
-          height: window.innerHeight,
-        }
-      },
-    })
+    gsap.ticker.add(update)
+    gsap.ticker.lagSmoothing(0)
 
     // Handle resize
     const handleResize = () => {
@@ -146,22 +139,19 @@ export const MotionProvider: React.FC<MotionProviderProps> = ({
 
     document.addEventListener('visibilitychange', handleVisibilityChange)
 
-    // Cleanup
+    // Cleanup - don't destroy global Lenis instance
     return () => {
-      lenis.destroy()
-      window.removeEventListener('resize', handleResize)
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-      ScrollTrigger.removeEventListener('refresh', () => lenis.resize())
+      // Only cleanup if we created the instance
+      if (lenis === globalLenisInstance) {
+        console.log('[MotionProvider] Keeping global Lenis instance alive')
+        // Don't destroy the global instance, just remove this component's listeners
+        window.removeEventListener('resize', handleResize)
+        document.removeEventListener('visibilitychange', handleVisibilityChange)
+      }
     }
   }, [chapters])
 
-  // DISABLED: Scroll persistence conflicts with Observer pattern
   useEffect(() => {
-    console.log(
-      '[MotionProvider] Scroll persistence DISABLED - conflicts with Observer'
-    )
-    return // EARLY RETURN - skip scroll persistence
-
     const saveScrollPosition = () => {
       if (typeof window !== 'undefined' && window.scrollY !== null) {
         sessionStorage.setItem('scroll-position', String(window.scrollY))

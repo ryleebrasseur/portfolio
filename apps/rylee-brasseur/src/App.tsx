@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
 import {
   MotionProvider,
   HeroToContactHeaderOrchestrator,
@@ -15,16 +14,16 @@ import { KineticPhone } from './components/KineticPhone/KineticPhone'
 
 import siteConfig from './config/site-config'
 
-gsap.registerPlugin(ScrollTrigger, ScrollToPlugin)
+gsap.registerPlugin(ScrollTrigger)
 
 function App() {
   const [currentSection, setCurrentSection] = useState<string>('hero')
   const [showThemeMenu, setShowThemeMenu] = useState(false)
 
   const handleMenuItemClick = (item: any) => {
-    // Animate transition to new section
-    gsap.to(window, {
-      scrollTo: { y: window.innerHeight, autoKill: false },
+    // Animate transition to new section using document.documentElement instead of window
+    gsap.to(document.documentElement, {
+      scrollTop: window.innerHeight,
       duration: 1,
       ease: 'power3.inOut',
       onComplete: () => {
