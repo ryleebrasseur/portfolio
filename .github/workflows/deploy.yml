@@ -48,17 +48,18 @@ jobs:
 
       - name: Set deployment environment variables
         run: |
-          # Check for repository variable first, then fall back to defaults
+          # Check for repository variable for custom domain
           if [ -n "${{ vars.CUSTOM_DOMAIN }}" ]; then
             echo "CUSTOM_DOMAIN=${{ vars.CUSTOM_DOMAIN }}" >> $GITHUB_ENV
             echo "VITE_BASE_PATH=/" >> $GITHUB_ENV
             echo "Using configured custom domain: ${{ vars.CUSTOM_DOMAIN }}"
             echo "Setting base path to root (/)"
           else
+            # Default to subdirectory deployment
             echo "CUSTOM_DOMAIN=" >> $GITHUB_ENV
-            echo "VITE_BASE_PATH=/" >> $GITHUB_ENV
+            echo "VITE_BASE_PATH=/${{ github.event.repository.name }}/" >> $GITHUB_ENV
             echo "No custom domain configured"
-            echo "Setting base path to root (/)"
+            echo "Setting base path to subdirectory (/${{ github.event.repository.name }}/)"
           fi
 
       - name: Build
