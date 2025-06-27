@@ -192,10 +192,20 @@ test.describe('Custom Cursor', () => {
     await logger.captureFullState('cursor-click-test')
   })
 
-  test('should be hidden on mobile devices', async ({ context, logger }) => {
+  test('should be hidden on mobile devices', async ({
+    context,
+    browserName,
+    logger,
+  }) => {
     await logger.trackFeature('custom-cursor')
     await logger.trackFeature('responsive-design')
     await logger.logAction('Testing cursor visibility on mobile devices')
+
+    // Firefox does not support isMobile option
+    if (browserName === 'firefox') {
+      test.skip(true, 'Firefox does not support isMobile context option')
+      return
+    }
 
     // Create a new context with mobile viewport to ensure media queries apply correctly
     const mobileContext = await context.browser()?.newContext({

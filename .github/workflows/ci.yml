@@ -308,6 +308,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
+        shell: bash
         run: |
           # Build all apps
           for app in apps/*/package.json; do
