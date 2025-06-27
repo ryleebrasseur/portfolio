@@ -6,7 +6,6 @@ build/
 .env
 .env.local
 coverage/
-playwright-report/
 .DS_Store
 *.log
 

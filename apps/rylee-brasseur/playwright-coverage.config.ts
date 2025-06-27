@@ -27,11 +27,7 @@ export default defineConfig({
   },
 
   // Add coverage reporter to existing reporters
-  reporter: [
-    ['json'],
-    ['html', { outputFolder: 'playwright-report' }],
-    ['list'],
-  ],
+  reporter: [['json'], ['html', { outputFolder: 'test-results' }], ['list']],
 
   // Global setup to instrument code
   globalSetup: './e2e/support/coverage-setup.ts',

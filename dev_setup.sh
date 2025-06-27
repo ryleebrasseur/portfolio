@@ -210,6 +210,16 @@ main() {
   fi
   # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+  # Install Python dependencies
+  log INFO "Installing Python dependencies from requirements.txt..."
+  if command_exists pip; then
+    pip install -r requirements.txt --user || { log WARNING "Failed to install Python dependencies"; }
+  elif command_exists pip3; then
+    pip3 install -r requirements.txt --user || { log WARNING "Failed to install Python dependencies"; }
+  else
+    log WARNING "pip not found - please install Python dependencies manually from requirements.txt"
+  fi
+
   local end_time=$(date +%s)
   echo ""; log SUCCESS "Setup complete! 🎉"; echo ""
   echo "📍 Installed versions:"

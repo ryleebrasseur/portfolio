@@ -1,1 +1,9 @@
 pnpm exec lint-staged
+
+# Auto-fix formatting on all files
+echo "Auto-fixing formatting..."
+pnpm format
+
+# Run TypeScript check after lint-staged
+echo "Running type check..."
+pnpm typecheck

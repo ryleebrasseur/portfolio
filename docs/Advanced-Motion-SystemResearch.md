@@ -283,7 +283,7 @@ The prompt's call for "generative particle fields" and "shader motion blur" poin
 - If even WebGL fails, a final fallback to a simple CSS animated gradient should be in place.
   This layered approach ensures a beautiful, performant experience for users on modern hardware while maintaining universal accessibility.
 
-5.2. View Transitions API for Shared-Element Continuity
+  5.2. View Transitions API for Shared-Element Continuity
 
 The View Transitions API is a powerful new browser primitive for animating DOM changes, particularly between page navigations.26 It excels at creating seamless "shared element" transitions, where an element appears to morph from one view to the next.
 

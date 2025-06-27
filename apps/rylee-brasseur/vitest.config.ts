@@ -10,10 +10,6 @@ export default defineConfig({
     setupFiles: './src/test/setup.ts',
     include: ['tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     exclude: ['node_modules', 'dist', 'e2e', 'tests/e2e'],
-    coverage: {
-      reporter: ['text', 'json', 'html', 'lcov'],
-      exclude: ['node_modules/', 'src/test/', 'tests/e2e/'],
-    },
   },
   resolve: {
     alias: {

@@ -24,7 +24,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Discover apps
         id: discover
         run: |
@@ -58,7 +58,7 @@ jobs:
       - name: Generate cache keys
         id: cache-keys
         run: |
-          echo "cache-key=node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}" >> $GITHUB_OUTPUT
+          echo "cache-key=node-modules-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}" >> $GITHUB_OUTPUT
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -72,7 +72,55 @@ jobs:
             packages/*/node_modules
           key: ${{ steps.cache-keys.outputs.cache-key }}
 
-  # Job 2: Linting
+  # Job 2: Install Playwright Browsers (runs in parallel with lint/typecheck/unit)
+  playwright-setup:
+    name: Install Playwright Browsers
+    runs-on: ubuntu-latest
+    needs: setup
+    outputs:
+      playwright-cache-key: ${{ steps.playwright-version.outputs.playwright-cache-key }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9.12.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.17.0'
+          cache: 'pnpm'
+
+      - name: Restore dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ needs.setup.outputs.cache-key }}
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: |
+          PLAYWRIGHT_VERSION=$(pnpm ls @playwright/test --json | jq -r '.[0].devDependencies["@playwright/test"].version')
+          echo "playwright-cache-key=playwright-${{ runner.os }}-$PLAYWRIGHT_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ steps.playwright-version.outputs.playwright-cache-key }}
+
+      - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
+
+  # Job 3: Linting
   lint:
     name: Lint
     runs-on: ubuntu-latest
@@ -101,13 +149,33 @@ jobs:
             packages/*/node_modules
           key: ${{ needs.setup.outputs.cache-key }}
 
+      - name: Cache turbo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-lint-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'turbo.json') }}
+          restore-keys: |
+            turbo-lint-${{ runner.os }}-
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          cache: 'pip'
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Validate YAML files
+        run: yamllint .github/workflows/*.yml
+
       - name: Run linting
         run: pnpm lint:ci
 
       - name: Check formatting
         run: pnpm format:check
 
-  # Job 3: Type Checking
+  # Job 4: Type Checking
   typecheck:
     name: Type Check
     runs-on: ubuntu-latest
@@ -136,10 +204,18 @@ jobs:
             packages/*/node_modules
           key: ${{ needs.setup.outputs.cache-key }}
 
+      - name: Cache turbo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-typecheck-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'turbo.json') }}
+          restore-keys: |
+            turbo-typecheck-${{ runner.os }}-
+
       - name: Run type checking
         run: pnpm typecheck
 
-  # Job 4: Unit Tests
+  # Job 5: Unit Tests
   test-unit:
     name: Unit Tests
     runs-on: ubuntu-latest
@@ -171,19 +247,10 @@ jobs:
       - name: Run unit tests
         run: pnpm test:unit
 
-      - name: Upload coverage
-        uses: codecov/codecov-action@v4
-        if: always()
-        with:
-          files: ./coverage/lcov.info
-          flags: unit
-          token: ${{ secrets.CODECOV_TOKEN }}
-
-  # Job 5: Build
+  # Job 6: Build
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: setup
     needs: [setup, discover-apps]
     strategy:
       matrix:
@@ -212,6 +279,15 @@ jobs:
             packages/*/node_modules
           key: ${{ needs.setup.outputs.cache-key }}
 
+      - name: Cache turbo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-build-${{ runner.os }}-${{ matrix.app }}-${{ hashFiles('pnpm-lock.yaml', 'turbo.json') }}
+          restore-keys: |
+            turbo-build-${{ runner.os }}-${{ matrix.app }}-
+            turbo-build-${{ runner.os }}-
+
       - name: Build ${{ matrix.app }}
         run: pnpm build --filter=${{ matrix.app }}
 
@@ -222,11 +298,11 @@ jobs:
           path: apps/${{ matrix.app }}/dist
           retention-days: 7
 
-  # Job 6: E2E Tests
+  # Job 7: E2E Tests
   test-e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
-    needs: [setup, build, discover-apps]
+    needs: [setup, build, discover-apps, playwright-setup]
     strategy:
       matrix:
         browser: [chromium, firefox, webkit]
@@ -255,14 +331,23 @@ jobs:
             packages/*/node_modules
           key: ${{ needs.setup.outputs.cache-key }}
 
+      - name: Restore Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ needs.playwright-setup.outputs.playwright-cache-key }}
+
+      - name: Install Playwright browser (fallback)
+        run: pnpm exec playwright install ${{ matrix.browser }}
+
+      - name: Install Playwright system dependencies
+        run: pnpm exec playwright install-deps ${{ matrix.browser }}
+
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: build-${{ matrix.app }}
           path: apps/${{ matrix.app }}/dist
-
-      - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
 
       - name: Run E2E tests
         run: |
@@ -274,12 +359,13 @@ jobs:
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
+        continue-on-error: true
         with:
-          name: playwright-report-${{ matrix.app }}-${{ matrix.browser }}
-          path: apps/${{ matrix.app }}/playwright-report/
+          name: test-results-${{ matrix.app }}-${{ matrix.browser }}
+          path: apps/${{ matrix.app }}/test-results/
           retention-days: 30
 
-  # Job 7: Windows Compatibility Check
+  # Job 8: Windows Compatibility Check
   test-windows:
     name: Windows Compatibility
     runs-on: windows-latest
@@ -299,10 +385,24 @@ jobs:
           node-version: '20.17.0'
           cache: 'pnpm'
 
+      - name: Cache dependencies
+        id: cache-deps
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            node-modules-${{ runner.os }}-
+
       - name: Install dependencies
+        if: steps.cache-deps.outputs.cache-hit != 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Build
+        shell: bash
         run: |
           # Build all apps
           for app in apps/*/package.json; do
@@ -313,7 +413,7 @@ jobs:
             fi
           done
 
-  # Job 8: Final Status Check
+  # Job 9: Final Status Check
   status:
     name: CI Status
     runs-on: ubuntu-latest
