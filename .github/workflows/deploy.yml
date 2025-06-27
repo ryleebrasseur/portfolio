@@ -55,11 +55,11 @@ jobs:
             echo "Using configured custom domain: ${{ vars.CUSTOM_DOMAIN }}"
             echo "Setting base path to root (/)"
           else
-            # Default to subdirectory deployment
+            # Default to root deployment
             echo "CUSTOM_DOMAIN=" >> $GITHUB_ENV
-            echo "VITE_BASE_PATH=/${{ github.event.repository.name }}/" >> $GITHUB_ENV
+            echo "VITE_BASE_PATH=/" >> $GITHUB_ENV
             echo "No custom domain configured"
-            echo "Setting base path to subdirectory (/${{ github.event.repository.name }}/)"
+            echo "Setting base path to root (/)"
           fi
 
       - name: Build
