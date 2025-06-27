@@ -2,8 +2,14 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "jsx": "react-jsx",
-    "jsxImportSource": "react"
+    "jsxImportSource": "react",
+    "paths": {
+      "@ryleebrasseur/shared-types": ["../../packages/shared-types"]
+    }
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["src", "e2e"],
+  "references": [
+    { "path": "./tsconfig.node.json" },
+    { "path": "../../packages/shared-types" }
+  ]
 }

@@ -1,10 +1,10 @@
 import { Page, TestInfo } from '@playwright/test'
 import { LogCollector } from './logCollector'
+import { TestCoverageTracker } from './test-coverage-tracker'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 
 export interface EnhancedLoggerOptions {
-  enableCoverage?: boolean
   enableScreenshots?: boolean
   enableTracing?: boolean
   verboseLevel?: 'minimal' | 'normal' | 'verbose' | 'debug'
@@ -12,10 +12,15 @@ export interface EnhancedLoggerOptions {
 
 export class EnhancedLogger {
   private logCollector: LogCollector
+  private coverageTracker: TestCoverageTracker
   private page: Page
   private testInfo: TestInfo
   private options: Required<EnhancedLoggerOptions>
-  private coverage: unknown[] = []
+  private pageEventHandlers: Array<{
+    event: string
+    handler: (...args: any[]) => void
+  }> = []
+  private readonly logLevel: string
 
   constructor(
     page: Page,
@@ -25,30 +30,84 @@ export class EnhancedLogger {
     this.page = page
     this.testInfo = testInfo
     this.logCollector = new LogCollector(page)
+    this.coverageTracker = new TestCoverageTracker()
     this.options = {
-      enableCoverage: true,
       enableScreenshots: true,
       enableTracing: true,
       verboseLevel: 'verbose',
       ...options,
     }
+    this.logLevel = process.env.LOG_LEVEL || 'info'
 
     this.setupEnhancedLogging()
   }
 
+  private shouldLog(level: string): boolean {
+    const levels = ['error', 'warn', 'info', 'debug']
+    const currentLevel = levels.indexOf(this.logLevel.toLowerCase())
+    const messageLevel = levels.indexOf(level.toLowerCase())
+    return (
+      currentLevel >= 0 && messageLevel >= 0 && messageLevel <= currentLevel
+    )
+  }
+
   private setupEnhancedLogging() {
+    // Track route changes
+    this.page.on('framenavigated', (frame) => {
+      if (frame === this.page.mainFrame()) {
+        this.coverageTracker.trackRoute(frame.url())
+      }
+    })
+
     // Intercept ALL browser console output
     this.page.on('console', async (msg) => {
       const type = msg.type()
       const text = msg.text()
       const location = msg.location()
 
-      // Log to test runner console with source info
-      const prefix = `[${type.toUpperCase()}]`
-      const sourceInfo = location.url
-        ? ` (${location.url}:${location.lineNumber})`
-        : ''
-      console.log(`${prefix} ${text}${sourceInfo}`)
+      // Map console types to log levels
+      const levelMap: Record<string, string> = {
+        log: 'debug',
+        info: 'info',
+        warn: 'warn',
+        error: 'error',
+        debug: 'debug',
+        trace: 'debug',
+      }
+      const logLevel = levelMap[type] || 'info'
+
+      // Only output if meets log level threshold
+      if (this.shouldLog(logLevel)) {
+        // Log to test runner console with source info
+        const prefix = `[${type.toUpperCase()}]`
+        const sourceInfo = location.url
+          ? ` (${location.url}:${location.lineNumber})`
+          : ''
+        console.log(`${prefix} ${text}${sourceInfo}`)
+      }
+
+      // Track interactions from console logs
+      if (text.includes('INTERACTION:') || text.includes('ACTION:')) {
+        const matches = text.match(
+          /INTERACTION:\s*(\w+)\s*on\s*(.+)|ACTION:\s*(\w+)\s*(.+)/
+        )
+        if (matches) {
+          const actionType = matches[1] || matches[3] || 'unknown'
+          const selector = matches[2] || matches[4] || 'unknown'
+          this.coverageTracker.trackInteraction(actionType, selector)
+        }
+      }
+
+      // Track components from console logs
+      if (text.includes('COMPONENT:') || text.includes('Component rendered:')) {
+        const componentMatch = text.match(
+          /COMPONENT:\s*(.+)|Component rendered:\s*(.+)/
+        )
+        if (componentMatch) {
+          const componentName = componentMatch[1] || componentMatch[2]
+          this.coverageTracker.trackComponent(componentName.trim())
+        }
+      }
 
       // Capture stack traces for errors
       if (type === 'error') {
@@ -56,7 +115,9 @@ export class EnhancedLogger {
           const args = await Promise.all(
             msg.args().map((arg) => arg.jsonValue())
           )
-          console.log('[ERROR DETAILS]', JSON.stringify(args, null, 2))
+          if (this.shouldLog('error')) {
+            console.log('[ERROR DETAILS]', JSON.stringify(args, null, 2))
+          }
         } catch {
           // Some errors can't be serialized
         }
@@ -65,86 +126,34 @@ export class EnhancedLogger {
 
     // Capture network failures
     this.page.on('requestfailed', (request) => {
-      console.log(`[NETWORK FAILED] ${request.method()} ${request.url()}`)
-      console.log(`[NETWORK FAILURE] ${request.failure()?.errorText}`)
+      if (this.shouldLog('warn')) {
+        console.log(`[NETWORK FAILED] ${request.method()} ${request.url()}`)
+        console.log(`[NETWORK FAILURE] ${request.failure()?.errorText}`)
+      }
     })
 
     // Capture page crashes
     this.page.on('crash', () => {
-      console.error('[PAGE CRASHED] The page has crashed!')
+      if (this.shouldLog('error')) {
+        console.error('[PAGE CRASHED] The page has crashed!')
+      }
     })
 
     // Capture dialog boxes
     this.page.on('dialog', async (dialog) => {
-      console.log(`[DIALOG ${dialog.type()}] ${dialog.message()}`)
+      if (this.shouldLog('warn')) {
+        console.log(`[DIALOG ${dialog.type()}] ${dialog.message()}`)
+      }
       await dialog.dismiss()
     })
-  }
-
-  async startCoverage() {
-    if (!this.options.enableCoverage) return
-
-    // Coverage API only works on Chromium browsers (Chrome DevTools Protocol)
-    const browserName = this.page.context().browser()?.browserType().name()
-    if (browserName !== 'chromium') {
-      console.log(
-        `[Coverage] Coverage API only supported on Chromium (current: ${browserName})`
-      )
-      return
-    }
-
-    console.log('[Coverage] Starting JS coverage collection')
-    await this.page.coverage.startJSCoverage({
-      resetOnNavigation: false,
-      reportAnonymousScripts: true,
-    })
-  }
-
-  async stopCoverage() {
-    if (!this.options.enableCoverage) return
-
-    // Coverage API only works on Chromium browsers (Chrome DevTools Protocol)
-    const browserName = this.page.context().browser()?.browserType().name()
-    if (browserName !== 'chromium') {
-      console.log(
-        `[Coverage] Coverage API only supported on Chromium (current: ${browserName})`
-      )
-      return
-    }
-
-    const coverage = await this.page.coverage.stopJSCoverage()
-    this.coverage = coverage
-
-    console.log(`[Coverage] Collected coverage for ${coverage.length} files`)
-
-    // Log coverage summary
-    let totalBytes = 0
-    let usedBytes = 0
-
-    for (const entry of coverage) {
-      if (!entry.text) continue // Skip entries without text
-
-      const ranges = entry.ranges || []
-      totalBytes += entry.text.length
-
-      for (const range of ranges) {
-        usedBytes += range.end - range.start
-      }
-    }
-
-    const percentage =
-      totalBytes > 0 ? ((usedBytes / totalBytes) * 100).toFixed(2) : 0
-    console.log(
-      `[Coverage] Overall coverage: ${percentage}% (${usedBytes}/${totalBytes} bytes)`
-    )
-
-    return coverage
   }
 
   async log(
     message: string,
     level: 'info' | 'warn' | 'error' | 'debug' = 'info'
   ) {
+    if (!this.shouldLog(level)) return
+
     const levels = ['minimal', 'normal', 'verbose', 'debug']
     const currentLevel = levels.indexOf(this.options.verboseLevel)
     const messageLevel = levels.indexOf(level === 'info' ? 'normal' : level)
@@ -158,20 +167,41 @@ export class EnhancedLogger {
 
   async logAction(action: string, details?: unknown) {
     await this.log(`ACTION: ${action}`, 'info')
-    if (details && this.options.verboseLevel === 'verbose') {
+    if (
+      details &&
+      this.options.verboseLevel === 'verbose' &&
+      this.shouldLog('debug')
+    ) {
       console.log('[ACTION DETAILS]', JSON.stringify(details, null, 2))
     }
   }
 
   async logState(stateName: string, state: unknown) {
     await this.log(`STATE: ${stateName}`, 'debug')
-    if (this.options.verboseLevel === 'debug') {
+    if (this.options.verboseLevel === 'debug' && this.shouldLog('debug')) {
       console.log('[STATE DETAILS]', JSON.stringify(state, null, 2))
     }
   }
 
+  async trackFeature(feature: string) {
+    this.coverageTracker.trackFeature(feature)
+    await this.log(`FEATURE: ${feature}`, 'debug')
+  }
+
+  async trackComponent(component: string) {
+    this.coverageTracker.trackComponent(component)
+    await this.log(`COMPONENT: ${component}`, 'debug')
+  }
+
+  async trackInteraction(type: string, selector: string) {
+    this.coverageTracker.trackInteraction(type, selector)
+    await this.log(`INTERACTION: ${type} on ${selector}`, 'debug')
+  }
+
   async captureFullState(label: string) {
-    console.log(`[Full State Capture] ${label}`)
+    if (this.shouldLog('info')) {
+      console.log(`[Full State Capture] ${label}`)
+    }
 
     // Capture screenshot
     if (this.options.enableScreenshots) {
@@ -179,7 +209,9 @@ export class EnhancedLogger {
         `state-${label}-${Date.now()}.png`
       )
       await this.page.screenshot({ path: screenshotPath, fullPage: true })
-      console.log(`[Screenshot] Saved to ${screenshotPath}`)
+      if (this.shouldLog('debug')) {
+        console.log(`[Screenshot] Saved to ${screenshotPath}`)
+      }
     }
 
     // Capture DOM state
@@ -202,18 +234,28 @@ export class EnhancedLogger {
       }
     })
 
-    console.log('[DOM State]', JSON.stringify(domState, null, 2))
+    if (this.shouldLog('debug')) {
+      console.log('[DOM State]', JSON.stringify(domState, null, 2))
+    }
 
     // Get current logs
     const logs = this.logCollector.getAllLogs()
-    console.log(`[Log Count] ${logs.length} logs captured`)
+    if (this.shouldLog('info')) {
+      console.log(`[Log Count] ${logs.length} logs captured`)
+    }
+
+    // Get coverage information
+    const coverage = this.coverageTracker.generateSummary()
+    if (this.shouldLog('debug')) {
+      console.log('[Coverage Summary]', JSON.stringify(coverage, null, 2))
+    }
 
     return {
       label,
       timestamp: new Date().toISOString(),
       domState,
       logCount: logs.length,
-      coverage: this.coverage,
+      coverage,
     }
   }
 
@@ -225,12 +267,10 @@ export class EnhancedLogger {
     const logsPath = path.join(artifactsDir, 'browser-logs.json')
     await this.logCollector.saveLogs(logsPath)
 
-    // Save coverage
-    if (this.coverage.length > 0) {
-      const coveragePath = path.join(artifactsDir, 'coverage.json')
-      await fs.writeFile(coveragePath, JSON.stringify(this.coverage, null, 2))
-      console.log(`[Coverage] Saved to ${coveragePath}`)
-    }
+    // Save test coverage
+    const coveragePath = path.join(artifactsDir, 'test-coverage.json')
+    const coverageSummary = this.coverageTracker.generateSummary()
+    await fs.writeFile(coveragePath, JSON.stringify(coverageSummary, null, 2))
 
     // Save test metadata
     const metadata = {
@@ -241,7 +281,7 @@ export class EnhancedLogger {
       errors: this.testInfo.errors,
       artifacts: {
         logs: logsPath,
-        coverage: this.coverage.length > 0 ? 'coverage.json' : null,
+        coverage: coveragePath,
         screenshots: await fs.readdir(this.testInfo.outputDir).catch(() => []),
       },
     }
@@ -251,6 +291,16 @@ export class EnhancedLogger {
       JSON.stringify(metadata, null, 2)
     )
 
-    console.log(`[Test Artifacts] Saved to ${artifactsDir}`)
+    if (this.shouldLog('info')) {
+      console.log(`[Test Artifacts] Saved to ${artifactsDir}`)
+    }
+  }
+
+  getCoverageTracker() {
+    return this.coverageTracker
+  }
+
+  resetCoverage() {
+    this.coverageTracker.reset()
   }
 }

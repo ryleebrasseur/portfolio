@@ -12,6 +12,8 @@ test.describe('Project Detail Modal', () => {
     page,
     logger,
   }) => {
+    await logger.trackFeature('project-modal')
+    await logger.trackComponent('ProjectDetailModal')
     await logger.logAction('Testing modal open functionality')
 
     // Click the first project button
@@ -19,6 +21,7 @@ test.describe('Project Detail Modal', () => {
       .locator('[class*="projectButton"]')
       .first()
     await logger.logAction('Clicking first project button')
+    await logger.trackInteraction('click', 'project-button')
     await firstProjectButton.click()
 
     // Check modal is visible
@@ -43,6 +46,8 @@ test.describe('Project Detail Modal', () => {
     page,
     logger,
   }) => {
+    await logger.trackFeature('project-modal')
+    await logger.trackComponent('ProjectDetailModal')
     await logger.logAction('Testing modal close button functionality')
 
     // Open modal
@@ -50,6 +55,7 @@ test.describe('Project Detail Modal', () => {
       .locator('[class*="projectButton"]')
       .first()
     await logger.logAction('Opening modal by clicking project button')
+    await logger.trackInteraction('click', 'project-button')
     await firstProjectButton.click()
 
     const modal = await page.locator('[role="dialog"]')
@@ -59,6 +65,7 @@ test.describe('Project Detail Modal', () => {
     // Click close button with force to bypass any overlapping elements
     const closeButton = await page.locator('[aria-label="Close modal"]').first()
     await logger.logAction('Clicking close button')
+    await logger.trackInteraction('click', 'close-button')
     await closeButton.click({ force: true })
 
     // Modal should be hidden
@@ -69,6 +76,8 @@ test.describe('Project Detail Modal', () => {
   })
 
   test('should close modal when clicking overlay', async ({ page, logger }) => {
+    await logger.trackFeature('project-modal')
+    await logger.trackComponent('ProjectDetailModal')
     await logger.logAction('Testing modal overlay close functionality')
 
     // Open modal
@@ -95,6 +104,8 @@ test.describe('Project Detail Modal', () => {
   })
 
   test('should close modal on Escape key', async ({ page, logger }) => {
+    await logger.trackFeature('project-modal')
+    await logger.trackComponent('ProjectDetailModal')
     await logger.logAction('Testing modal Escape key close functionality')
 
     // Open modal
@@ -120,6 +131,8 @@ test.describe('Project Detail Modal', () => {
   })
 
   test('should show correct project information', async ({ page, logger }) => {
+    await logger.trackFeature('project-modal')
+    await logger.trackComponent('ProjectDetailModal')
     await logger.logAction('Testing modal project information display')
 
     // Click second project
@@ -163,6 +176,8 @@ test.describe('Project Detail Modal', () => {
     page,
     logger,
   }) => {
+    await logger.trackFeature('project-modal')
+    await logger.trackFeature('scroll-lock')
     await logger.logAction('Testing body scroll prevention when modal is open')
 
     // Open modal
@@ -198,6 +213,8 @@ test.describe('Project Detail Modal', () => {
   })
 
   test('should be accessible', async ({ page, logger }) => {
+    await logger.trackFeature('project-modal')
+    await logger.trackFeature('accessibility')
     await logger.logAction('Testing modal accessibility features')
 
     // Open modal

@@ -13,6 +13,9 @@ import CustomCursor from './components/CustomCursor/CustomCursor'
 import InteractiveMenu from './components/InteractiveMenu/InteractiveMenu'
 import { KineticPhone } from './components/KineticPhone/KineticPhone'
 
+import siteConfig from './config/site-config'
+import { SiteConfig } from '@ryleebrasseur/shared-types'
+
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin)
 
 function App() {
@@ -98,7 +101,7 @@ function App() {
   return (
     <MotionProvider>
       <CustomCursor />
-      <HeroToContactHeaderOrchestrator />
+      <HeroToContactHeaderOrchestrator siteConfig={siteConfig} />
       <main>
         <HeroSectionWebGL />
         {/* Temporarily disabled InteractiveMenu
@@ -109,7 +112,6 @@ function App() {
           />
         </section>
         {currentSection !== 'hero' && renderSection()} */}
-
       </main>
     </MotionProvider>
   )

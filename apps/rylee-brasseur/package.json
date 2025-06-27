@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "@ryleebrasseur/motion-system": "workspace:*",
+    "@ryleebrasseur/shared-types": "workspace:*",
     "gsap": "3.13.0",
     "lenis": "^1.3.4"
   }

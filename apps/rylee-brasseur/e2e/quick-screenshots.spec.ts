@@ -4,6 +4,9 @@ test('verify no duplicate headers and animation works', async ({
   page,
   logger,
 }) => {
+  await logger.trackFeature('kinetic-phone-animation')
+  await logger.trackComponent('KineticPhone')
+  await logger.trackComponent('ContactHeader')
   await logger.logAction('Starting quick screenshots test')
 
   await page.goto('http://localhost:5173')

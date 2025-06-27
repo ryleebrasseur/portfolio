@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { KineticPhone } from '../KineticPhone'
 import { useMotion } from '@ryleebrasseur/motion-system'
-import { config } from '../../config'
+import siteConfig from '../../config/site-config'
 import styles from './HeroSection.module.css'
 
 const HeroSectionWebGL = () => {
@@ -18,7 +18,8 @@ const HeroSectionWebGL = () => {
   useEffect(() => {
     if (titleRef.current) registerElement('hero-name', titleRef)
     if (subtitleRef.current) registerElement('hero-title', subtitleRef)
-    if (institutionRef.current) registerElement('hero-institution', institutionRef)
+    if (institutionRef.current)
+      registerElement('hero-institution', institutionRef)
     if (emailRef.current) registerElement('hero-email', emailRef)
     if (contactRef.current) registerElement('hero-contact', contactRef)
   }, [registerElement])
@@ -109,29 +110,36 @@ const HeroSectionWebGL = () => {
   return (
     <div ref={containerRef} className={styles.heroContainer}>
       <div className={styles.overlayContent}>
-        <h1 ref={titleRef} className={`${styles.heroTitle} heroTitle`}>{config.hero.name}</h1>
+        <h1 ref={titleRef} className={`${styles.heroTitle} heroTitle`}>
+          {siteConfig.hero.name}
+        </h1>
         <p ref={subtitleRef} className={`${styles.heroSubtitle} heroSubtitle`}>
-          {config.hero.title}
+          {siteConfig.hero.title}
         </p>
-        <p ref={institutionRef} className={`${styles.heroInstitution} heroInstitution`}>
-          {config.hero.institution}
+        <p
+          ref={institutionRef}
+          className={`${styles.heroInstitution} heroInstitution`}
+        >
+          {siteConfig.hero.institution}
         </p>
         <div ref={contactRef} className={`${styles.heroContact} heroContact`}>
           <KineticPhone className={styles.contactPhone} />
           <span className={styles.contactDivider}>|</span>
           <a
             ref={emailRef}
-            href={`mailto:${config.hero.email}`}
+            href={`mailto:${siteConfig.hero.email}`}
             className={styles.contactLink}
             data-magnetic
           >
-            {config.hero.email}
+            {siteConfig.hero.email}
           </a>
         </div>
       </div>
 
       <div className={styles.scrollIndicator}>
-        <span className={styles.scrollTextDesktop}>Scroll / Drag to explore</span>
+        <span className={styles.scrollTextDesktop}>
+          Scroll / Drag to explore
+        </span>
         <span className={styles.scrollTextMobile}>Swipe to explore</span>
         <div className={`${styles.scrollLine} scrollLine`}></div>
       </div>

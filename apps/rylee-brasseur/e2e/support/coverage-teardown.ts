@@ -2,6 +2,11 @@ import { FullConfig } from '@playwright/test'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 
+interface CoverageEntry {
+  text: string
+  ranges?: { start: number; end: number }[]
+}
+
 async function globalTeardown(_config: FullConfig) {
   console.log('[Coverage Teardown] Starting global teardown')
 
@@ -21,7 +26,7 @@ async function globalTeardown(_config: FullConfig) {
     )
 
     // Merge all coverage data
-    const allCoverage: unknown[] = []
+    const allCoverage: CoverageEntry[] = []
     for (const file of coverageFiles) {
       const content = await fs.readFile(path.join(coverageDir, file), 'utf-8')
       const coverage = JSON.parse(content)

@@ -14,17 +14,21 @@ export const test = base.extend<{
 
     // Create enhanced logger
     const logger = new EnhancedLogger(page, testInfo, {
-      enableCoverage: true,
       enableScreenshots: true,
       enableTracing: true,
       verboseLevel: 'verbose',
     })
 
-    // Start coverage collection
-    await logger.startCoverage()
-
     // Inject runtime logging into the page
     await page.addInitScript(() => {
+      // Store listeners for cleanup
+      ;(window as any).__testListeners = []
+      ;(window as any).__originalConsoleMethods = {
+        log: console.log,
+        error: console.error,
+        warn: console.warn,
+      }
+
       // Capture motion system state
       ;(
         window as unknown as {
@@ -64,6 +68,17 @@ export const test = base.extend<{
         )
       }
 
+      // Override addEventListener to track listeners
+      const originalAddEventListener = window.addEventListener.bind(window)
+      window.addEventListener = function (
+        event: string,
+        handler: EventListenerOrEventListenerObject,
+        ...args: any[]
+      ) {
+        ;(window as any).__testListeners.push({ event, handler, args })
+        return originalAddEventListener(event, handler, ...args)
+      }
+
       // Log all events
       const events = [
         'scroll',
@@ -76,9 +91,13 @@ export const test = base.extend<{
         window.addEventListener(
           eventType,
           (e) => {
+            let targetTag = 'unknown'
+            if (e.target instanceof HTMLElement) {
+              targetTag = e.target.tagName
+            }
             console.log(`[Event: ${eventType}]`, {
               timestamp: Date.now(),
-              target: e.target?.tagName,
+              target: targetTag,
               scrollY: window.scrollY,
             })
           },
@@ -91,9 +110,35 @@ export const test = base.extend<{
     // eslint-disable-next-line react-hooks/rules-of-hooks
     await use(logger)
 
-    // After test: collect coverage and save artifacts
-    await logger.stopCoverage()
+    // After test: save artifacts
     await logger.saveTestArtifacts()
+
+    // Clean up window event listeners
+    await page
+      .evaluate(() => {
+        // Clean up event listeners
+        const listeners = (window as any).__testListeners || []
+        listeners.forEach(({ event, handler, args }: any) => {
+          window.removeEventListener(event, handler, ...args)
+        })
+        delete (window as any).__testListeners
+
+        // Restore original console methods
+        const originalMethods = (window as any).__originalConsoleMethods
+        if (originalMethods) {
+          console.log = originalMethods.log
+          console.error = originalMethods.error
+          console.warn = originalMethods.warn
+          delete (window as any).__originalConsoleMethods
+        }
+
+        // Clean up test state
+        delete (window as any).__motionState
+        delete (window as any).__observerState
+      })
+      .catch(() => {
+        // Page might be closed already, ignore errors
+      })
 
     console.log('\n' + '='.repeat(80))
     console.log(`[TEST END] ${testInfo.title}`)

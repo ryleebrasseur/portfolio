@@ -1,0 +1,140 @@
+import { readdir, readFile } from 'fs/promises'
+import { join } from 'path'
+
+interface CoverageData {
+  features: {
+    tested: string[]
+    count: number
+  }
+  routes: {
+    visited: string[]
+    count: number
+  }
+  interactions: {
+    summary: Record<string, Record<string, number>>
+    totalCount: number
+    uniqueCount: number
+  }
+  components: {
+    rendered: string[]
+    count: number
+  }
+}
+
+export async function aggregateCoverage(
+  testResultsDir: string
+): Promise<CoverageData> {
+  const aggregated: CoverageData = {
+    features: { tested: [], count: 0 },
+    routes: { visited: [], count: 0 },
+    interactions: { summary: {}, totalCount: 0, uniqueCount: 0 },
+    components: { rendered: [], count: 0 },
+  }
+
+  const uniqueFeatures = new Set<string>()
+  const uniqueRoutes = new Set<string>()
+  const uniqueComponents = new Set<string>()
+  const interactionCounts: Record<string, Record<string, number>> = {}
+
+  // Read all test result directories
+  const dirs = await readdir(testResultsDir)
+
+  for (const dir of dirs) {
+    const coverageFile = join(
+      testResultsDir,
+      dir,
+      'artifacts',
+      'test-coverage.json'
+    )
+
+    try {
+      const content = await readFile(coverageFile, 'utf-8')
+      const coverage: CoverageData = JSON.parse(content)
+
+      // Aggregate features
+      coverage.features.tested.forEach((f) => uniqueFeatures.add(f))
+
+      // Aggregate routes
+      coverage.routes.visited.forEach((r) => uniqueRoutes.add(r))
+
+      // Aggregate components
+      coverage.components.rendered.forEach((c) => uniqueComponents.add(c))
+
+      // Aggregate interactions
+      Object.entries(coverage.interactions.summary || {}).forEach(
+        ([action, targets]) => {
+          if (!interactionCounts[action]) {
+            interactionCounts[action] = {}
+          }
+          Object.entries(targets).forEach(([target, count]) => {
+            interactionCounts[action][target] =
+              (interactionCounts[action][target] || 0) + count
+          })
+        }
+      )
+
+      aggregated.interactions.totalCount += coverage.interactions.totalCount
+    } catch {
+      // Skip if coverage file doesn't exist
+    }
+  }
+
+  // Convert sets back to arrays
+  aggregated.features.tested = Array.from(uniqueFeatures).sort()
+  aggregated.features.count = aggregated.features.tested.length
+
+  aggregated.routes.visited = Array.from(uniqueRoutes).sort()
+  aggregated.routes.count = aggregated.routes.visited.length
+
+  aggregated.components.rendered = Array.from(uniqueComponents).sort()
+  aggregated.components.count = aggregated.components.rendered.length
+
+  aggregated.interactions.summary = interactionCounts
+  aggregated.interactions.uniqueCount = Object.keys(interactionCounts).reduce(
+    (sum, action) => sum + Object.keys(interactionCounts[action]).length,
+    0
+  )
+
+  return aggregated
+}
+
+// Example usage:
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const testResultsDir = process.argv[2] || './test-results'
+  aggregateCoverage(testResultsDir).then((coverage) => {
+    console.log('=== E2E Test Coverage Report ===\n')
+
+    console.log(`Features Tested (${coverage.features.count}):`)
+    coverage.features.tested.forEach((f) => console.log(`  - ${f}`))
+
+    console.log(`\nComponents Rendered (${coverage.components.count}):`)
+    coverage.components.rendered.forEach((c) => console.log(`  - ${c}`))
+
+    console.log(`\nRoutes Visited (${coverage.routes.count}):`)
+    coverage.routes.visited.forEach((r) => console.log(`  - ${r}`))
+
+    if (coverage.interactions.uniqueCount > 0) {
+      console.log(
+        `\nUser Interactions (${coverage.interactions.totalCount} total):`
+      )
+      Object.entries(coverage.interactions.summary).forEach(
+        ([action, targets]) => {
+          console.log(`  ${action}:`)
+          Object.entries(targets).forEach(([target, count]) => {
+            console.log(`    - ${target}: ${count} times`)
+          })
+        }
+      )
+    }
+
+    console.log('\n=== Coverage Summary ===')
+    console.log(`Total unique features tested: ${coverage.features.count}`)
+    console.log(
+      `Total unique components rendered: ${coverage.components.count}`
+    )
+    console.log(`Total unique routes visited: ${coverage.routes.count}`)
+    console.log(
+      `Total interactions tracked: ${coverage.interactions.totalCount}`
+    )
+  })
+}

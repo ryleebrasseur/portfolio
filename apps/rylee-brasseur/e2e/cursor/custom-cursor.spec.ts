@@ -12,6 +12,8 @@ test.describe('Custom Cursor', () => {
     page,
     logger,
   }) => {
+    await logger.trackFeature('custom-cursor')
+    await logger.trackComponent('CustomCursor')
     await logger.logAction(
       'Testing default cursor hide and custom cursor display'
     )
@@ -41,6 +43,9 @@ test.describe('Custom Cursor', () => {
   })
 
   test('should follow mouse movement', async ({ page, logger }) => {
+    await logger.trackFeature('custom-cursor')
+    await logger.trackComponent('CustomCursor')
+    await logger.trackInteraction('mousemove', 'document')
     await logger.logAction('Testing cursor movement tracking')
 
     const cursor = await page.locator(
@@ -82,6 +87,9 @@ test.describe('Custom Cursor', () => {
     page,
     logger,
   }) => {
+    await logger.trackFeature('custom-cursor')
+    await logger.trackComponent('CustomCursor')
+    await logger.trackFeature('hover-states')
     await logger.logAction('Testing cursor hover state changes')
 
     // Wait for cursor to be ready
@@ -140,6 +148,9 @@ test.describe('Custom Cursor', () => {
   })
 
   test('should respond to click events', async ({ page, logger }) => {
+    await logger.trackFeature('custom-cursor')
+    await logger.trackComponent('CustomCursor')
+    await logger.trackInteraction('click', 'document')
     await logger.logAction('Testing cursor click state')
 
     const cursor = await page.locator(
@@ -182,6 +193,8 @@ test.describe('Custom Cursor', () => {
   })
 
   test('should be hidden on mobile devices', async ({ context, logger }) => {
+    await logger.trackFeature('custom-cursor')
+    await logger.trackFeature('responsive-design')
     await logger.logAction('Testing cursor visibility on mobile devices')
 
     // Create a new context with mobile viewport to ensure media queries apply correctly
@@ -225,6 +238,9 @@ test.describe('Custom Cursor', () => {
     context,
     logger,
   }) => {
+    await logger.trackFeature('custom-cursor')
+    await logger.trackFeature('accessibility')
+    await logger.trackFeature('reduced-motion')
     await logger.logAction('Testing cursor with reduced motion preference')
 
     // Create new context with reduced motion
@@ -259,6 +275,8 @@ test.describe('Custom Cursor', () => {
     browserName,
     logger,
   }) => {
+    await logger.trackFeature('custom-cursor')
+    await logger.trackFeature('error-handling')
     await logger.logAction('Testing cursor behavior over non-element targets')
 
     // Wait for page to be fully loaded
@@ -317,7 +335,11 @@ test.describe('Custom Cursor', () => {
       await page.waitForTimeout(200)
     } catch (error) {
       // If WebKit fails on mouse.move, check if it's the known page closed error
-      if (browserName === 'webkit' && error.message.includes('Page closed')) {
+      if (
+        browserName === 'webkit' &&
+        error instanceof Error &&
+        error.message.includes('Page closed')
+      ) {
         await logger.logAction(
           'WebKit page closed during mouse movement - known WSL issue'
         )

@@ -127,7 +127,9 @@ export const ControlPanel = ({ isOpen, onClose }: ControlPanelProps) => {
         xPercent: -100,
         duration: 0.4,
         ease: 'power3.in',
-        onComplete: () => gsap.set(panel, { display: 'none' }),
+        onComplete: () => {
+          gsap.set(panel, { display: 'none' })
+        },
       })
 
       // Hide backdrop
@@ -135,7 +137,9 @@ export const ControlPanel = ({ isOpen, onClose }: ControlPanelProps) => {
         opacity: 0,
         duration: 0.3,
         ease: 'power2.in',
-        onComplete: () => gsap.set(backdrop, { display: 'none' }),
+        onComplete: () => {
+          gsap.set(backdrop, { display: 'none' })
+        },
       })
     }
   }, [isOpen])

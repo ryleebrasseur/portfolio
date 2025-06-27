@@ -1,5 +1,5 @@
 import { test, expect } from '../support/test-with-logging'
-import siteConfig from '../../src/config/site-config.json' assert { type: 'json' }
+import siteConfig from '../../src/config/site-config'
 
 test.describe('Hero Section with WebGL', () => {
   test.beforeEach(async ({ page, logger }) => {

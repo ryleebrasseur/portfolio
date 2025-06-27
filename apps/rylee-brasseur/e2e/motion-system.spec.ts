@@ -1,11 +1,15 @@
 import { test, expect } from './support/test-with-logging'
-import siteConfig from '../src/config/site-config.json' assert { type: 'json' }
+import siteConfig from '../src/config/site-config'
 
 test.describe('Motion System - Discrete State Transitions', () => {
   test('should transition between hero and header states', async ({
     page,
     logger,
   }) => {
+    await logger.trackFeature('motion-system-transitions')
+    await logger.trackFeature('hero-to-header-animation')
+    await logger.trackComponent('HeroSection')
+    await logger.trackComponent('ContactHeader')
     await logger.logAction('Starting motion system state transition test')
 
     // Navigate to the page
@@ -116,6 +120,8 @@ test.describe('Motion System - Discrete State Transitions', () => {
   })
 
   test('should prevent simultaneous animations', async ({ page, logger }) => {
+    await logger.trackFeature('motion-system-transitions')
+    await logger.trackFeature('animation-locking')
     await logger.logAction('Starting simultaneous animation prevention test')
 
     // Navigate to the page
@@ -164,6 +170,8 @@ test.describe('Motion System - Discrete State Transitions', () => {
     page,
     logger,
   }) => {
+    await logger.trackFeature('motion-system-transitions')
+    await logger.trackFeature('state-persistence')
     await logger.logAction('Starting state consistency test across reloads')
 
     // Navigate to the page
@@ -216,6 +224,8 @@ test.describe('Motion System - Discrete State Transitions', () => {
 
 test.describe('Motion System - Visual Verification', () => {
   test('should capture all animation states', async ({ page, logger }) => {
+    await logger.trackFeature('motion-system-transitions')
+    await logger.trackFeature('visual-regression')
     await logger.logAction(
       'Starting visual verification of all animation states'
     )
@@ -290,6 +300,9 @@ test.describe('Motion System - Visual Verification', () => {
 
 test.describe('Motion System - Observer Integration', () => {
   test('should respond to scroll events', async ({ page, logger }) => {
+    await logger.trackFeature('motion-system-transitions')
+    await logger.trackFeature('scroll-observer')
+    await logger.trackInteraction('scroll', 'document')
     await logger.logAction(
       'Starting observer integration test with scroll events'
     )

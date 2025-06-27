@@ -1,0 +1,11 @@
+{
+  "name": "@ryleebrasseur/shared-types",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "main": "index.ts",
+  "types": "index.ts",
+  "scripts": {
+    "build": "tsc"
+  }
+}

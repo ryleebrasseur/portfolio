@@ -61,7 +61,7 @@ export const MotionProvider: React.FC<MotionProviderProps> = ({
     console.log('[MotionProvider] Setting up Lenis smooth scrolling')
     // DISABLED: Lenis conflicts with Observer pattern
     return // EARLY RETURN - skip Lenis setup
-    
+
     // Initialize Lenis for smooth scrolling
     const lenis = new Lenis({
       duration: 1.2,
@@ -157,11 +157,13 @@ export const MotionProvider: React.FC<MotionProviderProps> = ({
 
   // DISABLED: Scroll persistence conflicts with Observer pattern
   useEffect(() => {
-    console.log('[MotionProvider] Scroll persistence DISABLED - conflicts with Observer')
+    console.log(
+      '[MotionProvider] Scroll persistence DISABLED - conflicts with Observer'
+    )
     return // EARLY RETURN - skip scroll persistence
-    
+
     const saveScrollPosition = () => {
-      if (typeof window !== 'undefined') {
+      if (typeof window !== 'undefined' && window.scrollY !== null) {
         sessionStorage.setItem('scroll-position', String(window.scrollY))
       }
     }
@@ -171,7 +173,7 @@ export const MotionProvider: React.FC<MotionProviderProps> = ({
     // Restore scroll position
     const savedPosition = sessionStorage.getItem('scroll-position')
     if (savedPosition && lenisRef.current) {
-      const position = parseFloat(savedPosition)
+      const position = parseFloat(savedPosition as string)
       setTimeout(() => {
         lenisRef.current?.scrollTo(position, { immediate: true })
         sessionStorage.removeItem('scroll-position')

@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, useMemo } from 'react'
 import { gsap } from 'gsap'
 import styles from './KineticPhone.module.css'
 
@@ -12,7 +12,10 @@ export const KineticPhone = ({ className }: KineticPhoneProps) => {
   const flipInterval = useRef<NodeJS.Timeout>()
 
   // Each stage must have exact same character positions
-  const stages = ['332 287-9533', '332 AT-RYLEE', 'NYC @ RYLEE ']
+  const stages = useMemo(
+    () => ['332 287-9533', '332 AT-RYLEE', 'NYC @ RYLEE '],
+    []
+  )
 
   // Auto-flip animation
   useEffect(() => {
@@ -23,7 +26,7 @@ export const KineticPhone = ({ className }: KineticPhoneProps) => {
     return () => {
       if (flipInterval.current) clearInterval(flipInterval.current)
     }
-  }, [])
+  }, [stages.length])
 
   // Flip animation
   useEffect(() => {
@@ -58,7 +61,7 @@ export const KineticPhone = ({ className }: KineticPhoneProps) => {
         })
       }
     })
-  }, [currentStage])
+  }, [currentStage, stages])
 
   return (
     <div
@@ -66,7 +69,7 @@ export const KineticPhone = ({ className }: KineticPhoneProps) => {
       className={`${styles.container} ${className || ''}`}
     >
       <a href="tel:3322879533" className={styles.phoneLink}>
-        {stages[0].split('').map((char, index) => (
+        {stages[0].split('').map((char: string, index: number) => (
           <span key={index} className={styles.flipContainer}>
             <span className={styles.flipper}>{char}</span>
           </span>
