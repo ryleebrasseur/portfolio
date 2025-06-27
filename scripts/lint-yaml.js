@@ -28,8 +28,7 @@ function lintYaml(files) {
   }
 
   try {
-    const fileList = files.join(' ')
-    execSync(`yamllint ${fileList}`, { stdio: 'inherit', cwd: rootDir })
+    execFileSync('yamllint', files, { stdio: 'inherit', cwd: rootDir })
     console.log('✅ YAML files are valid')
   } catch {
     console.error('❌ YAML linting failed')
