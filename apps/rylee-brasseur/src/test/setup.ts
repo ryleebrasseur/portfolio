@@ -10,7 +10,7 @@ global.IntersectionObserver = class IntersectionObserver {
   disconnect() {}
   observe() {}
   unobserve() {}
-} as any
+} as unknown as typeof IntersectionObserver
 
 // Mock ResizeObserver for tests
 global.ResizeObserver = class ResizeObserver {
@@ -18,7 +18,7 @@ global.ResizeObserver = class ResizeObserver {
   disconnect() {}
   observe() {}
   unobserve() {}
-} as any
+} as unknown as typeof ResizeObserver
 
 // Mock matchMedia for tests
 Object.defineProperty(window, 'matchMedia', {
@@ -35,5 +35,5 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 })
 
-// Mock window.scrollTo
-window.scrollTo = vi.fn()
+// Mock window.scrollTo with proper overloads
+window.scrollTo = vi.fn() as unknown as typeof window.scrollTo

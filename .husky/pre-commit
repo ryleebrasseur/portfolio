@@ -1,1 +1,5 @@
 pnpm exec lint-staged
+
+# Run TypeScript check after lint-staged
+echo "Running type check..."
+pnpm typecheck
