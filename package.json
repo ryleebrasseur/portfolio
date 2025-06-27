@@ -32,7 +32,10 @@
     "clean": "turbo run clean && rm -rf node_modules",
     "typecheck": "turbo run typecheck",
     "prepare": "node scripts/prepare.cjs",
-    "preinstall": "npx only-allow pnpm"
+    "preinstall": "npx only-allow pnpm",
+    "release:notes": "tsx scripts/generate-release-notes.ts",
+    "release:publish": "tsx scripts/publish-release.ts",
+    "release": "pnpm release:notes && pnpm release:publish"
   },
   "dependencies": {
     "@react-three/drei": "9.99.0",
@@ -69,6 +72,7 @@
     "postcss-nested": "6.0.1",
     "prettier": "3.2.5",
     "sass": "1.72.0",
+    "tsx": "^4.20.0",
     "turbo": "1.13.2",
     "typescript": "5.5.4",
     "typescript-eslint": "8.0.0",
