@@ -6,6 +6,10 @@ export default defineConfig({
   // Use environment variable for base path, default to root
   base: process.env.VITE_BASE_PATH || '/',
   plugins: [react()],
+  define: {
+    // Define process.env for browser compatibility
+    'process.env': process.env,
+  },
   resolve: {
     alias: {
       '@ryleebrasseur/motion-system': path.resolve(
