@@ -1,6 +1,6 @@
 [build]
-  base = "apps/robin-noguier"
-  command = "cd ../.. && ./dev_setup.sh && pnpm build --filter=robin-noguier"
+  base = "apps/rylee-brasseur"
+  command = "cd ../.. && ./dev_setup.sh && pnpm build --filter=rylee-brasseur"
   publish = "dist"
 
 [build.environment]

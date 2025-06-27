@@ -29,6 +29,9 @@ importers:
       papaparse:
         specifier: 5.4.1
         version: 5.4.1
+      picocolors:
+        specifier: ^1.0.0
+        version: 1.1.1
       react:
         specifier: 18.2.0
         version: 18.2.0
@@ -118,7 +121,7 @@ importers:
         specifier: 1.4.0
         version: 1.4.0(@types/node@20.11.30)(jsdom@26.1.0)(sass@1.72.0)
 
-  apps/robin-noguier:
+  apps/rylee-brasseur:
     dependencies:
       '@ryleebrasseur/motion-system':
         specifier: workspace:*
@@ -136,6 +139,9 @@ importers:
       '@playwright/test':
         specifier: 1.52.0
         version: 1.52.0
+      '@ryleebrasseur/dev-tools':
+        specifier: workspace:*
+        version: link:../../packages/dev-tools
       '@testing-library/jest-dom':
         specifier: ^6.6.3
         version: 6.6.3
@@ -151,9 +157,16 @@ importers:
       jsdom:
         specifier: ^26.1.0
         version: 26.1.0
-      v8-to-istanbul:
-        specifier: ^9.3.0
-        version: 9.3.0
+
+  packages/dev-tools:
+    dependencies:
+      picocolors:
+        specifier: ^1.0.0
+        version: 1.1.1
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.30
+        version: 20.11.30
 
   packages/motion-system:
     dependencies:
@@ -801,9 +814,6 @@ packages:
 
   '@types/estree@1.0.7':
     resolution: {integrity: sha512-w28IoSUCJpidD/TGviZwwMJckNESJZXFu7NBZ5YJ4mEUnNraUn9Pm8HSZm/jDF1pDWYKspWE7oVphigUPRakIQ==}
-
-  '@types/istanbul-lib-coverage@2.0.6':
-    resolution: {integrity: sha512-2QF/t/auWm0lsy8XtKVPG19v3sSOQlJe/YHZgfjb/KBBHOGSV+J2q/S671rcq9uTBrLAXmZpqJiaQbMT+zNU1w==}
 
   '@types/lodash@4.17.0':
     resolution: {integrity: sha512-t7dhREVv6dbNj0q17X12j7yDG4bD/DHYX7o5/DbDxobP0HnGPgpRz2Ej77aL7TZT3DSw13fqUTj8J4mMnqa7WA==}
@@ -2725,10 +2735,6 @@ packages:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
     hasBin: true
 
-  v8-to-istanbul@9.3.0:
-    resolution: {integrity: sha512-kiGUalWN+rgBJ/1OHZsBtU4rXZOfj/7rKQxULKlIzwzQSvMJUUNgPwJEEh7gU6xEVxC0ahoOBvN2YI8GH6FNgA==}
-    engines: {node: '>=10.12.0'}
-
   vite-node@1.4.0:
     resolution: {integrity: sha512-VZDAseqjrHgNd4Kh8icYHWzTKSCZMhia7GyHfhtzLW33fZlG9SwsB6CEhgyVOWkJfJ2pFLrp/Gj1FSfAiqH9Lw==}
     engines: {node: ^18.0.0 || >=20.0.0}
@@ -3457,8 +3463,6 @@ snapshots:
   '@types/draco3d@1.4.10': {}
 
   '@types/estree@1.0.7': {}
-
-  '@types/istanbul-lib-coverage@2.0.6': {}
 
   '@types/lodash@4.17.0': {}
 
@@ -5643,12 +5647,6 @@ snapshots:
   utility-types@3.11.0: {}
 
   uuid@9.0.1: {}
-
-  v8-to-istanbul@9.3.0:
-    dependencies:
-      '@jridgewell/trace-mapping': 0.3.25
-      '@types/istanbul-lib-coverage': 2.0.6
-      convert-source-map: 2.0.0
 
   vite-node@1.4.0(@types/node@20.11.30)(sass@1.72.0):
     dependencies:

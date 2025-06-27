@@ -17,8 +17,10 @@
   },
   "scripts": {
     "dev": "turbo run dev",
-    "dev:robin": "turbo run dev --filter=robin-noguier",
+    "dev:app": "node scripts/dev-app.js",
+    "dev:stop-all": "node scripts/stop-all-dev.js",
     "build": "turbo run build",
+    "build:app": "node scripts/build-app.js",
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
     "test:unit": "turbo run test:unit",
@@ -40,6 +42,7 @@
     "lenis": "1.3.4",
     "lodash": "4.17.21",
     "papaparse": "5.4.1",
+    "picocolors": "^1.0.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "three": "0.162.0"

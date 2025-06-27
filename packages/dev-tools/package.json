@@ -1,0 +1,21 @@
+{
+  "name": "@ryleebrasseur/dev-tools",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Shared development tools for the portfolio monorepo",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./dev-server": "./src/dev-server.js"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "picocolors": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30"
+  }
+}

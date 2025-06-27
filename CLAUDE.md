@@ -58,7 +58,7 @@ The script (v2.2.1) provides:
 - `pnpm lint` - Run ESLint on all packages
 - `pnpm format` - Format all code with Prettier
 
-### App-specific (from apps/robin-noguier)
+### App-specific (from apps/rylee-brasseur)
 
 - `pnpm dev` - Start Vite dev server on port 5173
 - `pnpm build` - Create production build in dist/
@@ -76,7 +76,7 @@ This is a pnpm monorepo using Turborepo for orchestration:
 ### Structure
 
 - `apps/` - Individual portfolio applications
-  - `robin-noguier/` - Sample React + Three.js portfolio
+  - `rylee-brasseur/` - React + Three.js portfolio
 - `packages/` - Shared packages (currently empty, ready for extraction)
 - `config/` - Shared configuration (currently empty)
 

@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd ../.. && pnpm build --filter=robin-noguier",
+  "buildCommand": "cd ../.. && pnpm build --filter=rylee-brasseur",
   "outputDirectory": "dist",
   "installCommand": "cd ../.. && ./dev_setup.sh",
   "framework": null,

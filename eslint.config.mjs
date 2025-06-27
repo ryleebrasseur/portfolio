@@ -9,6 +9,18 @@ export default [
   ...typescriptEslint.configs.recommended,
   prettierConfig,
   {
+    files: ['scripts/*.js', 'packages/*/src/**/*.js', 'apps/*/scripts/*.js'],
+    languageOptions: {
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        setTimeout: 'readonly',
+      },
+    },
+  },
+  {
     files: ['**/*.{js,jsx,ts,tsx}'],
     plugins: {
       react: reactPlugin,

@@ -120,10 +120,10 @@ You can test the build locally with different configurations:
 
 ```bash
 # Test custom domain build
-VITE_BASE_PATH=/ pnpm build --filter=robin-noguier
+VITE_BASE_PATH=/ pnpm build:app rylee-brasseur
 
 # Test subdirectory build
-VITE_BASE_PATH=/portfolio/ pnpm build --filter=robin-noguier
+VITE_BASE_PATH=/portfolio/ pnpm build:app rylee-brasseur
 ```
 
 ## Migration Guide

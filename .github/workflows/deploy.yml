@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      app:
+        description: 'App to deploy'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -17,6 +22,8 @@ concurrency:
 env:
   # Skip Git hooks in CI environment
   HUSKY: 0
+  # Set default app or use input/env var
+  DEPLOY_APP: ${{ github.event.inputs.app || vars.DEFAULT_APP || 'rylee-brasseur' }}
 
 jobs:
   build:
@@ -55,20 +62,20 @@ jobs:
           fi
 
       - name: Build
-        run: pnpm build --filter=robin-noguier
+        run: pnpm build --filter=${{ env.DEPLOY_APP }}
         env:
           NODE_ENV: production
 
       - name: Create CNAME file for custom domain
         if: env.CUSTOM_DOMAIN != ''
         run: |
-          echo "${{ env.CUSTOM_DOMAIN }}" > ./apps/robin-noguier/dist/CNAME
+          echo "${{ env.CUSTOM_DOMAIN }}" > ./apps/${{ env.DEPLOY_APP }}/dist/CNAME
           echo "Created CNAME file with domain: ${{ env.CUSTOM_DOMAIN }}"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./apps/robin-noguier/dist
+          path: ./apps/${{ env.DEPLOY_APP }}/dist
 
   deploy:
     environment:

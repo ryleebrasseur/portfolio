@@ -12,9 +12,20 @@
     "resolveJsonModule": true
   },
   "references": [
-    { "path": "./apps/robin-noguier" },
-    { "path": "./packages/motion-system" },
-    { "path": "./packages/shared-types" },
-    { "path": "./packages/shared-utils" }
+    {
+      "path": "./apps/rylee-brasseur"
+    },
+    {
+      "path": "./packages/dev-tools"
+    },
+    {
+      "path": "./packages/motion-system"
+    },
+    {
+      "path": "./packages/shared-types"
+    },
+    {
+      "path": "./packages/shared-utils"
+    }
   ]
 }
