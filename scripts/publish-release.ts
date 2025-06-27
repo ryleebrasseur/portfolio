@@ -199,6 +199,8 @@ async function uploadAsset(uploadUrl: string, filePath: string) {
       'Content-Length': fileSize.toString(),
     },
     body: fileStream as unknown as BodyInit,
+    // @ts-expect-error - Node.js fetch requires duplex for streams
+    duplex: 'half',
   })
 
   if (!res.ok) {
