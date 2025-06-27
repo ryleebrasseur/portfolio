@@ -204,7 +204,6 @@ test.describe('Custom Cursor', () => {
     // Firefox does not support isMobile option
     if (browserName === 'firefox') {
       test.skip(true, 'Firefox does not support isMobile context option')
-      return
     }
 
     // Create a new context with mobile viewport to ensure media queries apply correctly
