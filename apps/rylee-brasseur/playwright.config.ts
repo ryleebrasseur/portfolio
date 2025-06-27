@@ -47,10 +47,10 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'npm run dev',
+    command: 'node scripts/dev-server.js start',
     port: 5173,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000, // 2 minutes timeout for dev server to start
+    reuseExistingServer: true, // Our script handles reuse intelligently
+    timeout: 60 * 1000, // 1 minute timeout (our script is faster)
     stdout: 'pipe',
     stderr: 'pipe',
   },

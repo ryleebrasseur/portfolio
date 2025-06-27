@@ -4,7 +4,13 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/dev-server.js dev",
+    "dev:start": "node scripts/dev-server.js start",
+    "dev:stop": "node scripts/dev-server.js stop",
+    "dev:restart": "node scripts/dev-server.js restart",
+    "dev:status": "node scripts/dev-server.js status",
+    "dev:port-check": "node scripts/dev-server.js port-check",
+    "dev:kill": "node scripts/dev-server.js kill",
     "build": "vite build",
     "preview": "vite preview",
     "test": "npm run test:unit && npm run test:e2e",
@@ -25,8 +31,7 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
     "@vitest/coverage-v8": "^3.2.4",
-    "jsdom": "^26.1.0",
-    "v8-to-istanbul": "^9.3.0"
+    "jsdom": "^26.1.0"
   },
   "dependencies": {
     "@ryleebrasseur/motion-system": "workspace:*",
