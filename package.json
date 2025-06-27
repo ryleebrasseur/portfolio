@@ -80,6 +80,10 @@
       "eslint --fix",
       "prettier --write"
     ],
-    "*.{json,css,scss,md}": "prettier --write"
+    "*.{json,css,scss,md}": "prettier --write",
+    "*.{yml,yaml}": [
+      "node scripts/lint-yaml.js",
+      "prettier --write"
+    ]
   }
 }
