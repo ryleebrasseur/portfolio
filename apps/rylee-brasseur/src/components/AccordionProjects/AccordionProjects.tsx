@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useGSAP } from '@gsap/react'
 import { projects } from '../../data/projects'
 import CategoryLauncher, { CategoryData } from '../CategoryLauncher'
 import PostersView from '../CategoryViews/Posters'
@@ -126,24 +127,20 @@ const AccordionProjects: React.FC<AccordionProjectsProps> = ({ className }) => {
     updateGridColumns()
   }, [activeIndex, viewMode, categories, filteredProjects])
 
-  useEffect(() => {
-    if (!containerRef.current || !isVisible || hasAnimatedRef.current) return
+  useGSAP(() => {
+    if (!isVisible || hasAnimatedRef.current) return
 
-    const ctx = gsap.context(() => {
-      gsap.from(`.${styles.projectItem}`, {
-        y: 50,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.1,
-        ease: 'power3.out',
-        onComplete: () => {
-          hasAnimatedRef.current = true
-        },
-      })
-    }, containerRef)
-
-    return () => ctx.revert()
-  }, [isVisible])
+    gsap.from(`.${styles.projectItem}`, {
+      y: 50,
+      opacity: 0,
+      duration: 0.8,
+      stagger: 0.1,
+      ease: 'power3.out',
+      onComplete: () => {
+        hasAnimatedRef.current = true
+      },
+    })
+  }, { scope: containerRef, dependencies: [isVisible] })
 
   const handleHover = (index: number) => {
     setActiveIndex(index)

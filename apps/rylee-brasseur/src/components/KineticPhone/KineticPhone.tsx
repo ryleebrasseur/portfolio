@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect, useMemo } from 'react'
 import { gsap } from 'gsap'
+import { useGSAP } from '@gsap/react'
 import siteConfig from '../../config/site-config'
 import styles from './KineticPhone.module.css'
 
@@ -35,11 +36,9 @@ export const KineticPhone = ({ className }: KineticPhoneProps) => {
   }, [stages.length])
 
   // Flip animation
-  useEffect(() => {
-    if (!containerRef.current) return
-
-    const container = containerRef.current
-    const flippers = container.querySelectorAll(`.${styles.flipper}`)
+  useGSAP(() => {
+    const flippers = containerRef.current?.querySelectorAll(`.${styles.flipper}`)
+    if (!flippers) return
 
     flippers.forEach((flipper, index) => {
       const currentChar = stages[currentStage][index]
@@ -67,7 +66,7 @@ export const KineticPhone = ({ className }: KineticPhoneProps) => {
         })
       }
     })
-  }, [currentStage, stages])
+  }, { scope: containerRef, dependencies: [currentStage, stages] })
 
   // Clean phone number for tel: link
   const cleanedPhoneNumber = siteConfig.hero.phoneNumber.replace(/\D/g, '')

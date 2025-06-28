@@ -18,12 +18,14 @@
   \*/
   export interface StoryScrollerProps {
   /\*\*
+
   - An array of React nodes, where each node represents a full-viewport section.
   - The component will snap between these sections.
   - @example
   - ```tsx
 
     ```
+
   - <StoryScroller sections={[<div>Section 1</div>, <div>Section 2</div>]} />
   - ```
        */
@@ -82,6 +84,7 @@ import type { StoryScrollerProps } from './types'; // Importing types for strict
 - ```tsx
 
   ```
+
 - // In your page component (e.g., app/page.tsx)
 - import { StoryScroller } from '../components/StoryScroller/StoryScroller';
 -
@@ -103,6 +106,7 @@ import type { StoryScrollerProps } from './types'; // Importing types for strict
 - ```
 
   ```
+
 - @see DESIGN_NOTES.md#section-snapping-implementation-rationale
 - @see README.md#quickstart-usage
   \*/
@@ -181,18 +185,19 @@ import type { StoryScrollerProps } from './types'; // Importing types for strict
   useGSAP(() => {
   if (!isClient) return; // Guard to ensure client-side execution.
 
+  /\*\*
 
-    /**
-     * Asynchronous function to set up the scroll system.
-     * This allows for dynamic import of Lenis and handles potential errors during initialization.
-     * @async
-     * @function setupScroll
-     * @private
-     */
+  - Asynchronous function to set up the scroll system.
+  - This allows for dynamic import of Lenis and handles potential errors during initialization.
+  - @async
+  - @function setupScroll
+  - @private
+    \*/
     const setupScroll = async () => {
-      let lenisInstance: Awaited<ReturnType<typeof initLenis>> | null = null;
-      let checkScrollEndInterval: NodeJS.Timeout | undefined;
-      let rafId: number | undefined;
+    let lenisInstance: Awaited<ReturnType<typeof initLenis>> | null = null;
+    let checkScrollEndInterval: NodeJS.Timeout | undefined;
+    let rafId: number | undefined;
+
 
       try {
         const Lenis = await initLenis(); // Dynamically import Lenis.
@@ -429,9 +434,10 @@ import type { StoryScrollerProps } from './types'; // Importing types for strict
         // This is a nuclear option for route changes or complex unmounts.
         gsap.killTweensOf("*");
       };
-    };
 
-    setupScroll();
+  };
+
+  setupScroll();
 
 }, [isClient, sections.length]); // Dependency array: Re-run if client state changes or number of sections changes.
 
@@ -476,6 +482,7 @@ document.body.setAttribute('style', bodyStyle);
 
 // JSX & CSS FALLBACKS
 return (
+
 <div
 ref={container}
 className="scroll-container-fallback" // Apply fallback CSS class.
@@ -513,7 +520,7 @@ style={{
 };
 ````
 
-````markdown
+`````markdown
 // components/StoryScroller/README.md
 /\*\*
 
@@ -847,6 +854,8 @@ pointer-events: none; /_ Prevent interaction with iframes during Lenis-driven sc
 }
 ```
 ````
+`````
+
 ````
 
 ```markdown
@@ -871,3 +880,4 @@ pointer-events: none; /_ Prevent interaction with iframes during Lenis-driven sc
 - **`tolerance` (GSAP Observer)**: A setting in the GSAP Observer plugin that defines how much movement (e.g., wheel delta) is required before an event is considered significant enough to trigger a callback. Used to filter out small, accidental movements.
 - **`preventDefault: true`**: A property in event handlers or configurations that stops the browser's default action for a given event (e.g., stops native scrolling for a wheel event).
 ```
+````

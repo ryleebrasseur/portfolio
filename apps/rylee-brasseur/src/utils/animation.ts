@@ -95,6 +95,19 @@ export const getCSSTransitionDuration = (baseDuration: string): string => {
   return prefersReducedMotion() ? '0s' : baseDuration
 }
 
+// Debounce utility for performance-critical events (following StoryScroller patterns)
+export const debounce = <T extends (...args: any[]) => void>(
+  func: T,
+  wait: number
+): ((...args: Parameters<T>) => void) => {
+  let timeout: ReturnType<typeof setTimeout>
+  
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => func(...args), wait)
+  }
+}
+
 // Hook to listen for preference changes
 export const onMotionPreferenceChange = (
   callback: (prefersReduced: boolean) => void
