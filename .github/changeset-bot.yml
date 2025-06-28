@@ -1,0 +1,32 @@
+# Changeset Bot Configuration
+# This bot comments on PRs that are missing changesets
+
+# Message to post when a changeset is found
+prWithChangeset: |
+  Thanks for adding a changeset! This PR includes changes that will be published.
+
+  Reviewers: Please check the changeset files to ensure the version bumps are appropriate.
+
+# Message to post when no changeset is found
+prWithoutChangeset: |
+  This PR doesn't include a changeset. If this PR includes changes that need to be released, please add a changeset:
+
+  ```bash
+  pnpm changeset
+  ```
+
+  If this is a documentation change, dependency update, or other change that doesn't affect the published packages, you can ignore this message.
+
+# Commit types that don't require changesets
+skipLabels:
+  - 'dependencies'
+  - 'documentation'
+  - 'tests'
+  - 'chore'
+  - 'skip-changeset'
+
+# Enable comment on PRs
+comment: true
+
+# Update comment instead of creating new ones
+updateComment: true

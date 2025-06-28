@@ -3,40 +3,48 @@
   "version": "1.0.0",
   "type": "module",
   "private": true,
+  "engines": {
+    "node": ">=20.17.0"
+  },
   "scripts": {
-    "dev": "node scripts/dev-server.js dev",
-    "dev:start": "node scripts/dev-server.js start",
-    "dev:stop": "node scripts/dev-server.js stop",
-    "dev:restart": "node scripts/dev-server.js restart",
-    "dev:status": "node scripts/dev-server.js status",
-    "dev:port-check": "node scripts/dev-server.js port-check",
-    "dev:kill": "node scripts/dev-server.js kill",
     "build": "vite build",
+    "clean": "rimraf dist .turbo .vite-cache",
+    "dev": "node scripts/dev-server.js start",
+    "dev:kill": "node scripts/dev-server.js kill",
+    "dev:port-check": "node scripts/dev-server.js port-check",
+    "dev:restart": "node scripts/dev-server.js restart",
+    "dev:start": "node scripts/dev-server.js start",
+    "dev:status": "node scripts/dev-server.js status",
+    "dev:stop": "node scripts/dev-server.js stop",
+    "lint": "eslint src --cache --cache-location .eslintcache",
+    "lint:fix": "eslint src --fix --cache --cache-location .eslintcache",
     "preview": "vite preview",
-    "test": "npm run test:unit && npm run test:e2e",
-    "test:unit": "vitest run",
-    "test:unit:watch": "vitest",
+    "test": "pnpm test:unit && pnpm test:e2e",
     "test:e2e": "playwright test",
     "test:e2e:html": "PLAYWRIGHT_REPORTER=html playwright test",
     "test:e2e:list": "PLAYWRIGHT_REPORTER=list playwright test",
     "test:screenshots": "playwright test capture-essential-screenshots.spec.ts",
     "test:screenshots:all": "playwright test --grep '\\.(manual|spec)\\.ts$'",
-    "lint": "eslint src --cache --cache-location .eslintcache",
-    "lint:fix": "eslint src --fix --cache --cache-location .eslintcache",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@playwright/test": "1.52.0",
-    "@ryleebrasseur/dev-tools": "workspace:*",
+    "@ryleebrasseur/dev-tools": "1.0.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
-    "jsdom": "^26.1.0"
+    "jsdom": "^26.1.0",
+    "terser": "^5.43.1"
   },
   "dependencies": {
-    "@ryleebrasseur/motion-system": "workspace:*",
-    "@ryleebrasseur/shared-types": "workspace:*",
-    "gsap": "3.13.0",
+    "@ryleebrasseur/motion-system": "1.0.0",
+    "@ryleebrasseur/shared-types": "1.0.0",
+    "gsap": "^3.12.5",
     "lenis": "^1.3.4"
+  },
+  "volta": {
+    "node": "20.17.0"
   }
 }

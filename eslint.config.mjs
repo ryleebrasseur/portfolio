@@ -17,6 +17,8 @@ export default [
         __dirname: 'readonly',
         __filename: 'readonly',
         setTimeout: 'readonly',
+        Buffer: 'readonly',
+        URL: 'readonly',
       },
     },
   },
@@ -52,6 +54,13 @@ export default [
       
       // General rules
       'eol-last': ['error', 'always'],
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'prefer-const': 'error',
+      'no-duplicate-imports': 'error',
+      
+      // Monorepo-specific rules
+      'import/no-extraneous-dependencies': 'off', // Handled by pnpm
+      'import/prefer-default-export': 'off',
       
       // React hooks rules
       ...reactHooksPlugin.configs.recommended.rules,

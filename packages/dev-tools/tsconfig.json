@@ -5,7 +5,10 @@
     "outDir": "./dist",
     "composite": true,
     "allowJs": true,
-    "checkJs": true
+    "checkJs": true,
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
+    "declaration": true,
+    "declarationMap": true
   },
   "include": ["src/**/*"]
 }
