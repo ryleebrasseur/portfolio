@@ -5,7 +5,7 @@
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.6);
-  z-index: 998;
+  z-index: calc(var(--z-control-panel) - 1);
   backdrop-filter: blur(4px);
 }
 
@@ -18,7 +18,7 @@
   max-width: 90vw;
   background: rgba(0, 0, 0, 0.95);
   border-right: 1px solid var(--border);
-  z-index: 999;
+  z-index: var(--z-control-panel);
   display: flex;
   flex-direction: column;
   overflow-y: auto;

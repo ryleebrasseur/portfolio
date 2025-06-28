@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
+import { animateTo, animateFrom } from '../../utils/animation'
 import { KineticPhone } from '../KineticPhone'
 import { useMotion } from '@ryleebrasseur/motion-system'
 import siteConfig from '../../config/site-config'
@@ -13,6 +14,7 @@ const HeroSectionWebGL = () => {
   const institutionRef = useRef<HTMLParagraphElement>(null)
   const emailRef = useRef<HTMLAnchorElement>(null)
   const contactRef = useRef<HTMLDivElement>(null)
+  const [showScrollIndicator, setShowScrollIndicator] = useState(true)
 
   // Register elements with motion system after DOM is ready
   useEffect(() => {
@@ -29,8 +31,22 @@ const HeroSectionWebGL = () => {
     return () => cancelAnimationFrame(raf)
   }, [registerElement])
 
+  // Hide scroll indicator after user scrolls
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50 && showScrollIndicator) {
+        setShowScrollIndicator(false)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [showScrollIndicator])
+
   useEffect(() => {
     if (!containerRef.current) return
+
+    const cleanupFunctions: (() => void)[] = []
 
     const ctx = gsap.context(() => {
       // Magnetic hover effect for email link
@@ -45,7 +61,7 @@ const HeroSectionWebGL = () => {
           const x = e.clientX - rect.left - rect.width / 2
           const y = e.clientY - rect.top - rect.height / 2
 
-          gsap.to(element, {
+          animateTo(element, {
             x: x * 0.3,
             y: y * 0.3,
             duration: 0.3,
@@ -54,7 +70,7 @@ const HeroSectionWebGL = () => {
         }
 
         const handleMouseLeave = () => {
-          gsap.to(element, {
+          animateTo(element, {
             x: 0,
             y: 0,
             duration: 0.3,
@@ -65,15 +81,15 @@ const HeroSectionWebGL = () => {
         element.addEventListener('mousemove', handleMouseMove)
         element.addEventListener('mouseleave', handleMouseLeave)
 
-        // Cleanup
-        return () => {
+        // Store cleanup function
+        cleanupFunctions.push(() => {
           element.removeEventListener('mousemove', handleMouseMove)
           element.removeEventListener('mouseleave', handleMouseLeave)
-        }
+        })
       })
 
       // Animate hero content on load
-      gsap.from('.heroTitle', {
+      animateFrom('.heroTitle', {
         y: 50,
         opacity: 0,
         duration: 1,
@@ -81,7 +97,7 @@ const HeroSectionWebGL = () => {
         delay: 0.2,
       })
 
-      gsap.from('.heroSubtitle, .heroInstitution', {
+      animateFrom('.heroSubtitle, .heroInstitution', {
         y: 30,
         opacity: 0,
         duration: 1,
@@ -90,7 +106,7 @@ const HeroSectionWebGL = () => {
         delay: 0.4,
       })
 
-      gsap.from('.heroContact', {
+      animateFrom('.heroContact', {
         y: 20,
         opacity: 0,
         duration: 1,
@@ -99,7 +115,7 @@ const HeroSectionWebGL = () => {
       })
 
       // Animate scroll indicator
-      gsap.to('.scrollLine', {
+      animateTo('.scrollLine', {
         scaleY: 0,
         transformOrigin: 'top',
         duration: 2,
@@ -109,7 +125,11 @@ const HeroSectionWebGL = () => {
       })
     }, containerRef)
 
-    return () => ctx.revert()
+    return () => {
+      // Execute all cleanup functions
+      cleanupFunctions.forEach((cleanup) => cleanup())
+      ctx.revert()
+    }
   }, [])
 
   return (
@@ -128,10 +148,7 @@ const HeroSectionWebGL = () => {
           {siteConfig.hero.institution}
         </p>
         <div ref={contactRef} className={`${styles.heroContact} heroContact`}>
-          <KineticPhone
-            className={styles.contactPhone}
-            phoneNumber={siteConfig.hero.phoneNumber}
-          />
+          <KineticPhone className={styles.contactPhone} />
           <span className={styles.contactDivider}>|</span>
           <a
             ref={emailRef}
@@ -144,13 +161,15 @@ const HeroSectionWebGL = () => {
         </div>
       </div>
 
-      <div className={styles.scrollIndicator}>
-        <span className={styles.scrollTextDesktop}>
-          Scroll / Drag to explore
-        </span>
-        <span className={styles.scrollTextMobile}>Swipe to explore</span>
-        <div className={`${styles.scrollLine} scrollLine`}></div>
-      </div>
+      {showScrollIndicator && (
+        <div className={styles.scrollIndicator}>
+          <span className={styles.scrollTextDesktop}>
+            Scroll / Drag to explore
+          </span>
+          <span className={styles.scrollTextMobile}>Swipe to explore</span>
+          <div className={`${styles.scrollLine} scrollLine`}></div>
+        </div>
+      )}
     </div>
   )
 }

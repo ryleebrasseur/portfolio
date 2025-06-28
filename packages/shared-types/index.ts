@@ -15,6 +15,7 @@ export interface SiteConfig {
     institution: string
     email: string
     phoneNumber: string
+    phoneStages?: string[]
   }
   header: {
     brandName: string

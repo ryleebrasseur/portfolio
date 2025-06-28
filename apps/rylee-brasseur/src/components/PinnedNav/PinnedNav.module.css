@@ -11,7 +11,7 @@
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   border-top: 1px solid var(--border);
-  z-index: 100;
+  z-index: var(--z-nav);
 }
 
 .projectButtons {
@@ -80,7 +80,7 @@
   right: 0;
   width: 100%;
   height: calc(100% + 1rem);
-  z-index: -1;
+  z-index: var(--z-below);
 }
 
 .themeToggle {

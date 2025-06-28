@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState, useLayoutEffect } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ControlPanel } from '../ControlPanel'
+import { prefersReducedMotion } from '../../utils/animation'
 import styles from './InteractiveMenu.module.css'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -241,7 +242,7 @@ const InteractiveMenu: React.FC<InteractiveMenuProps> = ({
           left: 0,
           right: 0,
           width: '100%',
-          zIndex: 100,
+          zIndex: 'var(--z-header)',
           duration: 0,
         },
         0.9
@@ -266,20 +267,22 @@ const InteractiveMenu: React.FC<InteractiveMenuProps> = ({
         clearProps: 'rotation', // Clean up rotation after animation
       })
 
-      // Gentle floating animation for hero state
-      itemRefs.current.forEach((item, index) => {
-        if (!item) return
+      // Gentle floating animation for hero state (skip if reduced motion)
+      if (!prefersReducedMotion()) {
+        itemRefs.current.forEach((item, index) => {
+          if (!item) return
 
-        gsap.to(item, {
-          y: gsap.utils.random(-8, 8),
-          x: gsap.utils.random(-4, 4),
-          duration: gsap.utils.random(4, 6),
-          repeat: -1,
-          yoyo: true,
-          ease: 'sine.inOut',
-          delay: index * 0.3,
+          gsap.to(item, {
+            y: gsap.utils.random(-8, 8),
+            x: gsap.utils.random(-4, 4),
+            duration: gsap.utils.random(4, 6),
+            repeat: -1,
+            yoyo: true,
+            ease: 'sine.inOut',
+            delay: index * 0.3,
+          })
         })
-      })
+      }
     }, containerRef)
 
     return () => ctx.revert()

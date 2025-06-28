@@ -1,6 +1,6 @@
 import { SiteConfig } from '@ryleebrasseur/shared-types'
 
-const siteConfig = {
+const siteConfig: SiteConfig = {
   metadata: {
     title: 'Research Portfolio | Finance Research | Rylee Brasseur',
     description:
@@ -17,7 +17,8 @@ const siteConfig = {
     title: 'Exploring Finance & Policy',
     institution: 'Michigan State University | James Madison College',
     email: 'hello@rysdesigns.com',
-    phoneNumber: '517.449.9836',
+    phoneNumber: '332.287.9533',
+    phoneStages: ['332.287.9533', '332 AT-RYLEE', 'NYC @ RYLEE '],
   },
   header: {
     brandName: 'rys designs ❤️',
@@ -37,6 +38,6 @@ const siteConfig = {
     email: 'mailto:hello@rysdesigns.com',
     knowsAbout: ['research', 'finance', 'international relations'],
   },
-} as const
+}
 
-export default siteConfig as SiteConfig
+export default siteConfig

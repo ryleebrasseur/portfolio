@@ -11,6 +11,7 @@ import HeroSectionWebGL from './components/Hero/HeroSectionWebGL'
 import CustomCursor from './components/CustomCursor/CustomCursor'
 import InteractiveMenu from './components/InteractiveMenu/InteractiveMenu'
 import { KineticPhone } from './components/KineticPhone/KineticPhone'
+import { AccordionProjects } from './components/AccordionProjects'
 
 import siteConfig from './config/site-config'
 
@@ -102,6 +103,7 @@ function App() {
       <HeroToContactHeaderOrchestrator siteConfig={siteConfig} />
       <main>
         <HeroSectionWebGL />
+        <AccordionProjects />
         {/* Temporarily disabled InteractiveMenu
         <section className="menu-section">
           <InteractiveMenu 
