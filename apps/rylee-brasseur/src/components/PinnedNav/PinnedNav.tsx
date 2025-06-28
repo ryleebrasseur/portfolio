@@ -17,11 +17,11 @@ const PinnedNav: React.FC<PinnedNavProps> = ({
   currentProjectIndex,
 }) => {
   const [visibleTitles, setVisibleTitles] = useState<number[]>([])
-  const [currentTheme, setCurrentTheme] = useState('sunset')
+  const [currentTheme, setCurrentTheme] = useState('msu')
 
   useEffect(() => {
     // Load saved theme
-    const savedTheme = localStorage.getItem('portfolio-theme') || 'sunset'
+    const savedTheme = localStorage.getItem('portfolio-theme') || 'msu'
     setCurrentTheme(savedTheme)
     document.documentElement.setAttribute('data-theme', savedTheme)
 

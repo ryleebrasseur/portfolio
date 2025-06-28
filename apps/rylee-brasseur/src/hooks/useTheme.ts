@@ -20,12 +20,12 @@ const getThemeColors = (_themeName: string): ThemeColors => {
 }
 
 export const useTheme = () => {
-  const [theme, setTheme] = useState<string>('sunset')
-  const [colors, setColors] = useState<ThemeColors>(getThemeColors('sunset'))
+  const [theme, setTheme] = useState<string>('msu')
+  const [colors, setColors] = useState<ThemeColors>(getThemeColors('msu'))
 
   useEffect(() => {
     // Get initial theme
-    const savedTheme = localStorage.getItem('theme') || 'sunset'
+    const savedTheme = localStorage.getItem('theme') || 'msu'
     setTheme(savedTheme)
     setColors(getThemeColors(savedTheme))
 
@@ -37,7 +37,7 @@ export const useTheme = () => {
           mutation.attributeName === 'data-theme'
         ) {
           const newTheme =
-            document.documentElement.getAttribute('data-theme') || 'sunset'
+            document.documentElement.getAttribute('data-theme') || 'msu'
           setTheme(newTheme)
           setColors(getThemeColors(newTheme))
         }

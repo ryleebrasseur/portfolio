@@ -100,8 +100,18 @@ const InteractiveMenu: React.FC<InteractiveMenuProps> = ({
           scrub: 1.5, // Smooth scrubbing
           pin: true,
           pinSpacing: true,
-          anticipatePin: 1,
+          anticipatePin: 0, // Disable for mobile
           markers: false, // Enable for debugging
+          fastScrollEnd: true, // Better mobile performance
+          preventOverlaps: true,
+          refreshPriority: -1, // Lower priority
+          // Mobile-specific handling
+          onUpdate: (self) => {
+            // Force refresh on mobile if needed
+            if ('ontouchstart' in window && self.progress === 0) {
+              self.refresh()
+            }
+          },
         },
       })
 
@@ -267,8 +277,9 @@ const InteractiveMenu: React.FC<InteractiveMenuProps> = ({
         clearProps: 'rotation', // Clean up rotation after animation
       })
 
-      // Gentle floating animation for hero state (skip if reduced motion)
-      if (!prefersReducedMotion()) {
+      // Gentle floating animation for hero state (skip if reduced motion or mobile)
+      const isMobile = 'ontouchstart' in window || window.innerWidth <= 768
+      if (!prefersReducedMotion() && !isMobile) {
         itemRefs.current.forEach((item, index) => {
           if (!item) return
 

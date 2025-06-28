@@ -30,5 +30,6 @@
   --z-nav: var(--z-sticky);
   --z-control-panel: var(--z-modal);
   --z-project-modal: var(--z-modal);
+  --z-category-launcher: var(--z-modal);
   --z-theme-selector: var(--z-dropdown);
 }

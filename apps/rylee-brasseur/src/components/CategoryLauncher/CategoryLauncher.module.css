@@ -1,0 +1,171 @@
+.container {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  pointer-events: none;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.overlay {
+  position: fixed;
+  overflow: hidden;
+  pointer-events: auto;
+  box-shadow: 0 0 100px rgba(0, 0, 0, 0.5);
+}
+
+.content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  color: var(--text-primary);
+}
+
+.header {
+  padding: 4rem 2rem 2rem;
+  text-align: center;
+  position: relative;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), transparent);
+}
+
+.closeButton {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: var(--text-primary);
+}
+
+.closeButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.closeButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.categoryTitle {
+  font-family: var(--font-heading);
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 1rem 0;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.categoryDescription {
+  font-family: var(--font-subtitle);
+  font-size: clamp(1.125rem, 2vw, 1.5rem);
+  line-height: 1.5;
+  max-width: 600px;
+  margin: 0 auto 2rem;
+  opacity: 0.8;
+}
+
+.categoryMeta {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.6;
+}
+
+.categoryContent {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Placeholder for coming soon */
+.placeholder {
+  text-align: center;
+  opacity: 0.6;
+}
+
+.placeholderIcon {
+  margin-bottom: 2rem;
+  opacity: 0.3;
+}
+
+.placeholder h2 {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  margin: 0 0 1rem 0;
+  font-weight: 500;
+}
+
+.placeholder p {
+  font-family: var(--font-body);
+  font-size: 1.125rem;
+  margin: 0;
+  opacity: 0.8;
+}
+
+/* Scrollbar styling */
+.categoryContent::-webkit-scrollbar {
+  width: 8px;
+}
+
+.categoryContent::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.categoryContent::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.categoryContent::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .header {
+    padding: 5rem 1rem 2rem;
+  }
+
+  .closeButton {
+    top: 1rem;
+    right: 1rem;
+    width: 40px;
+    height: 40px;
+  }
+
+  .categoryTitle {
+    font-size: clamp(2rem, 10vw, 4rem);
+  }
+
+  .categoryDescription {
+    font-size: 1rem;
+  }
+
+  .categoryContent {
+    padding: 1rem;
+  }
+}

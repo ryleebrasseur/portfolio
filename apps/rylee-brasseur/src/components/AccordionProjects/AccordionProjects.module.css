@@ -12,6 +12,54 @@
   transform: translateY(0);
 }
 
+.header {
+  position: relative;
+  margin-bottom: 4rem;
+}
+
+.backButton {
+  position: absolute;
+  top: -2rem;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: var(--font-subtitle);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 0;
+  animation: fadeIn 0.6s ease forwards;
+}
+
+.backButton:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateX(-4px);
+}
+
+.backButton svg {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.3s ease;
+}
+
+.backButton:hover svg {
+  transform: translateX(-4px);
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
 .title {
   font-family: var(--font-heading);
   font-size: clamp(2.5rem, 5vw, 4rem);
@@ -22,6 +70,7 @@
   text-align: center;
   line-height: 1;
   text-transform: uppercase;
+  transition: all 0.6s ease;
 }
 
 .description {
@@ -30,9 +79,10 @@
   line-height: 1.6;
   opacity: 0.8;
   max-width: 74ch;
-  margin: 0 auto 4rem;
+  margin: 0 auto;
   text-align: center;
   text-wrap: balance;
+  transition: all 0.6s ease;
 }
 
 .projectList {
@@ -78,13 +128,17 @@
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.02);
-  transition: border-color 0.3s ease;
+  transition:
+    border-color 0.3s ease,
+    transform 0.3s ease;
+  cursor: pointer;
 }
 
 .projectItem:hover,
 .projectItem:focus-visible {
   outline: none;
   border-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.02);
 }
 
 .article {
@@ -149,6 +203,10 @@
   font-weight: 500;
   opacity: 0;
   transition: opacity calc(var(--speed) * 1.2) var(--easing);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
 }
 
 .link span {
@@ -198,13 +256,23 @@
     padding: 4rem 1rem;
   }
 
+  .header {
+    margin-bottom: 3rem;
+  }
+
+  .backButton {
+    position: relative;
+    top: auto;
+    left: auto;
+    margin-bottom: 2rem;
+  }
+
   .title {
     font-size: clamp(2rem, 6vw, 3rem);
   }
 
   .description {
     font-size: clamp(0.875rem, 2vw, 1rem);
-    margin-bottom: 3rem;
   }
 
   .projectList {
@@ -224,6 +292,32 @@
     left: auto;
     margin-bottom: 1rem;
   }
+}
+
+/* Category pattern overlay */
+.categoryPattern {
+  position: absolute;
+  inset: 0;
+  opacity: 0.1;
+  background-image: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(255, 255, 255, 0.05) 10px,
+      rgba(255, 255, 255, 0.05) 20px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 10px,
+      rgba(255, 255, 255, 0.03) 10px,
+      rgba(255, 255, 255, 0.03) 20px
+    );
+  transition: opacity 0.6s ease;
+}
+
+[data-active='true'] .categoryPattern {
+  opacity: 0.2;
 }
 
 /* Clean up temporary files */

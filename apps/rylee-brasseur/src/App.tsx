@@ -21,6 +21,18 @@ function App() {
   const [currentSection, setCurrentSection] = useState<string>('hero')
   const [showThemeMenu, setShowThemeMenu] = useState(false)
 
+  // Initialize MSU theme on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('portfolio-theme')
+    if (!savedTheme) {
+      // Set MSU as default theme if no saved preference
+      document.documentElement.setAttribute('data-theme', 'msu')
+      localStorage.setItem('portfolio-theme', 'msu')
+    } else {
+      document.documentElement.setAttribute('data-theme', savedTheme)
+    }
+  }, [])
+
   const handleMenuItemClick = (item: any) => {
     // Animate transition to new section using document.documentElement instead of window
     gsap.to(document.documentElement, {
@@ -30,10 +42,7 @@ function App() {
       onComplete: () => {
         setCurrentSection(item.id)
         // Apply theme
-        document.documentElement.setAttribute(
-          'data-theme',
-          item.theme || 'sunset'
-        )
+        document.documentElement.setAttribute('data-theme', item.theme || 'msu')
       },
     })
   }
@@ -104,6 +113,7 @@ function App() {
       <main>
         <HeroSectionWebGL />
         <AccordionProjects />
+
         {/* Temporarily disabled InteractiveMenu
         <section className="menu-section">
           <InteractiveMenu 

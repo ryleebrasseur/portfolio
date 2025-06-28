@@ -476,6 +476,9 @@ export const HeroToContactHeaderOrchestrator: React.FC<
           type: 'wheel,touch,pointer',
           preventDefault: true,
           wheelSpeed: -1,
+          dragMinimum: 5, // Minimum drag distance for mobile
+          tolerance: 10, // Add tolerance for accidental touches
+          lockAxis: true, // Lock to vertical axis on mobile
           onUp: () => {
             console.log('[Observer] Scroll DOWN detected:', {
               scrollY: window.scrollY,
@@ -510,7 +513,6 @@ export const HeroToContactHeaderOrchestrator: React.FC<
             }
             gotoSection(currentIndexRef.current - 1, -1)
           },
-          tolerance: 10,
           debounce: true, // Prevent rapid firing
         })
         console.log('[HeroToContactHeader] Observer created successfully')
