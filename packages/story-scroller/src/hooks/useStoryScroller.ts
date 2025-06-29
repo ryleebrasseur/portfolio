@@ -19,15 +19,29 @@ export const useStoryScroller = (totalSections: number) => {
   
   const gotoSection = useCallback((index: number) => {
     const clampedIndex = Math.max(0, Math.min(totalSections - 1, index))
+    console.log('🎯 useStoryScroller.gotoSection called:', {
+      requestedIndex: index,
+      clampedIndex,
+      currentSection,
+      totalSections
+    })
     // Dispatch action to update context state
     actions.setCurrentIndex(clampedIndex)
-  }, [totalSections, actions])
+  }, [totalSections, actions, currentSection])
   
   const nextSection = useCallback(() => {
+    console.log('➡️ useStoryScroller.nextSection called:', {
+      currentSection,
+      targetSection: currentSection + 1
+    })
     gotoSection(currentSection + 1)
   }, [currentSection, gotoSection])
   
   const prevSection = useCallback(() => {
+    console.log('⬅️ useStoryScroller.prevSection called:', {
+      currentSection,
+      targetSection: currentSection - 1
+    })
     gotoSection(currentSection - 1)
   }, [currentSection, gotoSection])
   

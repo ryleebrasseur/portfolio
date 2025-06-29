@@ -10,7 +10,6 @@ export interface ScrollState {
   // Navigation state
   currentIndex: number
   isAnimating: boolean
-  isScrolling: boolean
   lastScrollTime: number
   
   // Environment state
@@ -42,7 +41,6 @@ export type ScrollAction =
 export const createInitialState = (): ScrollState => ({
   currentIndex: 0,
   isAnimating: false,
-  isScrolling: false,
   lastScrollTime: 0,
   isClient: false,
   pathname: null,
@@ -87,14 +85,12 @@ export function scrollReducer(state: ScrollState, action: ScrollAction): ScrollS
     case 'START_SCROLLING':
       return {
         ...state,
-        isScrolling: true,
         lastScrollTime: Date.now(),
       }
       
     case 'END_SCROLLING':
       return {
         ...state,
-        isScrolling: false,
       }
       
     case 'UPDATE_SCROLL_TIME':
@@ -108,7 +104,6 @@ export function scrollReducer(state: ScrollState, action: ScrollAction): ScrollS
         ...state,
         currentIndex: 0,
         isAnimating: false,
-        isScrolling: false,
         lastScrollTime: 0,
       }
       
@@ -162,6 +157,8 @@ export const scrollActions = {
  * Selectors for accessing state properties
  */
 export const scrollSelectors = {
+  // NOTE: canNavigate logic has been moved to useDebouncing hook
+  // This selector remains for backwards compatibility but should be deprecated
   canNavigate: (state: ScrollState): boolean => {
     return !state.isAnimating && (Date.now() - state.lastScrollTime > 200)
   },

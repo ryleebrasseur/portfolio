@@ -8,7 +8,6 @@ describe('scrollReducer', () => {
       expect(state).toEqual({
         currentIndex: 0,
         isAnimating: false,
-        isScrolling: false,
         lastScrollTime: 0,
         isClient: false,
         pathname: null,
@@ -70,15 +69,15 @@ describe('scrollReducer', () => {
       const newState = scrollReducer(state, scrollActions.startScrolling())
       const after = Date.now()
       
-      expect(newState.isScrolling).toBe(true)
+      // isScrolling state removed - now handled by useDebouncing
       expect(newState.lastScrollTime).toBeGreaterThanOrEqual(before)
       expect(newState.lastScrollTime).toBeLessThanOrEqual(after)
     })
 
     it('should end scrolling', () => {
-      const state = { ...createInitialState(), isScrolling: true }
+      const state = createInitialState()
       const newState = scrollReducer(state, scrollActions.endScrolling())
-      expect(newState.isScrolling).toBe(false)
+      // isScrolling removed - handled by useDebouncing
     })
   })
 
@@ -87,7 +86,6 @@ describe('scrollReducer', () => {
       const state = {
         currentIndex: 5,
         isAnimating: true,
-        isScrolling: true,
         lastScrollTime: Date.now(),
         isClient: true,
         pathname: '/test',
@@ -96,7 +94,7 @@ describe('scrollReducer', () => {
       
       expect(newState.currentIndex).toBe(0)
       expect(newState.isAnimating).toBe(false)
-      expect(newState.isScrolling).toBe(false)
+      // isScrolling removed - handled by useDebouncing
       expect(newState.lastScrollTime).toBe(0)
       // These should not be reset
       expect(newState.isClient).toBe(true)
@@ -166,7 +164,6 @@ describe('scrollReducer', () => {
       const state = {
         currentIndex: 5,
         isAnimating: true,
-        isScrolling: true,
         lastScrollTime: Date.now(),
         isClient: true,
         pathname: '/test',
@@ -177,7 +174,7 @@ describe('scrollReducer', () => {
       expect(newState).toEqual(createInitialState())
       expect(newState.currentIndex).toBe(0)
       expect(newState.isAnimating).toBe(false)
-      expect(newState.isScrolling).toBe(false)
+      // isScrolling removed - handled by useDebouncing
       expect(newState.lastScrollTime).toBe(0)
       expect(newState.isClient).toBe(false)
       expect(newState.pathname).toBe(null)

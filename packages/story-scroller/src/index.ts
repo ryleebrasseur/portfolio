@@ -4,6 +4,10 @@ export { StoryScrollerWithErrorBoundary } from './components/StoryScrollerWithEr
 export { StoryScrollerErrorBoundary } from './components/StoryScrollerErrorBoundary'
 export { useStoryScroller } from './hooks/useStoryScroller'
 
+// Debouncing exports
+export { useDebouncing } from './hooks/useDebouncing'
+export type { DebounceConfig, DebounceState, DebugInfo } from './hooks/useDebouncing'
+
 // Context exports
 export { 
   ScrollProvider, 
