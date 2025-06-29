@@ -10,12 +10,14 @@ import { useScrollContext, useScrollActions } from '../context/ScrollContext'
 import { createBrowserService, type IBrowserService } from '../services/BrowserService'
 import { useDebouncing } from '../hooks/useDebouncing'
 
+// TODO: EXTRACT to useScrollManager (lines 13-21)
 // Dynamic import for Lenis to prevent SSR issues
 const initLenis = async () => {
   const Lenis = (await import('lenis')).default
   return Lenis
 }
 
+// TODO: EXTRACT to useScrollManager (lines 19-20)
 // Register GSAP plugins once at module level
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, Observer)
 
@@ -47,6 +49,7 @@ export const StoryScroller: React.FC<StoryScrollerProps> = ({
   const { state, browserService: contextBrowserService } = useScrollContext()
   const actions = useScrollActions()
   
+  // TODO: REPLACE with manager.getDebouncing() after migration
   // Initialize useDebouncing hook for centralized timing control
   const debouncing = useDebouncing({
     navigationCooldown: 200,
@@ -303,6 +306,8 @@ export const StoryScroller: React.FC<StoryScrollerProps> = ({
             }, 100)
           }
           
+          // TODO: EXTRACT to useScrollManager (lines 307-478)
+          // This entire navigation function should be moved to the centralized manager
           // Navigation function
           const gotoSection = (index: number, isExternal: boolean = false, externalFromIndex?: number) => {
             console.log('🧭 gotoSection called:', {
@@ -380,6 +385,7 @@ export const StoryScroller: React.FC<StoryScrollerProps> = ({
               return
             }
             
+            // TODO: EXTRACT to animation-queue.ts calculateAnimationDuration()
             // Calculate dynamic physics-based animation
             const distance = Math.abs(targetY - currentScrollY)
             const viewportHeight = browserService.getInnerHeight()
@@ -480,10 +486,12 @@ export const StoryScroller: React.FC<StoryScrollerProps> = ({
           // Store gotoSection in ref for external access
           gotoSectionRef.current = gotoSection
           
+          // TODO: EXTRACT to useScrollManager physics tracking (lines 484-520)
           // Track wheel events for debugging
           let lastWheelTime = 0
           let wheelEventCount = 0
           
+          // TODO: EXTRACT to useScrollManager magnetic snap logic
           // Start velocity tracking for magnetic effect
           if (enableMagneticSnap) {
             let velocityHistory: number[] = []
@@ -546,6 +554,7 @@ export const StoryScroller: React.FC<StoryScrollerProps> = ({
             }, velocityTrackingRate)
           }
           
+          // TODO: EXTRACT to useScrollManager (lines 557-643)
           // GSAP Observer for scroll/touch input
           const windowTarget = browserService.getWindow()
           if (!windowTarget) return
@@ -634,6 +643,7 @@ export const StoryScroller: React.FC<StoryScrollerProps> = ({
             },
           })
           
+          // TODO: EXTRACT to useScrollManager (lines 645-693)
           // Keyboard navigation
           if (keyboardNavigation) {
             const handleKeydown = (e: Event) => {
@@ -692,6 +702,7 @@ export const StoryScroller: React.FC<StoryScrollerProps> = ({
       
       setupScroll()
       
+      // TODO: EXTRACT to useScrollManager cleanup (lines 704-750)
       // Cleanup function
       return () => {
         console.log('🧹 StoryScroller cleanup starting - resetting initialization flag')
