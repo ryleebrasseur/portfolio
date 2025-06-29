@@ -1,8 +1,21 @@
+@import './styles/z-index.css';
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  cursor: none !important;
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 :root {
@@ -97,6 +110,9 @@
 
 html {
   scroll-behavior: auto;
+  /* Prevent iOS bounce and ensure smooth scrolling */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
 }
 
 body {
@@ -109,6 +125,24 @@ body {
   transition:
     background-color 0.3s ease,
     color 0.3s ease;
+  /* Mobile-specific fixes */
+  position: relative;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Fix for mobile viewport height */
+@supports (-webkit-touch-callout: none) {
+  /* iOS only */
+  body {
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* Prevent overscroll on mobile */
+html,
+body {
+  overscroll-behavior-y: none;
 }
 
 main {

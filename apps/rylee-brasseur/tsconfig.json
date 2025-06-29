@@ -3,13 +3,16 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "react",
-    "paths": {
-      "@ryleebrasseur/shared-types": ["../../packages/shared-types"]
-    }
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
   },
   "include": ["src", "e2e"],
   "references": [
     { "path": "./tsconfig.node.json" },
-    { "path": "../../packages/shared-types" }
+    { "path": "../../packages/shared-types" },
+    { "path": "../../packages/motion-system" },
+    { "path": "../../packages/shared-utils" },
+    { "path": "../../packages/dev-tools" }
   ]
 }

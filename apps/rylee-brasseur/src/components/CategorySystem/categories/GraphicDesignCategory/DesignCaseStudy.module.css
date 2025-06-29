@@ -1,0 +1,22 @@
+.caseStudyContainer {
+  padding: 2rem;
+  text-align: center;
+}
+
+.projectList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+.projectCard {
+  padding: 2rem;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  transition: transform 0.3s ease;
+}
+
+.projectCard:hover {
+  transform: translateY(-5px);
+}

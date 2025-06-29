@@ -7,18 +7,23 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     }
+  },
+  "engines": {
+    "node": ">=20.17.0"
   },
   "scripts": {
     "build": "tsc",
+    "clean": "rimraf dist tsconfig.tsbuildinfo .turbo",
     "dev": "tsc --watch",
-    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@ryleebrasseur/shared-types": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.8.3"
+    "typescript": "5.8.3"
   }
 }

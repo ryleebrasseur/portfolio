@@ -20,7 +20,6 @@ export const useCustomScroll = (): MutableRefObject<ScrollData> => {
 
   useEffect(() => {
     // DISABLED: MotionProvider handles Lenis setup to avoid conflicts
-    console.log('[useCustomScroll] Using MotionProvider Lenis instead')
     return
 
     const lenis = new Lenis({

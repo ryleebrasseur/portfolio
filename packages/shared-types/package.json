@@ -3,9 +3,25 @@
   "version": "1.0.0",
   "type": "module",
   "private": true,
-  "main": "index.ts",
-  "types": "index.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "engines": {
+    "node": ">=20.17.0"
+  },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "clean": "rimraf dist tsconfig.tsbuildinfo .turbo",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "5.8.3"
   }
 }

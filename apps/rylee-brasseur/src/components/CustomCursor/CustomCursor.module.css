@@ -5,7 +5,7 @@
   border: 1.5px solid var(--text-primary);
   border-radius: 50%;
   pointer-events: none;
-  z-index: 99999;
+  z-index: var(--z-cursor);
   transition:
     width 0.2s ease,
     height 0.2s ease,
@@ -37,7 +37,7 @@
   background-color: var(--text-primary);
   border-radius: 50%;
   pointer-events: none;
-  z-index: 99999;
+  z-index: var(--z-cursor);
   opacity: 0.9;
   will-change: transform;
 }

@@ -71,12 +71,14 @@ export const MotionProvider: React.FC<MotionProviderProps> = ({
     globalLenisInitialized = true
     console.log('[MotionProvider] Setting up Lenis smooth scrolling')
 
-    // Initialize Lenis for smooth scrolling
+    // Initialize Lenis for smooth scrolling with mobile-specific settings
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      touchMultiplier: 2,
+      touchMultiplier: 1.5, // Reduced from 2 for better mobile control
       infinite: false,
+      smoothWheel: true,
+      orientation: 'vertical' as const,
     })
 
     lenisRef.current = lenis
@@ -112,6 +114,18 @@ export const MotionProvider: React.FC<MotionProviderProps> = ({
     // Modern Lenis + GSAP integration (no scrollerProxy needed)
     lenis.on('scroll', ScrollTrigger.update)
 
+    // Configure ScrollTrigger for mobile
+    ScrollTrigger.config({
+      ignoreMobileResize: true, // Prevent resize on mobile keyboard
+      syncInterval: 40, // Sync more frequently on mobile
+      autoRefreshEvents: 'visibilitychange,DOMContentLoaded,load,resize', // Auto refresh on these events
+    })
+
+    // Mobile-specific ScrollTrigger normalization
+    if ('ontouchstart' in window) {
+      ScrollTrigger.normalizeScroll(true)
+    }
+
     const update = (time: number) => {
       lenis.raf(time * 1000) // Convert seconds to milliseconds
     }
@@ -126,7 +140,12 @@ export const MotionProvider: React.FC<MotionProviderProps> = ({
 
     window.addEventListener('resize', handleResize)
     ScrollTrigger.addEventListener('refresh', () => lenis.resize())
-    ScrollTrigger.refresh()
+
+    // Delay initial refresh to ensure all components are mounted
+    setTimeout(() => {
+      ScrollTrigger.refresh(true) // Force refresh
+      console.log('[MotionProvider] Initial ScrollTrigger refresh completed')
+    }, 250)
 
     // Handle page visibility for performance
     const handleVisibilityChange = () => {

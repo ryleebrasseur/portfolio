@@ -14,22 +14,27 @@
     }
   },
   "scripts": {
-    "type-check": "tsc --noEmit"
+    "build": "tsc",
+    "clean": "rimraf dist tsconfig.tsbuildinfo .turbo",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
-    "@studio-freight/lenis": "^1.0.42",
+    "lenis": "^1.3.4",
     "framer-motion": "^11.0.24",
     "gsap": "^3.12.5",
-    "react": "^18.2.0",
+    "react": "18.2.0",
     "@ryleebrasseur/shared-types": "workspace:*"
   },
+  "engines": {
+    "node": ">=20.17.0"
+  },
   "devDependencies": {
-    "@types/react": "^18.2.66",
-    "typescript": "^5.8.3"
+    "@types/react": "18.2.79",
+    "typescript": "5.8.3"
   },
   "peerDependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
   }
 }

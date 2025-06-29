@@ -1,0 +1,76 @@
+{
+  "name": "@ryleebrasseur/story-scroller",
+  "version": "0.0.1",
+  "description": "Production-ready React scroll-snapping component using GSAP and Lenis",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./styles": {
+      "import": "./dist/styles/index.css"
+    }
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "dependencies": {
+    "@gsap/react": "^2.1.1",
+    "gsap": "^3.12.5",
+    "lenis": "^1.1.19"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/react": "^14.2.2",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "@vitest/coverage-v8": "^1.4.0",
+    "@vitest/ui": "^1.4.0",
+    "happy-dom": "^18.0.1",
+    "jsdom": "^24.0.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.8.3",
+    "vitest": "^1.4.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT",
+  "author": "Rylee Brasseur",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ryleebrasseur/portfolio.git",
+    "directory": "packages/story-scroller"
+  },
+  "keywords": [
+    "react",
+    "scroll",
+    "smooth-scroll",
+    "gsap",
+    "lenis",
+    "animation",
+    "scroll-snapping",
+    "nextjs"
+  ]
+}

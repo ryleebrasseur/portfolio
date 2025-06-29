@@ -1,90 +1,265 @@
-name: Deploy to GitHub Pages
+# Deployment Workflow
+# Deploys applications to staging/production environments
+name: Deploy
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - staging
   workflow_dispatch:
     inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
       app:
-        description: 'App to deploy'
+        description: 'App to deploy (leave empty for all)'
         required: false
         type: string
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: 'pages'
-  cancel-in-progress: false
-
 env:
-  # Skip Git hooks in CI environment
-  HUSKY: 0
-  # Set default app or use input/env var
-  DEPLOY_APP: ${{ github.event.inputs.app || vars.DEFAULT_APP || 'rylee-brasseur' }}
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
 
 jobs:
-  build:
+  # Determine what to deploy
+  prepare:
+    name: Prepare Deployment
     runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.env.outputs.environment }}
+      apps: ${{ steps.apps.outputs.apps }}
+      deploy_all: ${{ steps.apps.outputs.deploy_all }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
         with:
-          version: 9.12.0
+          fetch-depth: 2
+
+      - name: Determine environment
+        id: env
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "environment=${{ inputs.environment }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+          else
+            echo "environment=staging" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Determine apps to deploy
+        id: apps
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "${{ inputs.app }}" ]; then
+            echo "apps=${{ inputs.app }}" >> $GITHUB_OUTPUT
+            echo "deploy_all=false" >> $GITHUB_OUTPUT
+          else
+            # Get all apps that have changed
+            CHANGED_APPS=$(git diff --name-only HEAD~1 HEAD | grep '^apps/' | cut -d'/' -f2 | sort -u | tr '\n' ' ')
+            if [ -z "$CHANGED_APPS" ]; then
+              # No app changes, deploy all
+              echo "apps=*" >> $GITHUB_OUTPUT
+              echo "deploy_all=true" >> $GITHUB_OUTPUT
+            else
+              echo "apps=$CHANGED_APPS" >> $GITHUB_OUTPUT
+              echo "deploy_all=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+  # Build and test before deployment
+  build:
+    name: Build for ${{ needs.prepare.outputs.environment }}
+    runs-on: ubuntu-latest
+    needs: prepare
+    strategy:
+      matrix:
+        app: ${{ fromJson(needs.prepare.outputs.deploy_all == 'true' && '["rylee-brasseur"]' || format('[{0}]', needs.prepare.outputs.apps)) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20.17.0'
-          cache: 'pnpm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-deploy-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-deploy-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Set deployment environment variables
+      - name: Build app
         run: |
-          # Check for repository variable for custom domain
-          if [ -n "${{ vars.CUSTOM_DOMAIN }}" ]; then
-            echo "CUSTOM_DOMAIN=${{ vars.CUSTOM_DOMAIN }}" >> $GITHUB_ENV
-            echo "VITE_BASE_PATH=/" >> $GITHUB_ENV
-            echo "Using configured custom domain: ${{ vars.CUSTOM_DOMAIN }}"
-            echo "Setting base path to root (/)"
-          else
-            # Default to root deployment
-            echo "CUSTOM_DOMAIN=" >> $GITHUB_ENV
-            echo "VITE_BASE_PATH=/" >> $GITHUB_ENV
-            echo "No custom domain configured"
-            echo "Setting base path to root (/)"
-          fi
-
-      - name: Build
-        run: pnpm build --filter=${{ env.DEPLOY_APP }}
+          cd apps/${{ matrix.app }}
+          pnpm build
         env:
           NODE_ENV: production
+          VITE_ENV: ${{ needs.prepare.outputs.environment }}
+          # TODO: Add environment-specific variables
+          # VITE_API_URL: ${{ secrets[format('VITE_API_URL_{0}', needs.prepare.outputs.environment)] }}
 
-      - name: Create CNAME file for custom domain
-        if: env.CUSTOM_DOMAIN != ''
+      - name: Run smoke tests
         run: |
-          echo "${{ env.CUSTOM_DOMAIN }}" > ./apps/${{ env.DEPLOY_APP }}/dist/CNAME
-          echo "Created CNAME file with domain: ${{ env.CUSTOM_DOMAIN }}"
+          cd apps/${{ matrix.app }}
+          # TODO: Add smoke test command
+          echo "TODO: Add smoke tests"
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
         with:
-          path: ./apps/${{ env.DEPLOY_APP }}/dist
+          name: ${{ matrix.app }}-build-${{ needs.prepare.outputs.environment }}
+          path: apps/${{ matrix.app }}/dist/
+          retention-days: 7
 
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  # Deploy to Vercel
+  deploy-vercel:
+    name: Deploy to Vercel
     runs-on: ubuntu-latest
-    needs: build
+    needs: [prepare, build]
+    if: contains('["rylee-brasseur"]', needs.prepare.outputs.apps)
+    strategy:
+      matrix:
+        app: ${{ fromJson(needs.prepare.outputs.deploy_all == 'true' && '["rylee-brasseur"]' || format('[{0}]', needs.prepare.outputs.apps)) }}
+    environment:
+      name: ${{ needs.prepare.outputs.environment }}
+      url: ${{ steps.deploy.outputs.url }}
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.app }}-build-${{ needs.prepare.outputs.environment }}
+          path: apps/${{ matrix.app }}/dist/
+
+      - name: Deploy to Vercel
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets[format('VERCEL_PROJECT_ID_{0}', matrix.app)] }}
+          vercel-args: ${{ needs.prepare.outputs.environment == 'production' && '--prod' || '' }}
+          working-directory: apps/${{ matrix.app }}
+
+      - name: Comment deployment URL
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `Deployed ${{ matrix.app }} to ${{ needs.prepare.outputs.environment }}: ${{ steps.deploy.outputs.url }}`
+            })
+
+  # Deploy to Netlify (alternative)
+  deploy-netlify:
+    name: Deploy to Netlify
+    runs-on: ubuntu-latest
+    needs: [prepare, build]
+    if: false # Enable when needed
+    strategy:
+      matrix:
+        app: ${{ fromJson(needs.prepare.outputs.deploy_all == 'true' && '["rylee-brasseur"]' || format('[{0}]', needs.prepare.outputs.apps)) }}
+    environment:
+      name: ${{ needs.prepare.outputs.environment }}
+      url: ${{ steps.deploy.outputs.deploy-url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.app }}-build-${{ needs.prepare.outputs.environment }}
+          path: apps/${{ matrix.app }}/dist/
+
+      - name: Deploy to Netlify
+        id: deploy
+        uses: nwtgck/actions-netlify@v3
+        with:
+          publish-dir: apps/${{ matrix.app }}/dist/
+          production-branch: main
+          production-deploy: ${{ needs.prepare.outputs.environment == 'production' }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: 'Deploy ${{ matrix.app }} from GitHub Actions'
+          enable-pull-request-comment: true
+          enable-commit-comment: false
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets[format('NETLIFY_SITE_ID_{0}', matrix.app)] }}
+
+  # Post-deployment checks
+  post-deploy:
+    name: Post-deployment Checks
+    runs-on: ubuntu-latest
+    needs: [prepare, deploy-vercel]
+    if: always()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # TODO: Add Lighthouse CI checks
+      # - name: Run Lighthouse CI
+      #   uses: treosh/lighthouse-ci-action@v11
+      #   with:
+      #     urls: ${{ needs.deploy-vercel.outputs.url }}
+      #     uploadArtifacts: true
+      #     temporaryPublicStorage: true
+
+      # TODO: Add uptime monitoring setup
+      # - name: Setup uptime monitoring
+      #   run: |
+      #     echo "TODO: Configure uptime monitoring"
+
+      - name: Notify deployment
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: |
+            Deployment to ${{ needs.prepare.outputs.environment }} ${{ job.status }}
+            Apps: ${{ needs.prepare.outputs.apps }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true
+
+  # Rollback mechanism
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    needs: [prepare, deploy-vercel, post-deploy]
+    if: failure() && needs.prepare.outputs.environment == 'production'
+    steps:
+      - name: Trigger rollback
+        run: |
+          echo "TODO: Implement rollback mechanism"
+          # This would typically:
+          # 1. Revert to previous deployment
+          # 2. Notify team
+          # 3. Create incident ticket

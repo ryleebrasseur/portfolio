@@ -16,7 +16,6 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  console.log('ProjectDetailModal render:', { project, isOpen })
   const modalRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -48,8 +47,6 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
   }, [])
 
   useEffect(() => {
-    console.log('Modal isOpen changed:', isOpen, 'project:', project?.title)
-
     if (isOpen) {
       // Prevent background scrolling
       document.body.style.overflow = 'hidden'

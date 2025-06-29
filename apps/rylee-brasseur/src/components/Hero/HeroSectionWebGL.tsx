@@ -1,5 +1,7 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
+import { useGSAP } from '@gsap/react'
+import { animateTo, animateFrom, debounce } from '../../utils/animation'
 import { KineticPhone } from '../KineticPhone'
 import { useMotion } from '@ryleebrasseur/motion-system'
 import siteConfig from '../../config/site-config'
@@ -13,6 +15,7 @@ const HeroSectionWebGL = () => {
   const institutionRef = useRef<HTMLParagraphElement>(null)
   const emailRef = useRef<HTMLAnchorElement>(null)
   const contactRef = useRef<HTMLDivElement>(null)
+  const [showScrollIndicator, setShowScrollIndicator] = useState(true)
 
   // Register elements with motion system after DOM is ready
   useEffect(() => {
@@ -29,88 +32,103 @@ const HeroSectionWebGL = () => {
     return () => cancelAnimationFrame(raf)
   }, [registerElement])
 
+  // Hide scroll indicator after user scrolls (debounced for performance)
   useEffect(() => {
+    const handleScroll = debounce(() => {
+      if (window.scrollY > 50 && showScrollIndicator) {
+        setShowScrollIndicator(false)
+      }
+    }, 16) // ~60fps debouncing
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [showScrollIndicator])
+
+  useGSAP(() => {
     if (!containerRef.current) return
 
-    const ctx = gsap.context(() => {
-      // Magnetic hover effect for email link
-      const magneticElements =
-        containerRef.current!.querySelectorAll('[data-magnetic]')
+    const cleanupFunctions: (() => void)[] = []
 
-      magneticElements.forEach((el) => {
-        const element = el as HTMLElement
+    // Magnetic hover effect for email link
+    const magneticElements =
+      containerRef.current.querySelectorAll('[data-magnetic]')
 
-        const handleMouseMove = (e: MouseEvent) => {
-          const rect = element.getBoundingClientRect()
-          const x = e.clientX - rect.left - rect.width / 2
-          const y = e.clientY - rect.top - rect.height / 2
+    magneticElements.forEach((el) => {
+      const element = el as HTMLElement
 
-          gsap.to(element, {
-            x: x * 0.3,
-            y: y * 0.3,
-            duration: 0.3,
-            ease: 'power2.out',
-          })
-        }
+      const handleMouseMove = (e: MouseEvent) => {
+        const rect = element.getBoundingClientRect()
+        const x = e.clientX - rect.left - rect.width / 2
+        const y = e.clientY - rect.top - rect.height / 2
 
-        const handleMouseLeave = () => {
-          gsap.to(element, {
-            x: 0,
-            y: 0,
-            duration: 0.3,
-            ease: 'power2.out',
-          })
-        }
+        animateTo(element, {
+          x: x * 0.3,
+          y: y * 0.3,
+          duration: 0.3,
+          ease: 'power2.out',
+        })
+      }
 
-        element.addEventListener('mousemove', handleMouseMove)
-        element.addEventListener('mouseleave', handleMouseLeave)
+      const handleMouseLeave = () => {
+        animateTo(element, {
+          x: 0,
+          y: 0,
+          duration: 0.3,
+          ease: 'power2.out',
+        })
+      }
 
-        // Cleanup
-        return () => {
-          element.removeEventListener('mousemove', handleMouseMove)
-          element.removeEventListener('mouseleave', handleMouseLeave)
-        }
+      element.addEventListener('mousemove', handleMouseMove)
+      element.addEventListener('mouseleave', handleMouseLeave)
+
+      // Store cleanup function
+      cleanupFunctions.push(() => {
+        element.removeEventListener('mousemove', handleMouseMove)
+        element.removeEventListener('mouseleave', handleMouseLeave)
       })
+    })
 
-      // Animate hero content on load
-      gsap.from('.heroTitle', {
-        y: 50,
-        opacity: 0,
-        duration: 1,
-        ease: 'power3.out',
-        delay: 0.2,
-      })
+    // Animate hero content on load
+    animateFrom('.heroTitle', {
+      y: 50,
+      opacity: 0,
+      duration: 1,
+      ease: 'power3.out',
+      delay: 0.2,
+    })
 
-      gsap.from('.heroSubtitle, .heroInstitution', {
-        y: 30,
-        opacity: 0,
-        duration: 1,
-        stagger: 0.1,
-        ease: 'power3.out',
-        delay: 0.4,
-      })
+    animateFrom('.heroSubtitle, .heroInstitution', {
+      y: 30,
+      opacity: 0,
+      duration: 1,
+      stagger: 0.1,
+      ease: 'power3.out',
+      delay: 0.4,
+    })
 
-      gsap.from('.heroContact', {
-        y: 20,
-        opacity: 0,
-        duration: 1,
-        ease: 'power3.out',
-        delay: 0.7,
-      })
+    animateFrom('.heroContact', {
+      y: 20,
+      opacity: 0,
+      duration: 1,
+      ease: 'power3.out',
+      delay: 0.7,
+    })
 
-      // Animate scroll indicator
-      gsap.to('.scrollLine', {
-        scaleY: 0,
-        transformOrigin: 'top',
-        duration: 2,
-        ease: 'power2.inOut',
-        repeat: -1,
-        yoyo: true,
-      })
-    }, containerRef)
+    // Animate scroll indicator
+    animateTo('.scrollLine', {
+      scaleY: 0,
+      transformOrigin: 'top',
+      duration: 2,
+      ease: 'power2.inOut',
+      repeat: -1,
+      yoyo: true,
+    })
 
-    return () => ctx.revert()
-  }, [])
+    // Return cleanup function for useGSAP
+    return () => {
+      cleanupFunctions.forEach((cleanup) => cleanup())
+    }
+  }, { scope: containerRef })
 
   return (
     <div ref={containerRef} className={styles.heroContainer}>
@@ -128,10 +146,7 @@ const HeroSectionWebGL = () => {
           {siteConfig.hero.institution}
         </p>
         <div ref={contactRef} className={`${styles.heroContact} heroContact`}>
-          <KineticPhone
-            className={styles.contactPhone}
-            phoneNumber={siteConfig.hero.phoneNumber}
-          />
+          <KineticPhone className={styles.contactPhone} />
           <span className={styles.contactDivider}>|</span>
           <a
             ref={emailRef}
@@ -144,13 +159,15 @@ const HeroSectionWebGL = () => {
         </div>
       </div>
 
-      <div className={styles.scrollIndicator}>
-        <span className={styles.scrollTextDesktop}>
-          Scroll / Drag to explore
-        </span>
-        <span className={styles.scrollTextMobile}>Swipe to explore</span>
-        <div className={`${styles.scrollLine} scrollLine`}></div>
-      </div>
+      {showScrollIndicator && (
+        <div className={styles.scrollIndicator}>
+          <span className={styles.scrollTextDesktop}>
+            Scroll / Drag to explore
+          </span>
+          <span className={styles.scrollTextMobile}>Swipe to explore</span>
+          <div className={`${styles.scrollLine} scrollLine`}></div>
+        </div>
+      )}
     </div>
   )
 }

@@ -188,12 +188,12 @@ export const HeroToContactHeaderOrchestrator: React.FC<
         if (headerName) {
           gsap.set(headerName, {
             fontFamily: 'var(--font-heading)',
-            fontSize: 'clamp(1.5rem, 3vw, 2rem)',
+            fontSize: 'clamp(1.25rem, 2vw, 1.75rem)',
             fontWeight: 700,
             margin: 0,
             letterSpacing: '-0.02em',
             lineHeight: 1,
-            textTransform: 'lowercase',
+            textTransform: 'uppercase',
             color: 'var(--text-primary)',
           })
         }
@@ -264,11 +264,11 @@ export const HeroToContactHeaderOrchestrator: React.FC<
           transition: opacity 0.3s ease;
         `
 
-          // Use the actual phone number from config for the stages
-          const stages = [
+          // Use the actual phone stages from config
+          const stages = siteConfig.hero.phoneStages || [
             siteConfig.hero.phoneNumber,
-            '517 4-RYLEE',
-            'MSU @ RYLEE ',
+            '332 AT-RYLEE',
+            'NYC @ RYLEE ',
           ]
           let currentStage = 0
 
@@ -319,7 +319,7 @@ export const HeroToContactHeaderOrchestrator: React.FC<
             const newText = stages[currentStage]
             const flippers = phoneLink.querySelectorAll('.flipper')
 
-            newText.split('').forEach((char, index) => {
+            newText.split('').forEach((char: string, index: number) => {
               if (flippers[index]) {
                 const flipper = flippers[index] as HTMLElement
                 const prevChar = prevText[index]
@@ -476,6 +476,9 @@ export const HeroToContactHeaderOrchestrator: React.FC<
           type: 'wheel,touch,pointer',
           preventDefault: true,
           wheelSpeed: -1,
+          dragMinimum: 5, // Minimum drag distance for mobile
+          tolerance: 10, // Add tolerance for accidental touches
+          lockAxis: true, // Lock to vertical axis on mobile
           onUp: () => {
             console.log('[Observer] Scroll DOWN detected:', {
               scrollY: window.scrollY,
@@ -510,7 +513,6 @@ export const HeroToContactHeaderOrchestrator: React.FC<
             }
             gotoSection(currentIndexRef.current - 1, -1)
           },
-          tolerance: 10,
           debounce: true, // Prevent rapid firing
         })
         console.log('[HeroToContactHeader] Observer created successfully')

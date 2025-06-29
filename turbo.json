@@ -1,25 +1,19 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["**/.env.*local"],
   "pipeline": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**", ".next/**"],
+      "env": ["NODE_ENV"]
+    },
+    "clean": {
+      "cache": false
     },
     "dev": {
       "cache": false,
-      "persistent": true
-    },
-    "test": {
-      "outputs": ["coverage/**"],
-      "cache": true
-    },
-    "test:e2e": {
-      "outputs": ["test-results/**", "playwright-report/**"],
-      "cache": false
-    },
-    "test:unit": {
-      "outputs": ["coverage/**"],
-      "cache": true
+      "persistent": true,
+      "env": ["NODE_ENV", "PORT"]
     },
     "lint": {
       "outputs": [".eslintcache"],
@@ -29,9 +23,32 @@
       "outputs": [".eslintcache"],
       "cache": false
     },
+    "test": {
+      "dependsOn": ["build"],
+      "outputs": ["coverage/**"],
+      "cache": true,
+      "env": ["CI"]
+    },
+    "test:coverage": {
+      "dependsOn": ["test:unit"],
+      "outputs": ["coverage/**"],
+      "cache": true
+    },
+    "test:e2e": {
+      "dependsOn": ["build"],
+      "outputs": ["test-results/**", "playwright-report/**"],
+      "cache": false,
+      "env": ["CI", "PLAYWRIGHT_*"]
+    },
+    "test:unit": {
+      "outputs": ["coverage/**"],
+      "cache": true,
+      "env": ["CI"]
+    },
     "typecheck": {
       "dependsOn": ["^build"],
-      "outputs": []
+      "outputs": ["tsconfig.tsbuildinfo"],
+      "cache": true
     }
   }
 }

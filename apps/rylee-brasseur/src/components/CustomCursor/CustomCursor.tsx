@@ -13,6 +13,16 @@ const CustomCursor: React.FC = () => {
   const [isClicking, setIsClicking] = useState(false)
   const position = useRef<Position>({ x: 0, y: 0 })
   const magnetTargets = useRef<NodeListOf<Element> | null>(null)
+  const lastUpdateTime = useRef<number>(0)
+  const rafId = useRef<number>(0)
+
+  // Check for reduced motion preference
+  const prefersReducedMotion = window.matchMedia(
+    '(prefers-reduced-motion: reduce)'
+  ).matches
+
+  // Allow users to disable custom cursor for accessibility
+  const isDisabled = localStorage.getItem('disableCustomCursor') === 'true'
 
   useEffect(() => {
     const cursor = cursorRef.current
@@ -25,8 +35,6 @@ const CustomCursor: React.FC = () => {
     // Initialize magnetic targets
     magnetTargets.current = document.querySelectorAll('[data-magnetic]')
 
-    let rafId: number
-
     const updateCursor = () => {
       // Use transform for better performance
       cursor.style.transform = `translate3d(${position.current.x}px, ${position.current.y}px, 0) translate(-50%, -50%)`
@@ -36,7 +44,19 @@ const CustomCursor: React.FC = () => {
     const onMouseMove = (e: MouseEvent) => {
       position.current = { x: e.clientX, y: e.clientY }
 
-      // Direct update for instant response
+      // Throttle updates to 60fps (16.67ms)
+      const now = Date.now()
+      if (now - lastUpdateTime.current < 16) {
+        if (!rafId.current) {
+          rafId.current = requestAnimationFrame(() => {
+            updateCursor()
+            rafId.current = 0
+          })
+        }
+        return
+      }
+
+      lastUpdateTime.current = now
       updateCursor()
     }
 
@@ -97,15 +117,22 @@ const CustomCursor: React.FC = () => {
       document.removeEventListener('mouseup', onMouseUp)
       document.removeEventListener('mouseenter', onMouseEnterWindow)
       document.removeEventListener('mouseleave', onMouseLeaveWindow)
-      if (rafId) cancelAnimationFrame(rafId)
+      if (rafId.current) cancelAnimationFrame(rafId.current)
     }
   }, [])
 
-  // Check for reduced motion preference
-  const prefersReducedMotion = window.matchMedia(
-    '(prefers-reduced-motion: reduce)'
-  ).matches
-  if (prefersReducedMotion) return null
+  // Ensure cursor is restored for reduced motion or disabled states
+  useEffect(() => {
+    if (prefersReducedMotion || isDisabled) {
+      document.body.style.cursor = 'auto'
+      return () => {
+        document.body.style.cursor = 'auto'
+      }
+    }
+  }, [prefersReducedMotion, isDisabled])
+
+  // Don't render if disabled or reduced motion is preferred
+  if (isDisabled || prefersReducedMotion) return null
 
   return (
     <>

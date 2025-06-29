@@ -1,0 +1,72 @@
+{
+  "versionGroups": [
+    {
+      "label": "Ensure React version consistency",
+      "packages": ["**"],
+      "dependencies": ["react", "react-dom"],
+      "dependencyTypes": ["prod", "dev", "peer"]
+    },
+    {
+      "label": "Ensure TypeScript version consistency",
+      "packages": ["**"],
+      "dependencies": ["typescript"],
+      "dependencyTypes": ["dev"]
+    },
+    {
+      "label": "Ensure GSAP version consistency",
+      "packages": ["**"],
+      "dependencies": ["gsap", "@gsap/react"],
+      "dependencyTypes": ["prod", "dev"]
+    },
+    {
+      "label": "Ensure Three.js ecosystem consistency",
+      "packages": ["**"],
+      "dependencies": [
+        "three",
+        "@react-three/fiber",
+        "@react-three/drei",
+        "@types/three"
+      ],
+      "dependencyTypes": ["prod", "dev"]
+    },
+    {
+      "label": "Ensure Lenis version consistency",
+      "packages": ["**"],
+      "dependencies": ["lenis", "@studio-freight/lenis", "@darkroom/lenis"],
+      "dependencyTypes": ["prod", "dev"]
+    },
+    {
+      "label": "Ensure type definitions consistency",
+      "packages": ["**"],
+      "dependencies": ["@types/node", "@types/react", "@types/react-dom"],
+      "dependencyTypes": ["dev"]
+    }
+  ],
+  "semverGroups": [
+    {
+      "label": "Use exact versions for critical dependencies",
+      "range": "",
+      "dependencies": [
+        "react",
+        "react-dom",
+        "typescript",
+        "vite",
+        "turbo",
+        "three",
+        "@react-three/fiber",
+        "@react-three/drei"
+      ],
+      "packages": ["**"]
+    }
+  ],
+  "sortFirst": [
+    "name",
+    "version",
+    "private",
+    "type",
+    "description",
+    "author",
+    "license"
+  ],
+  "sortAz": ["dependencies", "devDependencies", "peerDependencies", "scripts"]
+}

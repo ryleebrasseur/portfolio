@@ -1,0 +1,35 @@
+/**
+ * Z-index scale for consistent layering
+ * 
+ * Usage: Use CSS custom properties instead of hardcoded values
+ * Example: z-index: var(--z-dropdown);
+ */
+
+:root {
+  /* Base layers */
+  --z-base: 0;
+  --z-below: -1;
+
+  /* Interactive elements */
+  --z-hover: 10; /* Hover states, floating elements */
+  --z-dropdown: 20; /* Dropdowns, tooltips */
+  --z-sticky: 30; /* Sticky headers, navs */
+
+  /* Overlays */
+  --z-overlay: 40; /* Semi-transparent overlays */
+  --z-modal: 50; /* Modals, dialogs */
+  --z-popover: 60; /* Popovers on top of modals */
+
+  /* System UI */
+  --z-notification: 70; /* Toast notifications */
+  --z-cursor: 90; /* Custom cursor */
+  --z-critical: 9999; /* Error boundaries, critical UI */
+
+  /* Specific components */
+  --z-header: var(--z-sticky);
+  --z-nav: var(--z-sticky);
+  --z-control-panel: var(--z-modal);
+  --z-project-modal: var(--z-modal);
+  --z-category-launcher: var(--z-modal);
+  --z-theme-selector: var(--z-dropdown);
+}

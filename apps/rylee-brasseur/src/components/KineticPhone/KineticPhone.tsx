@@ -1,34 +1,28 @@
 import { useRef, useState, useEffect, useMemo } from 'react'
 import { gsap } from 'gsap'
+import { useGSAP } from '@gsap/react'
+import siteConfig from '../../config/site-config'
 import styles from './KineticPhone.module.css'
 
 interface KineticPhoneProps {
   className?: string
-  phoneNumber: string
 }
 
-export const KineticPhone = ({ className, phoneNumber }: KineticPhoneProps) => {
+export const KineticPhone = ({ className }: KineticPhoneProps) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const [currentStage, setCurrentStage] = useState(0)
   const flipInterval = useRef<NodeJS.Timeout>()
 
-  // Extract area code from phone number and create dynamic stages
-  const stages = useMemo(() => {
-    // Format phone number to standard format (assuming US format)
-    const cleaned = phoneNumber.replace(/\D/g, '')
-    const formatted = cleaned.replace(/^(\d{3})(\d{3})(\d{4})$/, '$1.$2.$3')
-
-    // Extract area code for creative display
-    const areaCode = cleaned.substring(0, 3)
-
-    // Create stages that maintain exact character positions
-    // Each stage must be exactly the same length
-    const stage1 = formatted // e.g., "517.449.9836"
-    const stage2 = `${areaCode} AT-RYLEE` // e.g., "517 AT-RYLEE"
-    const stage3 = `MSU @ RYLEE ` // Institution-based stage
-
-    return [stage1, stage2, stage3]
-  }, [phoneNumber])
+  // Use stages from config
+  const stages = useMemo(
+    () =>
+      siteConfig.hero.phoneStages || [
+        '332.287.9533',
+        '332 AT-RYLEE',
+        'NYC @ RYLEE ',
+      ],
+    []
+  )
 
   // Auto-flip animation
   useEffect(() => {
@@ -42,11 +36,9 @@ export const KineticPhone = ({ className, phoneNumber }: KineticPhoneProps) => {
   }, [stages.length])
 
   // Flip animation
-  useEffect(() => {
-    if (!containerRef.current) return
-
-    const container = containerRef.current
-    const flippers = container.querySelectorAll(`.${styles.flipper}`)
+  useGSAP(() => {
+    const flippers = containerRef.current?.querySelectorAll(`.${styles.flipper}`)
+    if (!flippers) return
 
     flippers.forEach((flipper, index) => {
       const currentChar = stages[currentStage][index]
@@ -74,10 +66,10 @@ export const KineticPhone = ({ className, phoneNumber }: KineticPhoneProps) => {
         })
       }
     })
-  }, [currentStage, stages])
+  }, { scope: containerRef, dependencies: [currentStage, stages] })
 
   // Clean phone number for tel: link
-  const cleanedPhoneNumber = phoneNumber.replace(/\D/g, '')
+  const cleanedPhoneNumber = siteConfig.hero.phoneNumber.replace(/\D/g, '')
 
   return (
     <div
