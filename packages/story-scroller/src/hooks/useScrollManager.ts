@@ -1,388 +1,499 @@
-import { useRef, useCallback, useEffect } from 'react'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
-import { Observer } from 'gsap/Observer'
-import { useGSAP } from '@gsap/react'
-import type { LenisInstance, ObserverInstance } from '../types/internal'
-import { useDebouncing } from './useDebouncing'
+/**
+ * @fileoverview The definitive, centralized scroll management hook.
+ * This hook is the single source of truth for all scroll-related state,
+ * animations, and user input. It orchestrates Lenis, GSAP, and Observer
+ * to create a stable and predictable scroll experience.
+ */
 
-// Register GSAP plugins
-gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, Observer)
+import { useRef, useCallback, useEffect } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
+import { Observer } from 'gsap/Observer';
+import type { 
+  ScrollManagerAPI, 
+  ScrollManagerConfig, 
+  AnimationControllers,
+  NavigationOptions,
+  ScrollState 
+} from '../types/scroll-manager';
+import { useScrollContext, useScrollActions } from '../context/ScrollContext';
+import { IBrowserService, createBrowserService } from '../services/BrowserService';
+import { createAnimationQueue, calculateAnimationDuration, shouldInterruptAnimation } from '../utils/animation-queue';
+import { forceSync, emergencyReset, verifyState, checkStuckAnimation, getDiagnosticReport } from '../utils/scroll-sync';
+import { TIMING, PHYSICS, EASING_FUNCTIONS, POSITION_TOLERANCE, SCROLLTRIGGER_CONFIG, DEBUG_CONFIG } from '../constants/scroll-physics';
 
-// Dynamic import for Lenis
+// Register GSAP plugins once at module level
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, Observer);
+
+// Dynamic import for Lenis to prevent SSR issues
 const initLenis = async () => {
-  const Lenis = (await import('lenis')).default
-  return Lenis
-}
-
-export interface ScrollManagerConfig {
-  sections: number
-  duration?: number
-  tolerance?: number
-  touchMultiplier?: number
-  preventDefault?: boolean
-  magneticThreshold?: number
-  magneticVelocityThreshold?: number
-  onSectionChange?: (index: number) => void
-}
-
-export interface ScrollManagerState {
-  currentSection: number
-  targetSection: number | null
-  isAnimating: boolean
-  isScrolling: boolean
-  canNavigate: boolean
-  scrollPosition: number
-  velocity: number
-}
-
-export interface ScrollManagerAPI {
-  gotoSection: (index: number) => void
-  nextSection: () => void
-  prevSection: () => void
-  forceSync: () => void
-  emergency: () => void
-  getState: () => ScrollManagerState
-}
+  const Lenis = (await import('lenis')).default;
+  return new Lenis({
+    lerp: PHYSICS.LENIS_LERP,
+    wheelMultiplier: PHYSICS.LENIS_WHEEL_MULTIPLIER,
+    smoothWheel: true,
+    smoothTouch: false, // Critical: Prevents mobile conflicts
+    touchMultiplier: PHYSICS.TOUCH_MULTIPLIER,
+    infinite: false,
+    orientation: 'vertical',
+    gestureOrientation: 'vertical',
+    duration: PHYSICS.LENIS_DURATION_MULTIPLIER,
+    easing: EASING_FUNCTIONS.DEFAULT,
+  });
+};
 
 /**
- * Centralized scroll manager - single source of truth for all scroll state
- * 
- * TODO: IMPLEMENTATION PLAN
- * 1. Replace stateRef with useScrollState hook
- * 2. Integrate animation queue from utils/animation-queue.ts
- * 3. Use constants from constants/scroll-physics.ts
- * 4. Implement proper error recovery with try/catch blocks
- * 5. Add narrative mode support (currently stubbed)
- * 6. Improve logging with debug levels
- * 7. Add performance monitoring
- * 
- * EXTRACTION TARGETS:
- * - Lines 171-286 of StoryScroller.tsx (Lenis setup)
- * - Lines 307-478 of StoryScroller.tsx (gotoSection logic)
- * - Lines 484-555 of StoryScroller.tsx (velocity tracking)
- * - Lines 557-643 of StoryScroller.tsx (Observer setup)
- * - Lines 645-693 of StoryScroller.tsx (keyboard navigation)
+ * The definitive, centralized scroll management hook.
  */
 export function useScrollManager(config: ScrollManagerConfig): ScrollManagerAPI {
   const {
     sections,
-    duration = 1.2,
-    tolerance = 50,
-    touchMultiplier = 2,
+    duration = PHYSICS.BASE_ANIMATION_DURATION,
+    easing = EASING_FUNCTIONS.DEFAULT,
+    tolerance = PHYSICS.OBSERVER_TOLERANCE,
+    touchMultiplier = PHYSICS.TOUCH_MULTIPLIER,
     preventDefault = true,
-    magneticThreshold = 0.15,
-    magneticVelocityThreshold = 5,
+    invertDirection = false,
+    keyboardNavigation = true,
     onSectionChange,
-  } = config
+    browserService: providedBrowserService,
+    magneticSnap = false,
+    narrativeConfig,
+  } = config;
 
-  // TODO: Replace with useScrollState hook
-  // const scrollState = useScrollState(config)
-  // For now, keep existing implementation
-  const stateRef = useRef<ScrollManagerState>({
-    currentSection: 0,
-    targetSection: null,
-    isAnimating: false,
-    isScrolling: false,
-    canNavigate: true,
-    scrollPosition: 0,
-    velocity: 0,
-  })
-
-  // Animation controllers
-  const controllersRef = useRef<{
-    lenis: LenisInstance | null
-    observer: ObserverInstance | null
-    scrollTween: gsap.core.Tween | null
-    rafId: number | null
-    cleanupFns: (() => void)[]
-  }>({
+  // Core refs
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { state: contextState, dispatch } = useScrollContext();
+  const actions = useScrollActions();
+  
+  // Service and state refs
+  const browserService = useRef<IBrowserService>(providedBrowserService || createBrowserService());
+  const animationQueue = useRef(createAnimationQueue());
+  const controllers = useRef<AnimationControllers>({
     lenis: null,
     observer: null,
     scrollTween: null,
     rafId: null,
-    cleanupFns: [],
-  })
-
-  // TODO: Replace with proper navigation queue from utils/animation-queue.ts
-  // const navigationQueue = useRef(createNavigationQueue())
-  // Navigation request deduplication
-  const navigationQueueRef = useRef<{
-    targetSection: number | null
-    timestamp: number
-  }>({
+    verificationIntervalId: null,
+    keyboardCleanup: null,
+    lenisTickerCallback: undefined,
+  });
+  
+  // Convert context state to our ScrollState format
+  const scrollState = useRef<ScrollState>({
+    currentSection: contextState.currentIndex || 0,
     targetSection: null,
-    timestamp: 0,
-  })
+    isAnimating: contextState.isAnimating || false,
+    isScrolling: false,
+    canNavigate: !contextState.isAnimating,
+    scrollPosition: 0,
+    velocity: 0,
+    lastNavigationTime: contextState.lastScrollTime || 0,
+  });
+  
+  // Keep state ref updated
+  useEffect(() => {
+    scrollState.current.currentSection = contextState.currentIndex || 0;
+    scrollState.current.isAnimating = contextState.isAnimating || false;
+    scrollState.current.canNavigate = !contextState.isAnimating;
+    scrollState.current.lastNavigationTime = contextState.lastScrollTime || 0;
+  }, [contextState]);
+  
+  const stateRef = scrollState;
+
+  // Track initialization state
+  const isInitialized = useRef(false);
+  const initializationError = useRef<Error | null>(null);
 
   /**
-   * Force all animation systems to sync to current state
+   * The core navigation logic.
+   * This function is the single entry point for all scroll animations.
    */
-  const forceSync = useCallback(() => {
-    const state = stateRef.current
-    const viewportHeight = window.innerHeight
-    const targetY = state.currentSection * viewportHeight
-
-    console.log('🔄 FORCE SYNC:', {
-      currentSection: state.currentSection,
-      targetY,
-      scrollY: window.scrollY,
-    })
-
-    // Kill any active animations
-    if (controllersRef.current.scrollTween) {
-      controllersRef.current.scrollTween.kill()
-      controllersRef.current.scrollTween = null
-    }
-
-    // Force scroll position
-    window.scrollTo(0, targetY)
+  const gotoSection = useCallback((index: number, options?: NavigationOptions) => {
+    console.log(`🎯 [useScrollManager.gotoSection] ENTER:`, {
+      requestedIndex: index,
+      currentSection: stateRef.current.currentSection,
+      isAnimating: stateRef.current.isAnimating,
+      options
+    });
     
-    // Reset Lenis position if exists
-    if (controllersRef.current.lenis) {
-      controllersRef.current.lenis.scrollTo(targetY, { immediate: true })
-    }
-
-    // Update ScrollTrigger
-    ScrollTrigger.refresh(true)
-
-    // Reset state flags
-    stateRef.current = {
-      ...state,
-      targetSection: null,
-      isAnimating: false,
-      isScrolling: false,
-      canNavigate: true,
-      scrollPosition: targetY,
-      velocity: 0,
-    }
-  }, [])
-
-  /**
-   * Emergency reset - nuclear option
-   */
-  const emergency = useCallback(() => {
-    console.log('🚨 EMERGENCY RESET TRIGGERED')
-
-    // Kill everything
-    gsap.killTweensOf('*')
-    ScrollTrigger.killAll()
+    // Validate bounds
+    const newIndex = gsap.utils.clamp(0, sections.length - 1, index);
     
-    if (controllersRef.current.observer) {
-      controllersRef.current.observer.kill()
-      controllersRef.current.observer = null
+    // Check if already at target
+    if (newIndex === stateRef.current.currentSection && !stateRef.current.isAnimating) {
+      console.log(`📍 [useScrollManager.gotoSection] Already at section ${newIndex}, EXIT early`);
+      return;
     }
 
-    if (controllersRef.current.lenis) {
-      controllersRef.current.lenis.destroy()
-      controllersRef.current.lenis = null
+    // Create navigation request
+    const request = animationQueue.current.enqueue({
+      targetSection: newIndex,
+      source: options?.metadata?.storyContext?.trigger === 'story' ? 'narrative' : 'programmatic',
+      priority: options?.force ? 'high' : 'normal',
+      options,
+    });
+
+    if (!request) {
+      return; // Request was deduplicated
     }
 
-    // Reset to section 0
-    window.scrollTo(0, 0)
+    // Check if we should interrupt current animation
+    if (stateRef.current.isAnimating && controllers.current.scrollTween) {
+      const currentRequest = animationQueue.current.peek();
+      if (shouldInterruptAnimation(currentRequest, request)) {
+        console.log(`⚡ Interrupting current animation for higher priority request`);
+        controllers.current.scrollTween.kill();
+      } else {
+        console.log(`⏸️ Current animation has higher priority, queueing request`);
+        return;
+      }
+    }
+
+    // Start animation
+    console.log(`🚀 [useScrollManager.gotoSection] Starting animation to section ${newIndex}`);
+    stateRef.current.isAnimating = true;
+    stateRef.current.canNavigate = false;
+    stateRef.current.targetSection = newIndex;
+    actions.gotoSection(newIndex, Date.now());
+
+    // Get target element
+    const targetElement = containerRef.current?.querySelector(`[data-section-idx="${newIndex}"]`) as HTMLElement;
+    if (!targetElement) {
+      console.error(`❌ [useScrollManager.gotoSection] Target element for section ${newIndex} not found`);
+      animationQueue.current.clear();
+      stateRef.current.isAnimating = false;
+      stateRef.current.canNavigate = true;
+      actions.endAnimation();
+      return;
+    }
+
+    // Calculate target position using getBoundingClientRect (NOT offsetTop)
+    const targetY = targetElement.getBoundingClientRect().top + window.scrollY;
     
-    stateRef.current = {
-      currentSection: 0,
-      targetSection: null,
-      isAnimating: false,
-      isScrolling: false,
-      canNavigate: true,
-      scrollPosition: 0,
-      velocity: 0,
-    }
+    // Calculate dynamic duration based on distance
+    const calculatedDuration = options?.immediate 
+      ? 0 
+      : options?.duration || calculateAnimationDuration(
+          stateRef.current.currentSection,
+          newIndex,
+          duration
+        );
 
-    // Notify parent
-    onSectionChange?.(0)
-  }, [onSectionChange])
+    // Kill any existing tweens
+    gsap.killTweensOf(window);
 
-  /**
-   * Navigate to section with deduplication
-   */
-  const gotoSection = useCallback((index: number) => {
-    const state = stateRef.current
-    const now = Date.now()
-    const clampedIndex = Math.max(0, Math.min(sections - 1, index))
-
-    // TODO: Use proper deduplication from animation-queue.ts
-    // const request = enqueueNavigation(navigationQueue.current, {
-    //   targetSection: clampedIndex,
-    //   source: 'user',
-    //   priority: 'normal',
-    // })
-    // Deduplication checks
-    if (state.targetSection === clampedIndex && 
-        now - navigationQueueRef.current.timestamp < 100) {
-      console.log('❌ Navigation deduplicated:', clampedIndex)
-      return
-    }
-
-    if (!state.canNavigate || state.isAnimating) {
-      console.log('❌ Navigation blocked:', { canNavigate: state.canNavigate, isAnimating: state.isAnimating })
-      return
-    }
-
-    if (clampedIndex === state.currentSection) {
-      console.log('❌ Already at section:', clampedIndex)
-      return
-    }
-
-    // Update navigation queue
-    navigationQueueRef.current = {
-      targetSection: clampedIndex,
-      timestamp: now,
-    }
-
-    // Lock navigation
-    stateRef.current = {
-      ...state,
-      targetSection: clampedIndex,
-      isAnimating: true,
-      canNavigate: false,
-    }
-
-    const viewportHeight = window.innerHeight
-    const currentY = window.scrollY
-    const targetY = clampedIndex * viewportHeight
-
-    console.log('🎯 Navigation start:', {
-      from: state.currentSection,
-      to: clampedIndex,
-      currentY,
-      targetY,
-    })
-
-    // Kill any existing animation
-    if (controllersRef.current.scrollTween) {
-      controllersRef.current.scrollTween.kill()
-    }
-
-    // TODO: Extract physics calculations from StoryScroller.tsx lines 383-447
-    // const { duration: dynamicDuration, easing } = calculateAnimationPhysics({
-    //   currentY,
-    //   targetY,
-    //   velocity: state.velocity,
-    //   magneticActive: state.magneticActive,
-    // })
-    
-    // Animate with GSAP
-    controllersRef.current.scrollTween = gsap.to(window, {
-      scrollTo: {
-        y: targetY,
-        autoKill: false,
+    // Create the animation
+    controllers.current.scrollTween = gsap.to(window, {
+      scrollTo: { 
+        y: targetY, 
+        autoKill: false // Prevent user scroll from canceling
       },
-      duration, // TODO: Use dynamicDuration
-      ease: "power2.inOut", // TODO: Use dynamic easing
+      duration: calculatedDuration,
+      ease: options?.easing || easing,
+      onStart: () => {
+        if (DEBUG_CONFIG.VERBOSE) {
+          console.log(`🚀 Starting animation to section ${newIndex}`);
+        }
+        // Notify Lenis to stop its smooth scroll during animation
+        if (controllers.current.lenis) {
+          controllers.current.lenis.stop();
+        }
+      },
       onUpdate: () => {
-        const progress = controllersRef.current.scrollTween?.progress() || 0
-        console.log('📊 Animation progress:', progress.toFixed(2))
+        // Keep Lenis in sync during animation
+        if (controllers.current.lenis) {
+          controllers.current.lenis.scroll = window.scrollY;
+        }
       },
       onComplete: () => {
-        console.log('✅ Animation complete')
+        console.log(`✅ [useScrollManager] Animation to section ${newIndex} complete`);
         
-        // Verify final position
-        const finalY = window.scrollY
-        const finalSection = Math.round(finalY / viewportHeight)
-        
-        if (finalSection !== clampedIndex) {
-          console.warn('⚠️ Position drift detected:', {
-            expected: clampedIndex,
-            actual: finalSection,
-          })
-          // Force correction
-          window.scrollTo(0, targetY)
-        }
-
         // Update state
-        stateRef.current = {
-          currentSection: clampedIndex,
-          targetSection: null,
-          isAnimating: false,
-          isScrolling: false,
-          canNavigate: true,
-          scrollPosition: targetY,
-          velocity: 0,
+        if (stateRef.current.currentSection !== newIndex) {
+          actions.setCurrentIndex(newIndex);
+          stateRef.current.currentSection = newIndex;
         }
-
-        // Clear navigation queue
-        navigationQueueRef.current.targetSection = null
-
-        // Notify parent
-        onSectionChange?.(clampedIndex)
-
-        // Force ScrollTrigger update
-        ScrollTrigger.refresh()
+        stateRef.current.isAnimating = false;
+        stateRef.current.canNavigate = true;
+        actions.endAnimation();
+        
+        // Clear queue and restart Lenis
+        animationQueue.current.clear();
+        if (controllers.current.lenis) {
+          controllers.current.lenis.start();
+        }
+        
+        // Fire callbacks
+        onSectionChange?.(newIndex);
+        options?.onComplete?.();
+        
+        // Verify we landed correctly
+        setTimeout(() => {
+          console.log(`🔍 [useScrollManager] Post-animation verification check`);
+          verifyState(stateRef, controllers.current, browserService.current, dispatch);
+        }, TIMING.POSITION_CHECK_DELAY);
       },
       onInterrupt: () => {
-        console.log('⚠️ Animation interrupted')
-        forceSync()
+        console.warn(`⚠️ Animation to section ${newIndex} interrupted`);
+        
+        // Sync to actual position
+        const actualY = browserService.current.getScrollY();
+        const actualSection = Math.round(actualY / browserService.current.getInnerHeight());
+        
+        forceSync(actualSection, stateRef, controllers.current, browserService.current, dispatch);
+        
+        // Clear queue and fire callback
+        animationQueue.current.clear();
+        options?.onInterrupt?.();
       },
-    })
-  }, [sections, duration, onSectionChange, forceSync])
+    });
+  }, [sections.length, duration, easing, onSectionChange, actions, dispatch]);
 
+  // Navigation helpers
   const nextSection = useCallback(() => {
-    gotoSection(stateRef.current.currentSection + 1)
-  }, [gotoSection])
+    gotoSection(stateRef.current.currentSection + 1);
+  }, [gotoSection]);
 
   const prevSection = useCallback(() => {
-    gotoSection(stateRef.current.currentSection - 1)
-  }, [gotoSection])
+    gotoSection(stateRef.current.currentSection - 1);
+  }, [gotoSection]);
 
-  const getState = useCallback(() => {
-    return { ...stateRef.current }
-  }, [])
+  /**
+   * Initialize all scroll systems.
+   * This is called on mount and after emergency reset.
+   */
+  const initialize = useCallback(async () => {
+    const bs = browserService.current;
+    if (!bs.isClient() || !containerRef.current) return;
 
-  // Initialize on mount
-  useEffect(() => {
-    console.log('🚀 ScrollManager initializing')
+    try {
+      console.log('🚀 Initializing scroll manager...');
 
-    // Setup Observer for input
-    const observer = Observer.create({
-      target: window,
-      type: 'wheel,touch',
-      tolerance,
-      preventDefault,
-      onDown: () => {
-        if (stateRef.current.canNavigate) {
-          nextSection()
+      // 1. Initialize Lenis with GSAP ticker (NOT separate RAF)
+      controllers.current.lenis = await initLenis();
+      const lenis = controllers.current.lenis;
+
+      // CRITICAL: Use GSAP ticker to drive Lenis
+      const tickerCallback = (time: number) => {
+        // GSAP provides time in seconds, Lenis needs milliseconds
+        lenis?.raf(time * 1000);
+      };
+      controllers.current.lenisTickerCallback = tickerCallback;
+      gsap.ticker.add(tickerCallback);
+
+      // Sync Lenis scroll events with ScrollTrigger
+      lenis.on('scroll', () => {
+        ScrollTrigger.update();
+        // Update our state
+        const scrollY = lenis.scroll || 0;
+        const section = Math.round(scrollY / bs.getInnerHeight());
+        if (section !== stateRef.current.currentSection && !stateRef.current.isAnimating) {
+          actions.setCurrentIndex(section);
         }
-      },
-      onUp: () => {
-        if (stateRef.current.canNavigate) {
-          prevSection()
-        }
-      },
-    })
+      });
 
-    controllersRef.current.observer = observer
+      // 2. Configure ScrollTrigger after hydration delay
+      if (typeof window !== 'undefined') {
+        setTimeout(() => {
+          ScrollTrigger.config({
+            syncInterval: SCROLLTRIGGER_CONFIG.SYNC_INTERVAL,
+            autoRefreshEvents: SCROLLTRIGGER_CONFIG.AUTO_REFRESH_EVENTS,
+          });
 
-    // Periodic state verification
-    const verifyInterval = setInterval(() => {
-      const state = stateRef.current
-      if (state.isAnimating && !controllersRef.current.scrollTween?.isActive()) {
-        console.warn('⚠️ Stuck animation detected')
-        forceSync()
+          // Set up ScrollTrigger proxy for Lenis
+          ScrollTrigger.scrollerProxy(document.body, {
+            scrollTop(value) {
+              if (arguments.length) {
+                lenis.scrollTo(value, { immediate: true });
+              }
+              return lenis.scroll || 0;
+            },
+            getBoundingClientRect() {
+              return {
+                top: 0,
+                left: 0,
+                width: window.innerWidth,
+                height: window.innerHeight,
+              };
+            },
+          });
+
+          ScrollTrigger.refresh(true);
+        }, TIMING.HYDRATION_DELAY);
       }
-    }, 500)
 
-    // Cleanup
-    return () => {
-      console.log('🧹 ScrollManager cleanup')
-      clearInterval(verifyInterval)
-      observer.kill()
-      if (controllersRef.current.scrollTween) {
-        controllersRef.current.scrollTween.kill()
+      // 3. Initialize Observer for input detection
+      console.log('🎮 [useScrollManager] Creating Observer with config:', {
+        tolerance,
+        preventDefault,
+        wheelSpeed: PHYSICS.WHEEL_SPEED * (invertDirection ? -1 : 1)
+      });
+      
+      controllers.current.observer = Observer.create({
+        target: window,
+        type: 'wheel,touch,pointer',
+        tolerance: tolerance,
+        preventDefault: preventDefault,
+        wheelSpeed: PHYSICS.WHEEL_SPEED * (invertDirection ? -1 : 1),
+        onUp: () => {
+          console.log('⬆️ [Observer] onUp triggered, state:', {
+            isAnimating: stateRef.current.isAnimating,
+            canNavigate: stateRef.current.canNavigate,
+            currentSection: stateRef.current.currentSection
+          });
+          if (!stateRef.current.isAnimating && stateRef.current.canNavigate) {
+            prevSection();
+          }
+        },
+        onDown: () => {
+          console.log('⬇️ [Observer] onDown triggered, state:', {
+            isAnimating: stateRef.current.isAnimating,
+            canNavigate: stateRef.current.canNavigate,
+            currentSection: stateRef.current.currentSection
+          });
+          if (!stateRef.current.isAnimating && stateRef.current.canNavigate) {
+            nextSection();
+          }
+        },
+        // Firefox Logitech mouse workaround
+        onWheel: (self) => {
+          const isFirefox = navigator.userAgent.includes('Firefox');
+          if (isFirefox && Math.abs(self.deltaY) < 50) {
+            self.deltaY *= 2;
+          }
+        },
+      });
+
+      // 4. Set up keyboard navigation
+      if (keyboardNavigation) {
+        const handleKeyDown = (e: KeyboardEvent) => {
+          if (stateRef.current.isAnimating || !stateRef.current.canNavigate) return;
+
+          switch (e.key) {
+            case 'ArrowDown':
+            case 'PageDown':
+              e.preventDefault();
+              nextSection();
+              break;
+            case 'ArrowUp':
+            case 'PageUp':
+              e.preventDefault();
+              prevSection();
+              break;
+            case 'Home':
+              e.preventDefault();
+              gotoSection(0);
+              break;
+            case 'End':
+              e.preventDefault();
+              gotoSection(sections.length - 1);
+              break;
+            case ' ': // Spacebar
+              e.preventDefault();
+              if (e.shiftKey) {
+                prevSection();
+              } else {
+                nextSection();
+              }
+              break;
+          }
+        };
+
+        bs.addEventListener('keydown', handleKeyDown);
+        controllers.current.keyboardCleanup = () => bs.removeEventListener('keydown', handleKeyDown);
       }
-      gsap.killTweensOf(window)
+
+      // 5. Start state verification interval
+      controllers.current.verificationIntervalId = setInterval(() => {
+        verifyState(stateRef, controllers.current, bs, dispatch);
+        checkStuckAnimation(stateRef, controllers.current, bs, dispatch);
+      }, TIMING.STATE_VERIFICATION_INTERVAL);
+
+      isInitialized.current = true;
+      console.log('✅ Scroll manager initialized successfully');
+
+    } catch (error) {
+      console.error('❌ Failed to initialize scroll manager:', error);
+      initializationError.current = error as Error;
+      throw error;
     }
-  }, [tolerance, preventDefault, nextSection, prevSection, forceSync])
+  }, [gotoSection, nextSection, prevSection, keyboardNavigation, sections.length, tolerance, preventDefault, invertDirection, dispatch]);
 
+  /**
+   * Complete cleanup of all resources.
+   */
+  const destroy = useCallback(() => {
+    console.log('🧹 Destroying scroll manager...');
+
+    // Kill all animations
+    if (controllers.current.scrollTween) {
+      controllers.current.scrollTween.kill();
+    }
+    gsap.killTweensOf(window);
+
+    // Remove GSAP ticker callback
+    if (controllers.current.lenisTickerCallback) {
+      gsap.ticker.remove(controllers.current.lenisTickerCallback);
+    }
+
+    // Destroy Observer
+    if (controllers.current.observer) {
+      controllers.current.observer.kill();
+    }
+
+    // Destroy Lenis
+    if (controllers.current.lenis) {
+      controllers.current.lenis.destroy();
+    }
+
+    // Clear intervals
+    if (controllers.current.verificationIntervalId) {
+      clearInterval(controllers.current.verificationIntervalId);
+    }
+
+    // Remove keyboard listeners
+    if (controllers.current.keyboardCleanup) {
+      controllers.current.keyboardCleanup();
+    }
+
+    // Kill all ScrollTriggers
+    ScrollTrigger.killAll();
+
+    // Clear queue
+    animationQueue.current.clear();
+
+    isInitialized.current = false;
+    console.log('✅ Scroll manager destroyed');
+  }, []);
+
+  // Initialize on mount, cleanup on unmount
+  useEffect(() => {
+    initialize();
+    return () => destroy();
+  }, [initialize, destroy]);
+
+  // Public API
   return {
+    containerRef,
     gotoSection,
     nextSection,
     prevSection,
-    forceSync,
-    emergency,
-    getState,
-  }
+    forceSync: () => {
+      const actualSection = Math.round(
+        browserService.current.getScrollY() / browserService.current.getInnerHeight()
+      );
+      forceSync(actualSection, stateRef, controllers.current, browserService.current, dispatch);
+    },
+    emergencyReset: () => {
+      emergencyReset(controllers.current, initialize, dispatch);
+    },
+    destroy,
+    getState: () => stateRef.current,
+    getQueueStatus: () => ({
+      pending: animationQueue.current.requests.length,
+      processing: animationQueue.current.processing,
+    }),
+  };
 }

@@ -1,310 +1,166 @@
 /**
- * Animation queue management for deduplication and priority handling
- * Prevents animation conflicts and ensures smooth transitions
+ * @fileoverview Animation queue implementation for managing navigation requests.
+ * Provides deduplication, priority handling, and conflict prevention.
  */
 
-import type { NavigationRequest, NavigationQueue, NavigationOptions } from '../types/scroll-state'
-
-/**
- * Create a unique ID for navigation requests
- */
-export function generateNavigationId(): string {
-  return `nav_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-}
+import type { NavigationRequest, AnimationQueue } from '../types/scroll-manager';
+import { TIMING } from '../constants/scroll-physics';
 
 /**
- * Initialize an empty navigation queue
+ * Creates a robust animation queue to manage navigation requests,
+ * prevent conflicts, and handle deduplication.
  */
-export function createNavigationQueue(): NavigationQueue {
-  return {
-    requests: [],
-    processing: false,
-    lastProcessedId: null,
-    highPriorityCount: 0,
-  }
-}
+export function createAnimationQueue(): AnimationQueue {
+  let requests: NavigationRequest[] = [];
+  let processing = false;
+  let lastProcessedId: string | null = null;
 
-/**
- * Add a navigation request to the queue with deduplication
- */
-export function enqueueNavigation(
-  queue: NavigationQueue,
-  request: Omit<NavigationRequest, 'id' | 'timestamp'>
-): NavigationRequest {
-  const now = Date.now()
-  const fullRequest: NavigationRequest = {
-    ...request,
-    id: generateNavigationId(),
-    timestamp: now,
-  }
-  
-  // Check for duplicate requests
-  const duplicateIndex = queue.requests.findIndex(
-    r => r.targetSection === request.targetSection && 
-        now - r.timestamp < 100 && // Within 100ms
-        r.source === request.source
-  )
-  
-  if (duplicateIndex !== -1) {
-    console.log('🚫 Duplicate navigation request ignored:', {
-      targetSection: request.targetSection,
-      source: request.source,
-      timeSinceLastRequest: now - queue.requests[duplicateIndex].timestamp,
-    })
-    return queue.requests[duplicateIndex]
-  }
-  
-  // Handle priority insertion
-  if (request.priority === 'critical') {
-    // Critical requests go to the front
-    queue.requests.unshift(fullRequest)
-  } else if (request.priority === 'high') {
-    // High priority requests go after critical but before normal
-    const insertIndex = queue.requests.findIndex(r => 
-      r.priority !== 'critical' && r.priority !== 'high'
-    )
-    if (insertIndex === -1) {
-      queue.requests.push(fullRequest)
+  /**
+   * Add a new navigation request to the queue.
+   * Implements deduplication logic to prevent rapid-fire duplicates.
+   */
+  const enqueue = (request: Omit<NavigationRequest, 'id' | 'timestamp'>): NavigationRequest | null => {
+    const fullRequest: NavigationRequest = {
+      ...request,
+      id: `nav_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: Date.now(),
+    };
+
+    // Deduplication: Check if a request for the same target was enqueued recently
+    const isDuplicate = requests.some(
+      (r) =>
+        r.targetSection === fullRequest.targetSection &&
+        fullRequest.timestamp - r.timestamp < TIMING.DEDUPLICATION_THRESHOLD
+    );
+
+    if (isDuplicate) {
+      console.log(`❌ Queue: Duplicate request for section ${fullRequest.targetSection} ignored (within ${TIMING.DEDUPLICATION_THRESHOLD}ms window)`);
+      return null;
+    }
+
+    // Check if we're already processing a request to the same section
+    if (processing && requests.some(r => r.targetSection === fullRequest.targetSection)) {
+      console.log(`❌ Queue: Request for section ${fullRequest.targetSection} already being processed`);
+      return null;
+    }
+
+    // Add to queue based on priority
+    if (fullRequest.priority === 'critical') {
+      // Critical requests go to the front
+      requests.unshift(fullRequest);
+    } else if (fullRequest.priority === 'high') {
+      // High priority requests go after critical but before normal/low
+      const criticalCount = requests.filter(r => r.priority === 'critical').length;
+      requests.splice(criticalCount, 0, fullRequest);
     } else {
-      queue.requests.splice(insertIndex, 0, fullRequest)
+      // Normal and low priority go to the end
+      requests.push(fullRequest);
     }
-    queue.highPriorityCount++
-  } else {
-    // Normal and low priority go to the end
-    queue.requests.push(fullRequest)
-  }
-  
-  console.log('📥 Navigation enqueued:', {
-    id: fullRequest.id,
-    targetSection: fullRequest.targetSection,
-    priority: fullRequest.priority,
-    queueLength: queue.requests.length,
-  })
-  
-  return fullRequest
-}
 
-/**
- * Get the next navigation request from the queue
- */
-export function dequeueNavigation(queue: NavigationQueue): NavigationRequest | null {
-  if (queue.requests.length === 0) {
-    return null
-  }
-  
-  const request = queue.requests.shift()!
-  
-  if (request.priority === 'high') {
-    queue.highPriorityCount = Math.max(0, queue.highPriorityCount - 1)
-  }
-  
-  queue.lastProcessedId = request.id
-  
-  console.log('📤 Navigation dequeued:', {
-    id: request.id,
-    targetSection: request.targetSection,
-    remainingInQueue: queue.requests.length,
-  })
-  
-  return request
-}
+    console.log(`✅ Queue: Request ${fullRequest.id} added (target: ${fullRequest.targetSection}, priority: ${fullRequest.priority})`);
+    return fullRequest;
+  };
 
-/**
- * Clear all pending navigation requests
- */
-export function clearNavigationQueue(queue: NavigationQueue): void {
-  const cleared = queue.requests.length
-  queue.requests = []
-  queue.highPriorityCount = 0
-  queue.processing = false
-  
-  if (cleared > 0) {
-    console.log('🗑️ Navigation queue cleared:', { clearedCount: cleared })
-  }
-}
-
-/**
- * Remove specific navigation requests by predicate
- */
-export function filterNavigationQueue(
-  queue: NavigationQueue,
-  predicate: (request: NavigationRequest) => boolean
-): NavigationRequest[] {
-  const removed: NavigationRequest[] = []
-  
-  queue.requests = queue.requests.filter(request => {
-    if (!predicate(request)) {
-      removed.push(request)
-      if (request.priority === 'high') {
-        queue.highPriorityCount = Math.max(0, queue.highPriorityCount - 1)
-      }
-      return false
+  /**
+   * Get the next request to process from the queue.
+   * Respects priority ordering.
+   */
+  const dequeue = (): NavigationRequest | null => {
+    if (requests.length === 0) {
+      return null;
     }
-    return true
-  })
-  
-  if (removed.length > 0) {
-    console.log('🔍 Filtered navigation queue:', {
-      removedCount: removed.length,
-      remainingCount: queue.requests.length,
-    })
-  }
-  
-  return removed
-}
 
-/**
- * Check if a navigation to a specific section is already queued
- */
-export function isNavigationQueued(
-  queue: NavigationQueue,
-  targetSection: number
-): boolean {
-  return queue.requests.some(r => r.targetSection === targetSection)
-}
+    // Get the highest priority request (queue is already sorted by priority)
+    const nextRequest = requests.shift()!;
+    lastProcessedId = nextRequest.id;
+    processing = true;
 
-/**
- * Get queue statistics for debugging
- */
-export function getQueueStats(queue: NavigationQueue): {
-  total: number
-  byPriority: Record<string, number>
-  bySource: Record<string, number>
-  oldestRequestAge: number | null
-  processingTime: number | null
-} {
-  const now = Date.now()
-  const stats = {
-    total: queue.requests.length,
-    byPriority: { critical: 0, high: 0, normal: 0, low: 0 },
-    bySource: {} as Record<string, number>,
-    oldestRequestAge: null as number | null,
-    processingTime: null as number | null,
-  }
-  
-  queue.requests.forEach((request, index) => {
-    // Count by priority
-    stats.byPriority[request.priority]++
-    
-    // Count by source
-    stats.bySource[request.source] = (stats.bySource[request.source] || 0) + 1
-    
-    // Track oldest request
-    if (index === 0) {
-      stats.oldestRequestAge = now - request.timestamp
+    console.log(`📤 Queue: Processing request ${nextRequest.id} (target: ${nextRequest.targetSection})`);
+    return nextRequest;
+  };
+
+  /**
+   * Clear all pending requests.
+   * Typically called after successful navigation or emergency reset.
+   */
+  const clear = () => {
+    const pendingCount = requests.length;
+    if (pendingCount > 0) {
+      console.log(`🧹 Queue: Clearing ${pendingCount} pending requests`);
+      requests = [];
     }
-  })
-  
-  return stats
-}
+    processing = false;
+  };
 
-/**
- * Merge navigation options with defaults
- */
-export function mergeNavigationOptions(
-  options?: NavigationOptions,
-  defaults?: NavigationOptions
-): NavigationOptions {
+  /**
+   * Peek at the highest priority request without removing it.
+   */
+  const peek = (): NavigationRequest | null => {
+    return requests.length > 0 ? requests[0] : null;
+  };
+
+  /**
+   * Check if a similar request exists in the queue.
+   */
+  const hasSimilar = (targetSection: number, withinMs: number = TIMING.DEDUPLICATION_THRESHOLD): boolean => {
+    const now = Date.now();
+    return requests.some(
+      r => r.targetSection === targetSection && (now - r.timestamp) < withinMs
+    );
+  };
+
   return {
-    duration: options?.duration ?? defaults?.duration,
-    easing: options?.easing ?? defaults?.easing,
-    immediate: options?.immediate ?? defaults?.immediate ?? false,
-    force: options?.force ?? defaults?.force ?? false,
-    onComplete: options?.onComplete ?? defaults?.onComplete,
-    onInterrupt: options?.onInterrupt ?? defaults?.onInterrupt,
-    metadata: {
-      ...defaults?.metadata,
-      ...options?.metadata,
-    },
-  }
+    requests,
+    processing,
+    lastProcessedId,
+    enqueue,
+    dequeue,
+    clear,
+    peek,
+    hasSimilar,
+  };
 }
 
 /**
- * Determine if a navigation request should interrupt the current animation
+ * Calculate appropriate animation duration based on distance.
+ * Longer distances get slightly longer animations for smoother feel.
+ */
+export function calculateAnimationDuration(
+  currentSection: number,
+  targetSection: number,
+  baseDuration: number = TIMING.BASE_DURATION
+): number {
+  const distance = Math.abs(targetSection - currentSection);
+  
+  if (distance === 0) return 0;
+  if (distance === 1) return baseDuration;
+  
+  // Scale duration based on distance, but cap it
+  const scaledDuration = baseDuration * (1 + (distance - 1) * 0.2);
+  return Math.min(scaledDuration, TIMING.MAX_DURATION);
+}
+
+/**
+ * Determine if a navigation should interrupt the current animation.
+ * Critical priority or force flag can interrupt.
  */
 export function shouldInterruptAnimation(
   currentRequest: NavigationRequest | null,
   newRequest: NavigationRequest
 ): boolean {
-  // Critical requests always interrupt
-  if (newRequest.priority === 'critical') {
-    return true
-  }
+  if (!currentRequest) return true;
   
-  // Force option overrides normal rules
-  if (newRequest.options?.force) {
-    return true
-  }
+  // Critical priority always interrupts
+  if (newRequest.priority === 'critical') return true;
   
-  // No current request means nothing to interrupt
-  if (!currentRequest) {
-    return false
-  }
+  // Force flag overrides
+  if (newRequest.options?.force) return true;
   
   // High priority can interrupt normal/low
   if (newRequest.priority === 'high' && 
       (currentRequest.priority === 'normal' || currentRequest.priority === 'low')) {
-    return true
+    return true;
   }
   
-  // Recovery requests can interrupt user requests
-  if (newRequest.source === 'recovery' && currentRequest.source === 'user') {
-    return true
-  }
-  
-  return false
-}
-
-/**
- * Calculate appropriate animation duration based on distance
- */
-export function calculateAnimationDuration(
-  currentSection: number,
-  targetSection: number,
-  baseDuration: number = 1.2,
-  options?: NavigationOptions
-): number {
-  // Immediate animations have no duration
-  if (options?.immediate) {
-    return 0
-  }
-  
-  // Use explicit duration if provided
-  if (options?.duration !== undefined) {
-    return options.duration
-  }
-  
-  // Calculate based on distance
-  const distance = Math.abs(targetSection - currentSection)
-  
-  // Single section: use base duration
-  if (distance === 1) {
-    return baseDuration
-  }
-  
-  // Multiple sections: scale duration
-  // Use sqrt to prevent very long animations
-  return baseDuration * Math.sqrt(distance)
-}
-
-/**
- * Create a navigation request for recovery scenarios
- */
-export function createRecoveryRequest(
-  targetSection: number,
-  reason: string
-): Omit<NavigationRequest, 'id' | 'timestamp'> {
-  return {
-    targetSection,
-    source: 'recovery',
-    priority: 'high',
-    options: {
-      force: true,
-      immediate: true,
-      metadata: {
-        reason,
-        timestamp: Date.now(),
-      },
-    },
-  }
+  return false;
 }

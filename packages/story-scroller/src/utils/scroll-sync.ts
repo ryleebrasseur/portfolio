@@ -1,306 +1,275 @@
 /**
- * Utilities for forcing scroll synchronization and emergency recovery
- * These are the "nuclear options" for when things go wrong
+ * @fileoverview Scroll synchronization utilities for state recovery and drift correction.
+ * Provides force sync and emergency reset capabilities.
  */
 
-import type { ScrollState } from '../types/scroll-state'
+import type { RefObject } from 'react';
+import type { ScrollState, AnimationControllers } from '../types/scroll-manager';
+import type { IBrowserService } from '../services/BrowserService';
+import { scrollActions } from '../state/scrollReducer';
+import { TIMING, DEBUG_CONFIG } from '../constants/scroll-physics';
+
+// Import GSAP and ScrollTrigger from window to match the global registration
+declare global {
+  interface Window {
+    gsap: any;
+    ScrollTrigger: any;
+  }
+}
 
 /**
- * Force all animation systems to sync to the specified state
- * This is the primary recovery mechanism when state drift is detected
+ * Forces all animation systems to sync to a specific section.
+ * This is the primary recovery mechanism for state drift.
  */
-export function forceSync(options: {
-  targetSection: number
-  state: ScrollState
-  controllers: {
-    lenis?: any
-    scrollTween?: any
+export function forceSync(
+  targetSection: number,
+  stateRef: RefObject<ScrollState>,
+  controllers: AnimationControllers,
+  browserService: IBrowserService,
+  dispatch: React.Dispatch<any>
+) {
+  console.warn(`🔄 FORCE SYNC triggered. Syncing to section: ${targetSection}`);
+
+  // 1. Kill any active GSAP tweens on the window
+  if (window.gsap) {
+    window.gsap.killTweensOf(window);
+    // Also kill the current scroll tween if it exists
+    if (controllers.scrollTween) {
+      controllers.scrollTween.kill();
+      controllers.scrollTween = null;
+    }
   }
-  viewportHeight?: number
-  onComplete?: () => void
-}): void {
-  const { 
-    targetSection, 
-    state, 
-    controllers, 
-    viewportHeight = window.innerHeight,
-    onComplete 
-  } = options
-  
-  console.log('🔄 FORCE SYNC INITIATED:', {
-    targetSection,
-    currentSection: state.currentSection,
-    isAnimating: state.isAnimating,
-    timestamp: Date.now(),
-  })
-  
-  // Step 1: Kill any active animations
-  if (controllers.scrollTween?.isActive?.()) {
-    console.log('  → Killing active scroll tween')
-    controllers.scrollTween.kill()
-  }
-  
-  // Step 2: Calculate target position
-  const targetY = targetSection * viewportHeight
-  
-  // Step 3: Force immediate scroll position update
-  console.log('  → Setting scroll position to:', targetY)
-  window.scrollTo(0, targetY)
-  
-  // Step 4: Update Lenis if it exists
+
+  // 2. Stop Lenis if it's running
   if (controllers.lenis) {
-    console.log('  → Syncing Lenis position')
-    controllers.lenis.scrollTo(targetY, { immediate: true })
-    
-    // Reset Lenis internal state
-    if (controllers.lenis.stop) {
-      controllers.lenis.stop()
-    }
-    if (controllers.lenis.reset) {
-      controllers.lenis.reset()
-    }
+    controllers.lenis.stop();
   }
-  
-  // Step 5: Force ScrollTrigger refresh
+
+  // 3. Calculate the exact target scroll position in pixels
+  const viewportHeight = browserService.getInnerHeight();
+  const targetY = targetSection * viewportHeight;
+
+  // 4. Immediately set the scroll position of the window
+  browserService.scrollTo(0, targetY);
+
+  // 5. Immediately tell Lenis where it should be
+  if (controllers.lenis) {
+    controllers.lenis.scrollTo(targetY, { immediate: true });
+  }
+
+  // 6. Force ScrollTrigger to re-calculate its positions
   if (window.ScrollTrigger) {
-    console.log('  → Refreshing ScrollTrigger')
-    window.ScrollTrigger.refresh(true)
-    window.ScrollTrigger.update()
+    window.ScrollTrigger.refresh(true);
   }
-  
-  // Step 6: Verify position after a frame
-  requestAnimationFrame(() => {
-    const actualY = window.scrollY
-    const drift = Math.abs(actualY - targetY)
-    
-    if (drift > 1) {
-      console.warn('  ⚠️ Position drift after sync:', {
-        expected: targetY,
-        actual: actualY,
-        drift,
-      })
-      
-      // Try one more time
-      window.scrollTo(0, targetY)
-    } else {
-      console.log('  ✅ Force sync complete')
-    }
-    
-    onComplete?.()
-  })
+
+  // 7. Update the internal state to reflect the new reality
+  if (stateRef.current) {
+    stateRef.current.isAnimating = false;
+    stateRef.current.isScrolling = false;
+    stateRef.current.currentSection = targetSection;
+    stateRef.current.targetSection = null;
+    stateRef.current.canNavigate = true;
+    stateRef.current.scrollPosition = targetY;
+    stateRef.current.velocity = 0;
+  }
+
+  // 8. Dispatch state updates through the centralized state management
+  dispatch(scrollActions.setCurrentIndex(targetSection));
+  dispatch(scrollActions.endAnimation());
+  dispatch(scrollActions.setScrollPosition(targetY));
+
+  console.log(`✅ Force sync complete. Current section is now ${targetSection}`);
 }
 
 /**
- * Emergency nuclear reset - destroys everything and starts fresh
- * Use this only as a last resort when the system is completely broken
+ * The "nuclear option". Destroys and reinitializes everything.
+ * Use this only when the system is in an unrecoverable state.
  */
-export function emergency(options: {
-  onReset?: () => void
-  controllers?: {
-    lenis?: any
-    observer?: any
-    scrollTween?: any
-    rafId?: number
-  }
-}): void {
-  const { onReset, controllers = {} } = options
-  
-  console.log('🚨 EMERGENCY RESET TRIGGERED - NUCLEAR OPTION')
-  console.trace('Emergency reset stack trace')
-  
+export function emergencyReset(
+  controllers: AnimationControllers,
+  reinitialize: () => void,
+  dispatch: React.Dispatch<any>
+) {
+  console.error('🚨 EMERGENCY RESET triggered. Destroying and reinitializing scroll system.');
+
   try {
-    // Step 1: Kill all GSAP animations globally
+    // 1. Kill all GSAP animations and ScrollTriggers
     if (window.gsap) {
-      console.log('  → Killing all GSAP animations')
-      window.gsap.killTweensOf('*')
+      window.gsap.killTweensOf('*');
+      if (controllers.scrollTween) {
+        controllers.scrollTween.kill();
+        controllers.scrollTween = null;
+      }
     }
-    
-    // Step 2: Kill all ScrollTriggers
+
     if (window.ScrollTrigger) {
-      console.log('  → Killing all ScrollTriggers')
-      window.ScrollTrigger.killAll()
-      window.ScrollTrigger.clearMatchMedia()
-      window.ScrollTrigger.clearScrollMemory()
+      window.ScrollTrigger.killAll();
     }
-    
-    // Step 3: Destroy Observer
+
+    // 2. Destroy the Observer and Lenis instances
     if (controllers.observer) {
-      console.log('  → Destroying Observer')
-      controllers.observer.kill()
+      controllers.observer.kill();
+      controllers.observer = null;
     }
-    
-    // Step 4: Destroy Lenis
+
     if (controllers.lenis) {
-      console.log('  → Destroying Lenis')
-      if (controllers.lenis.destroy) {
-        controllers.lenis.destroy()
-      }
-      if (controllers.lenis.stop) {
-        controllers.lenis.stop()
-      }
+      controllers.lenis.destroy();
+      controllers.lenis = null;
     }
-    
-    // Step 5: Cancel animation frame
-    if (controllers.rafId) {
-      console.log('  → Cancelling RAF')
-      cancelAnimationFrame(controllers.rafId)
+
+    // 3. Clear any pending timeouts or intervals
+    if (controllers.verificationIntervalId) {
+      clearInterval(controllers.verificationIntervalId);
+      controllers.verificationIntervalId = null;
     }
-    
-    // Step 6: Reset scroll position to top
-    console.log('  → Resetting scroll to top')
-    window.scrollTo(0, 0)
-    document.documentElement.scrollTop = 0
-    document.body.scrollTop = 0
-    
-    // Step 7: Clear any inline styles that might have been added
-    const scrollContainer = document.querySelector('[data-scroll-container]')
-    if (scrollContainer instanceof HTMLElement) {
-      console.log('  → Clearing container styles')
-      scrollContainer.style.transform = ''
-      scrollContainer.style.willChange = ''
+
+    // 4. Clean up keyboard listeners
+    if (controllers.keyboardCleanup) {
+      controllers.keyboardCleanup();
+      controllers.keyboardCleanup = null;
     }
-    
-    // Step 8: Remove any GSAP-added attributes
-    document.querySelectorAll('[data-gsap-id]').forEach(el => {
-      el.removeAttribute('data-gsap-id')
-      el.removeAttribute('style')
-    })
-    
-    // Step 9: Notify callback
-    console.log('  → Emergency reset complete')
-    onReset?.()
-    
+
+    // 5. Remove GSAP ticker callback for Lenis
+    if (controllers.lenisTickerCallback && window.gsap) {
+      window.gsap.ticker.remove(controllers.lenisTickerCallback);
+      controllers.lenisTickerCallback = undefined;
+    }
+
+    // 6. Reset window scroll position to top
+    window.scrollTo(0, 0);
+
+    // 7. Reset all state through dispatch
+    dispatch(scrollActions.resetState());
+
+    // 8. Wait a frame before reinitializing to ensure cleanup is complete
+    requestAnimationFrame(() => {
+      console.log('🔄 Reinitializing scroll system...');
+      reinitialize();
+    });
+
   } catch (error) {
-    console.error('🔥 Emergency reset failed:', error)
+    console.error('❌ Error during emergency reset:', error);
+    // Even if there's an error, try to reinitialize
+    setTimeout(reinitialize, 100);
+  }
+}
+
+/**
+ * Periodically called to check for drift between the component's state
+ * and the actual scroll position of the page.
+ */
+export function verifyState(
+  stateRef: RefObject<ScrollState>,
+  controllers: AnimationControllers,
+  browserService: IBrowserService,
+  dispatch: React.Dispatch<any>
+) {
+  if (!stateRef.current || stateRef.current.isAnimating) {
+    return; // Don't verify during an active animation
+  }
+
+  // 1. Get the actual scroll position from the browserService
+  const actualY = browserService.getScrollY();
+  const viewportHeight = browserService.getInnerHeight();
+
+  // 2. Calculate which section corresponds to that scroll position
+  const actualSection = Math.round(actualY / viewportHeight);
+
+  // 3. Compare with the section in our state
+  if (actualSection !== stateRef.current.currentSection) {
+    console.warn(
+      `⚠️ State drift detected! State: ${stateRef.current.currentSection}, Reality: ${actualSection}, ` +
+      `ScrollY: ${actualY}, ViewportHeight: ${viewportHeight}`
+    );
+
+    // 4. If they don't match, trigger a force sync
+    forceSync(actualSection, stateRef, controllers, browserService, dispatch);
+  }
+
+  // 5. Also check if Lenis is out of sync
+  if (controllers.lenis) {
+    const lenisScroll = controllers.lenis.scroll || 0;
+    const scrollDiff = Math.abs(lenisScroll - actualY);
     
-    // Last resort: reload the page
-    if (confirm('Scroll system critically failed. Reload page?')) {
-      window.location.reload()
+    if (scrollDiff > 1) { // 1px tolerance
+      if (DEBUG_CONFIG.VERBOSE) {
+        console.warn(`⚠️ Lenis drift detected! Lenis: ${lenisScroll}, Window: ${actualY}`);
+      }
+      // Sync Lenis to window position
+      controllers.lenis.scrollTo(actualY, { immediate: true });
     }
   }
 }
 
 /**
- * Verify that the actual scroll position matches the expected state
+ * Check if the current animation is stuck and needs intervention.
  */
-export function verifyScrollPosition(options: {
-  expectedSection: number
-  tolerance?: number
-  viewportHeight?: number
-}): {
-  isValid: boolean
-  actualSection: number
-  drift: number
-  recommendation: 'none' | 'sync' | 'emergency'
-} {
-  const { 
-    expectedSection, 
-    tolerance = 0.1, 
-    viewportHeight = window.innerHeight 
-  } = options
-  
-  const actualScrollY = window.scrollY
-  const expectedScrollY = expectedSection * viewportHeight
-  const drift = Math.abs(actualScrollY - expectedScrollY)
-  const driftPercentage = drift / viewportHeight
-  const actualSection = Math.round(actualScrollY / viewportHeight)
-  
-  let isValid = true
-  let recommendation: 'none' | 'sync' | 'emergency' = 'none'
-  
-  if (driftPercentage > tolerance) {
-    isValid = false
-    
-    if (actualSection !== expectedSection) {
-      // Section mismatch - needs sync
-      recommendation = 'sync'
-    } else if (driftPercentage > 0.5) {
-      // Major drift - consider emergency
-      recommendation = 'emergency'
-    } else {
-      // Minor drift - sync should fix it
-      recommendation = 'sync'
-    }
+export function checkStuckAnimation(
+  stateRef: RefObject<ScrollState>,
+  controllers: AnimationControllers,
+  browserService: IBrowserService,
+  dispatch: React.Dispatch<any>
+): boolean {
+  if (!stateRef.current || !stateRef.current.isAnimating) {
+    return false;
   }
+
+  const now = Date.now();
+  const animationDuration = now - stateRef.current.lastNavigationTime;
+
+  if (animationDuration > TIMING.STUCK_ANIMATION_THRESHOLD) {
+    console.error(
+      `❌ Animation stuck! Started ${animationDuration}ms ago, ` +
+      `target: ${stateRef.current.targetSection}, current: ${stateRef.current.currentSection}`
+    );
+
+    // Force sync to the current actual position
+    const actualY = browserService.getScrollY();
+    const viewportHeight = browserService.getInnerHeight();
+    const actualSection = Math.round(actualY / viewportHeight);
+    
+    forceSync(actualSection, stateRef, controllers, browserService, dispatch);
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Get a diagnostic report of the current state of all systems.
+ * Useful for debugging state drift issues.
+ */
+export function getDiagnosticReport(
+  stateRef: RefObject<ScrollState>,
+  controllers: AnimationControllers,
+  browserService: IBrowserService
+): Record<string, any> {
+  const actualY = browserService.getScrollY();
+  const viewportHeight = browserService.getInnerHeight();
+  const actualSection = Math.round(actualY / viewportHeight);
   
   return {
-    isValid,
-    actualSection,
-    drift,
-    recommendation,
-  }
-}
-
-/**
- * Debounced state verification with automatic recovery
- */
-let verificationTimeout: NodeJS.Timeout | null = null
-
-export function scheduleStateVerification(options: {
-  delay?: number
-  state: ScrollState
-  onVerify: (result: ReturnType<typeof verifyScrollPosition>) => void
-}): () => void {
-  const { delay = 500, state, onVerify } = options
-  
-  // Clear any existing verification
-  if (verificationTimeout) {
-    clearTimeout(verificationTimeout)
-  }
-  
-  // Schedule new verification
-  verificationTimeout = setTimeout(() => {
-    const result = verifyScrollPosition({
-      expectedSection: state.currentSection,
-    })
-    
-    console.log('🔍 Scheduled state verification:', {
-      ...result,
-      state: state.currentSection,
-    })
-    
-    onVerify(result)
-  }, delay)
-  
-  // Return cleanup function
-  return () => {
-    if (verificationTimeout) {
-      clearTimeout(verificationTimeout)
-      verificationTimeout = null
-    }
-  }
-}
-
-/**
- * Calculate the required scroll correction
- */
-export function calculateScrollCorrection(options: {
-  currentScrollY: number
-  targetSection: number
-  viewportHeight?: number
-}): {
-  distance: number
-  duration: number
-  direction: 'up' | 'down' | 'none'
-} {
-  const { 
-    currentScrollY, 
-    targetSection, 
-    viewportHeight = window.innerHeight 
-  } = options
-  
-  const targetScrollY = targetSection * viewportHeight
-  const distance = targetScrollY - currentScrollY
-  
-  // Calculate duration based on distance
-  const baseDistance = viewportHeight
-  const baseDuration = 1.2
-  const durationScale = Math.min(Math.abs(distance) / baseDistance, 3)
-  const duration = baseDuration * Math.sqrt(durationScale) // Sqrt for more natural feel
-  
-  return {
-    distance: Math.abs(distance),
-    duration,
-    direction: distance > 0 ? 'down' : distance < 0 ? 'up' : 'none',
-  }
+    timestamp: new Date().toISOString(),
+    state: stateRef.current ? {
+      currentSection: stateRef.current.currentSection,
+      targetSection: stateRef.current.targetSection,
+      isAnimating: stateRef.current.isAnimating,
+      isScrolling: stateRef.current.isScrolling,
+      canNavigate: stateRef.current.canNavigate,
+      scrollPosition: stateRef.current.scrollPosition,
+      velocity: stateRef.current.velocity,
+    } : null,
+    reality: {
+      windowScrollY: actualY,
+      calculatedSection: actualSection,
+      viewportHeight: viewportHeight,
+      lenisScroll: controllers.lenis?.scroll || null,
+    },
+    controllers: {
+      hasLenis: !!controllers.lenis,
+      hasObserver: !!controllers.observer,
+      hasScrollTween: !!controllers.scrollTween,
+      hasVerificationInterval: !!controllers.verificationIntervalId,
+    },
+  };
 }
