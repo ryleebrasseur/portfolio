@@ -13,7 +13,6 @@ export const mockLenis = {
   progress: 0,
   targetScroll: 0,
   actualScroll: 0,
-  isScrolling: false,
 };
 
 export const createMockLenis = () => ({

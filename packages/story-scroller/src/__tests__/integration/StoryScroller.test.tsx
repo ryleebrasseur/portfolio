@@ -199,7 +199,7 @@ describe('StoryScroller Integration', () => {
         scroll: 400, // Halfway between first and second story
         limit: 2400,
         progress: 0.17,
-        isScrolling: false 
+ 
       });
 
       await waitFor(() => {
@@ -219,7 +219,7 @@ describe('StoryScroller Integration', () => {
         scroll: 400,
         limit: 2400,
         progress: 0.17,
-        isScrolling: false 
+ 
       });
 
       await vi.advanceTimersByTime(200);

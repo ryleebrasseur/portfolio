@@ -42,6 +42,7 @@ export interface IBrowserService {
   // Window properties
   getInnerWidth(): number
   getInnerHeight(): number
+  getWindow(): Window | undefined
   
   // Custom events for testing
   dispatchEvent(event: Event): boolean
@@ -147,6 +148,10 @@ export class BrowserService implements IBrowserService {
   
   getInnerHeight(): number {
     return this._window?.innerHeight ?? 0
+  }
+  
+  getWindow(): Window | undefined {
+    return this._window
   }
   
   dispatchEvent(event: Event): boolean {
@@ -268,6 +273,10 @@ export class MockBrowserService implements IBrowserService {
   
   getInnerHeight(): number {
     return this._innerHeight
+  }
+  
+  getWindow(): Window | undefined {
+    return this._isClient ? ({} as Window) : undefined
   }
   
   dispatchEvent(event: Event): boolean {

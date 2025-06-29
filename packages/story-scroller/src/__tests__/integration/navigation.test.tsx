@@ -417,7 +417,7 @@ describe('StoryScroller Navigation', () => {
         call => call[0] === 'scroll'
       )?.[1];
 
-      scrollHandler?.({ scroll: 100, limit: 3840, progress: 0.026, isScrolling: true });
+      scrollHandler?.({ scroll: 100, limit: 3840, progress: 0.026 });
 
       // Wait past auto-advance delay
       await vi.advanceTimersByTime(1500);

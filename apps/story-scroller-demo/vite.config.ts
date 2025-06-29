@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@ryleebrasseur/story-scroller': path.resolve(__dirname, '../../packages/story-scroller/src'),
+      '@ryleebrasseur/story-scroller': path.resolve(__dirname, '../../packages/story-scroller/src/index.ts'),
     },
   },
   server: {

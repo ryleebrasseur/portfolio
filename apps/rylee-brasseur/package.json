@@ -39,6 +39,7 @@
     "terser": "^5.43.1"
   },
   "dependencies": {
+    "@gsap/react": "^2.1.2",
     "@ryleebrasseur/motion-system": "workspace:*",
     "@ryleebrasseur/shared-types": "workspace:*",
     "gsap": "^3.12.5",
