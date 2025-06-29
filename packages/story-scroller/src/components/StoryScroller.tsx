@@ -1,62 +1,38 @@
-/**
- * @fileoverview Simplified StoryScroller component.
- * All logic has been moved to the useScrollManager hook.
- * This component is now a pure presentational wrapper.
- */
 
 import React from 'react';
 import { useScrollManager } from '../hooks/useScrollManager';
 import type { StoryScrollerProps } from '../types';
-import { CSS_CLASSES, DATA_ATTRIBUTES } from '../constants/scroll-physics';
 
-/**
- * StoryScroller component creates a full-page section-snapping experience.
- * The useScrollManager hook contains ALL the logic for scroll management.
- */
 export const StoryScroller: React.FC<StoryScrollerProps> = (props) => {
-  const {
-    sections,
-    containerClassName = '',
-    sectionClassName = '',
-    className = '',
-    style = {},
-    ...scrollConfig
-  } = props;
+  const scrollManager = useScrollManager(props);
+  
+  // Expose navigation functions globally for demo app access
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).storyScrollerAPI = {
+        gotoSection: scrollManager.gotoSection,
+        nextSection: scrollManager.nextSection,
+        prevSection: scrollManager.prevSection
+      };
+    }
+  }, [scrollManager.gotoSection, scrollManager.nextSection, scrollManager.prevSection]);
 
-  // The useScrollManager hook now contains ALL the logic
-  const { containerRef } = useScrollManager({
-    sections,
-    ...scrollConfig,
-  });
-
-  // Early return if sections not provided
-  if (!sections || sections.length === 0) {
-    console.error('StoryScroller: sections prop is required and must not be empty');
-    return null;
-  }
-
-  // The component is now only responsible for rendering the UI
   return (
     <div
-      ref={containerRef}
-      className={`${CSS_CLASSES.CONTAINER} ${containerClassName} ${className}`.trim()}
+      ref={scrollManager.containerRef}
+      className={`story-scroller-container ${props.containerClassName || ''} ${props.className || ''}`.trim()}
       style={{
         width: '100vw',
-        height: '100vh',
-        overflow: 'hidden',
         overscrollBehavior: 'none',
-        position: 'relative',
-        ...style,
+        ...props.style,
       }}
-      {...{ [DATA_ATTRIBUTES.SCROLL_CONTAINER]: true }}
     >
-      {sections.map((child, i) => (
+      {props.sections.map((child, i) => (
         <section
           key={i}
           data-section-idx={i}
-          {...{ [DATA_ATTRIBUTES.SECTION_INDEX]: i }}
           tabIndex={0}
-          className={`${CSS_CLASSES.SECTION} ${sectionClassName}`.trim()}
+          className={`story-scroller-section ${props.sectionClassName || ''}`.trim()}
           style={{
             height: '100vh',
             width: '100%',

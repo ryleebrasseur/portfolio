@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { useScrollContext, useScrollActions } from '../context/ScrollContext'
 
 /**
@@ -14,36 +14,37 @@ export const useStoryScroller = (totalSections: number) => {
   const { state } = useScrollContext()
   const actions = useScrollActions()
   
-  // Use currentIndex from context state as currentSection
-  const currentSection = state.currentIndex
-  
   const gotoSection = useCallback((index: number) => {
     const clampedIndex = Math.max(0, Math.min(totalSections - 1, index))
     console.log('🎯 useStoryScroller.gotoSection called:', {
       requestedIndex: index,
       clampedIndex,
-      currentSection,
+      currentIndex: state.currentIndex,
       totalSections
     })
     // Dispatch action to update context state
     actions.setCurrentIndex(clampedIndex)
-  }, [totalSections, actions, currentSection])
+  }, [totalSections, actions, state.currentIndex])
   
   const nextSection = useCallback(() => {
+    const current = state.currentIndex || 0
+    const target = current + 1
     console.log('➡️ useStoryScroller.nextSection called:', {
-      currentSection,
-      targetSection: currentSection + 1
+      currentSection: current,
+      targetSection: target
     })
-    gotoSection(currentSection + 1)
-  }, [currentSection, gotoSection])
+    gotoSection(target)
+  }, [state.currentIndex, gotoSection])
   
   const prevSection = useCallback(() => {
+    const current = state.currentIndex || 0
+    const target = current - 1
     console.log('⬅️ useStoryScroller.prevSection called:', {
-      currentSection,
-      targetSection: currentSection - 1
+      currentSection: current,
+      targetSection: target
     })
-    gotoSection(currentSection - 1)
-  }, [currentSection, gotoSection])
+    gotoSection(target)
+  }, [state.currentIndex, gotoSection])
   
   const firstSection = useCallback(() => {
     gotoSection(0)
@@ -58,8 +59,10 @@ export const useStoryScroller = (totalSections: number) => {
     actions.setCurrentIndex(index)
   }, [actions])
   
-  // Memoize the return value to prevent unnecessary re-renders
-  return useMemo(() => ({
+  // Use currentIndex directly from state, no memoization to avoid circular deps
+  const currentSection = state.currentIndex || 0
+  
+  return {
     currentSection,
     setCurrentSection,
     gotoSection,
@@ -69,14 +72,5 @@ export const useStoryScroller = (totalSections: number) => {
     lastSection,
     isFirstSection: currentSection === 0,
     isLastSection: currentSection === totalSections - 1,
-  }), [
-    currentSection,
-    setCurrentSection,
-    gotoSection,
-    nextSection,
-    prevSection,
-    firstSection,
-    lastSection,
-    totalSections
-  ])
+  }
 }
