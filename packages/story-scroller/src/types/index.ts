@@ -73,6 +73,34 @@ export interface StoryScrollerConfig {
    * CSS class name for sections.
    */
   sectionClassName?: string
+  
+  /**
+   * Threshold for magnetic snap effect (0-1).
+   * When scroll position is within this percentage of a snap point,
+   * the magnetic effect will trigger.
+   * @default 0.15
+   */
+  magneticThreshold?: number
+  
+  /**
+   * Velocity threshold for magnetic snap (pixels per frame).
+   * Magnetic snap only triggers when velocity is below this value.
+   * @default 5
+   */
+  magneticVelocityThreshold?: number
+  
+  /**
+   * Interval for velocity tracking in milliseconds.
+   * Lower values = more responsive but higher CPU usage.
+   * @default 16 (60fps)
+   */
+  velocityTrackingRate?: number
+  
+  /**
+   * Whether to enable magnetic snap effect.
+   * @default true
+   */
+  enableMagneticSnap?: boolean
 }
 
 /**

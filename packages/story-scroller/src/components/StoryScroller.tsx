@@ -37,6 +37,11 @@ export const StoryScroller: React.FC<StoryScrollerProps> = ({
   sectionClassName = '',
   className = '',
   style = {},
+  // New physics parameters
+  magneticThreshold = 0.15,
+  magneticVelocityThreshold = 5,
+  velocityTrackingRate = 16,
+  enableMagneticSnap = true,
 }) => {
   const container = useRef<HTMLDivElement>(null)
   const { state, browserService: contextBrowserService } = useScrollContext()
@@ -151,6 +156,7 @@ export const StoryScroller: React.FC<StoryScrollerProps> = ({
       let scrollEndHandler: (() => void) | null = null
       let cleanupKeyboard: (() => void) | undefined
       let wheelDebounceTimeout: NodeJS.Timeout | null = null
+      let velocityTrackingInterval: NodeJS.Timeout | null = null
       
       const setupScroll = async () => {
         try {
@@ -162,16 +168,23 @@ export const StoryScroller: React.FC<StoryScrollerProps> = ({
           
           const Lenis = await initLenis()
           
-          // Initialize Lenis for document scrolling
+          // Initialize Lenis with physics-based configuration
           lenisInstance = new Lenis({
-            duration,
-            easing,
+            duration: duration * 0.8, // Slightly faster base for responsiveness
+            easing: (t) => {
+              // Smooth cubic ease-out for natural deceleration
+              return 1 - Math.pow(1 - t, 3)
+            },
             orientation: 'vertical',
             gestureOrientation: 'vertical',
             smoothWheel: true,
             touchMultiplier,
             infinite: false,
             autoResize: true,
+            // Physics improvements
+            lerp: 0.1, // Smoothing factor (0-1, lower = smoother)
+            wheelMultiplier: 0.8, // Reduce wheel sensitivity for better control
+            normalizeWheel: true, // Normalize across different input devices
           }) as unknown as LenisInstance
           
           // FEEDBACK IMPLEMENTATION: Use GSAP ticker instead of separate RAF
@@ -186,6 +199,7 @@ export const StoryScroller: React.FC<StoryScrollerProps> = ({
           let lastScrollUpdate = 0
           let lastScrollY = 0
           let lenisEventCount = 0
+          let scrollVelocity = 0
           
           lenisInstance.on('scroll', () => {
             const now = Date.now()
@@ -366,10 +380,70 @@ export const StoryScroller: React.FC<StoryScrollerProps> = ({
               return
             }
             
+            // Calculate dynamic physics-based animation
+            const distance = Math.abs(targetY - currentScrollY)
+            const viewportHeight = browserService.getInnerHeight()
+            const sectionsToTravel = distance / viewportHeight
+            
+            // Convert velocity to pixels per frame for easier reasoning
+            const velocityPerFrame = scrollVelocity / 60
+            const absVelocity = Math.abs(velocityPerFrame)
+            
+            // Physics-based duration calculation
+            // Base time = distance / velocity, with constraints
+            let dynamicDuration = duration
+            
+            if (absVelocity > 1) {
+              // If scrolling with momentum, calculate natural deceleration time
+              const decelerationRate = 0.95 // Friction coefficient
+              const timeToStop = Math.log(1 / absVelocity) / Math.log(decelerationRate)
+              dynamicDuration = Math.min(duration * 1.5, Math.max(duration * 0.5, timeToStop / 60))
+            } else {
+              // Low velocity - use base duration scaled by distance
+              dynamicDuration = duration * Math.sqrt(sectionsToTravel)
+            }
+            
+            // Physics-based easing selection
+            let dynamicEase = "power2.inOut"
+            
+            // Check if this is a magnetic snap
+            const currentSection = currentScrollY / viewportHeight
+            const distanceToTarget = Math.abs(currentSection - newIndex)
+            const isMagneticSnap = distanceToTarget < magneticThreshold
+            
+            if (isMagneticSnap) {
+              // Magnetic snap - use custom back easing for subtle overshoot
+              dynamicEase = "back.out(1.2)"
+              dynamicDuration *= 0.7 // Faster for snappy feel
+            } else if (absVelocity > 10) {
+              // High velocity - natural deceleration curve
+              dynamicEase = "power3.out"
+            } else if (absVelocity > 3) {
+              // Medium velocity - smooth curve
+              dynamicEase = "power2.out"
+            } else {
+              // Low velocity - symmetric ease
+              dynamicEase = "power2.inOut"
+            }
+            
+            // Apply momentum to the ease if scrolling in same direction
+            const scrollDirection = targetY > currentScrollY ? 1 : -1
+            const velocityDirection = scrollVelocity > 0 ? 1 : -1
+            const isWithMomentum = scrollDirection === velocityDirection && absVelocity > 5
+            
+            if (isWithMomentum) {
+              // Scrolling with momentum - use out easing for natural deceleration
+              dynamicEase = dynamicEase.replace('.inOut', '.out')
+            }
+            
             console.log('🎬 Starting GSAP scroll animation:', {
               from: currentScrollY,
               to: targetY,
-              duration
+              duration: dynamicDuration.toFixed(2),
+              velocity: velocityPerFrame.toFixed(1),
+              ease: dynamicEase,
+              isMagneticSnap,
+              withMomentum: isWithMomentum
             })
             
             gsap.to(windowTarget, {
@@ -377,8 +451,8 @@ export const StoryScroller: React.FC<StoryScrollerProps> = ({
                 y: targetY,
                 autoKill: false,
               },
-              duration,
-              ease: "power2.inOut",
+              duration: dynamicDuration,
+              ease: dynamicEase,
               onComplete: () => {
                 const finalScrollY = browserService.getScrollY()
                 console.log('✅ GSAP scroll animation complete:', {
@@ -406,9 +480,71 @@ export const StoryScroller: React.FC<StoryScrollerProps> = ({
           // Store gotoSection in ref for external access
           gotoSectionRef.current = gotoSection
           
-          // Track wheel events to debug single scroll issue
+          // Track wheel events for debugging
           let lastWheelTime = 0
           let wheelEventCount = 0
+          
+          // Start velocity tracking for magnetic effect
+          if (enableMagneticSnap) {
+            let velocityHistory: number[] = []
+            let lastVelocityTime = Date.now()
+            
+            velocityTrackingInterval = setInterval(() => {
+              const currentScrollY = browserService.getScrollY()
+              const currentTime = Date.now()
+              const timeDelta = (currentTime - lastVelocityTime) / 1000 // Convert to seconds
+              
+              if (timeDelta > 0) {
+                // Calculate velocity in pixels per second
+                const instantVelocity = (currentScrollY - lastScrollY) / timeDelta
+                velocityHistory.push(instantVelocity)
+                
+                // Keep only last 5 samples for smoothing
+                if (velocityHistory.length > 5) {
+                  velocityHistory.shift()
+                }
+                
+                // Calculate average velocity for smoothing
+                scrollVelocity = velocityHistory.reduce((a, b) => a + b, 0) / velocityHistory.length
+                
+                // Check for magnetic snap if velocity is low
+                const absVelocity = Math.abs(scrollVelocity)
+                if (absVelocity < magneticVelocityThreshold * 60 && !stateRef.current.isAnimating) { // Convert threshold to px/sec
+                  const viewportHeight = browserService.getInnerHeight()
+                  const currentSection = currentScrollY / viewportHeight
+                  const nearestSection = Math.round(currentSection)
+                  const distanceToNearest = Math.abs(currentSection - nearestSection)
+                  
+                  // Calculate magnetic force based on distance (inverse square law)
+                  const magneticForce = distanceToNearest < magneticThreshold 
+                    ? Math.pow(1 - (distanceToNearest / magneticThreshold), 2)
+                    : 0
+                  
+                  // Only trigger if magnetic force is strong enough AND it's a different section
+                  if (magneticForce > 0.5 && 
+                      nearestSection !== stateRef.current.currentIndex &&
+                      nearestSection >= 0 && 
+                      nearestSection < sections.length) {
+                    
+                    console.log('🧲 Magnetic snap triggered:', {
+                      currentSection: currentSection.toFixed(2),
+                      nearestSection,
+                      distance: distanceToNearest.toFixed(3),
+                      velocity: (absVelocity / 60).toFixed(1), // Show in px/frame for consistency
+                      magneticForce: magneticForce.toFixed(2),
+                      threshold: magneticThreshold
+                    })
+                    
+                    // Don't immediately snap - let the animation handle it smoothly
+                    gotoSection(nearestSection)
+                  }
+                }
+                
+                lastScrollY = currentScrollY
+                lastVelocityTime = currentTime
+              }
+            }, velocityTrackingRate)
+          }
           
           // GSAP Observer for scroll/touch input
           const windowTarget = browserService.getWindow()
@@ -567,6 +703,11 @@ export const StoryScroller: React.FC<StoryScrollerProps> = ({
         // Clear wheel debounce timeout
         if (wheelDebounceTimeout) {
           clearTimeout(wheelDebounceTimeout)
+        }
+        
+        // Clear velocity tracking interval
+        if (velocityTrackingInterval) {
+          clearInterval(velocityTrackingInterval)
         }
         
         // Remove GSAP ticker callback
