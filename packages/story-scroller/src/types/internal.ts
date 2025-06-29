@@ -1,10 +1,30 @@
 // Internal types for StoryScroller implementation
 
+// Lenis scroll event data
+export interface LenisScrollEvent {
+  scroll: number      // Current scroll position
+  limit: number       // Maximum scroll limit
+  velocity: number    // Scroll velocity
+  direction: number   // Scroll direction (1 for down, -1 for up)
+  progress: number    // Scroll progress (0-1)
+}
+
+// Lenis virtual scroll event data
+export interface LenisVirtualScrollEvent {
+  deltaX: number
+  deltaY: number
+  event: WheelEvent | TouchEvent
+}
+
+// Lenis instance interface
 export interface LenisInstance {
   scroll: number
   raf: (time: number) => void
   scrollTo: (value: number, options?: { immediate?: boolean }) => void
-  on: (event: 'scroll' | 'virtual-scroll', callback: (e?: any) => void) => () => void
+  on: {
+    (event: 'scroll', callback: (data: LenisScrollEvent) => void): () => void
+    (event: 'virtual-scroll', callback: (data: LenisVirtualScrollEvent) => void): () => void
+  }
   destroy: () => void
 }
 

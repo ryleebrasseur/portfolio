@@ -1,7 +1,9 @@
+import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { StoryScroller } from '../src/components/StoryScroller'
+import { ScrollProvider } from '../src/context/ScrollContext'
 
 // Mock GSAP modules
 vi.mock('gsap', () => ({
@@ -78,6 +80,15 @@ describe('StoryScroller Component', () => {
     <div key="3">Section 3</div>,
   ]
 
+  // Wrapper to provide ScrollContext
+  const renderWithProvider = (ui: React.ReactElement) => {
+    return render(
+      <ScrollProvider>
+        {ui}
+      </ScrollProvider>
+    )
+  }
+
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -87,7 +98,7 @@ describe('StoryScroller Component', () => {
   })
 
   it('renders all sections', () => {
-    render(<StoryScroller sections={mockSections} />)
+    renderWithProvider(<StoryScroller sections={mockSections} />)
     
     expect(screen.getByText('Section 1')).toBeInTheDocument()
     expect(screen.getByText('Section 2')).toBeInTheDocument()
@@ -95,7 +106,7 @@ describe('StoryScroller Component', () => {
   })
 
   it('applies correct data attributes to sections', () => {
-    const { container } = render(<StoryScroller sections={mockSections} />)
+    const { container } = renderWithProvider(<StoryScroller sections={mockSections} />)
     
     const sections = container.querySelectorAll('[data-section-idx]')
     expect(sections).toHaveLength(3)
@@ -105,7 +116,7 @@ describe('StoryScroller Component', () => {
   })
 
   it('applies custom class names', () => {
-    const { container } = render(
+    const { container } = renderWithProvider(
       <StoryScroller
         sections={mockSections}
         containerClassName="custom-container"
@@ -128,13 +139,22 @@ describe('StoryScroller Component', () => {
     const { Observer } = await import('gsap/all')
     
     // Setup Observer mock to capture callbacks
-    let observerCallbacks: any = {}
-    ;(Observer.create as any).mockImplementation((config: any) => {
+    interface ObserverConfig {
+      onDown?: () => void
+      onUp?: () => void
+      onWheel?: (self: { deltaY: number }) => void
+      preventDefault?: boolean
+      tolerance?: number
+      [key: string]: unknown
+    }
+    
+    let observerCallbacks: ObserverConfig = {}
+    ;(Observer.create as jest.MockedFunction<typeof Observer.create>).mockImplementation((config: ObserverConfig) => {
       observerCallbacks = config
       return { kill: vi.fn() }
     })
     
-    render(
+    renderWithProvider(
       <StoryScroller
         sections={mockSections}
         onSectionChange={onSectionChange}
@@ -166,7 +186,7 @@ describe('StoryScroller Component', () => {
   it('respects preventDefault option', async () => {
     const { Observer } = await import('gsap/all')
     
-    render(
+    renderWithProvider(
       <StoryScroller
         sections={mockSections}
         preventDefault={false}
@@ -185,7 +205,7 @@ describe('StoryScroller Component', () => {
   it('respects tolerance option', async () => {
     const { Observer } = await import('gsap/all')
     
-    render(
+    renderWithProvider(
       <StoryScroller
         sections={mockSections}
         tolerance={100}
@@ -205,7 +225,7 @@ describe('StoryScroller Component', () => {
     const user = userEvent.setup()
     const onSectionChange = vi.fn()
     
-    render(
+    renderWithProvider(
       <StoryScroller
         sections={mockSections}
         keyboardNavigation={true}
@@ -226,7 +246,7 @@ describe('StoryScroller Component', () => {
     const gsap = (await import('gsap')).default
     const { ScrollTrigger, Observer } = await import('gsap/all')
     
-    const { unmount } = render(<StoryScroller sections={mockSections} />)
+    const { unmount } = renderWithProvider(<StoryScroller sections={mockSections} />)
     
     unmount()
     
@@ -239,14 +259,14 @@ describe('StoryScroller Component', () => {
   })
 
   it('handles empty sections array', () => {
-    const { container } = render(<StoryScroller sections={[]} />)
+    const { container } = renderWithProvider(<StoryScroller sections={[]} />)
     
     const sections = container.querySelectorAll('[data-section-idx]')
     expect(sections).toHaveLength(0)
   })
 
   it('updates when sections change', () => {
-    const { rerender } = render(<StoryScroller sections={mockSections} />)
+    const { rerender } = renderWithProvider(<StoryScroller sections={mockSections} />)
     
     expect(screen.getByText('Section 1')).toBeInTheDocument()
     
@@ -255,7 +275,11 @@ describe('StoryScroller Component', () => {
       <div key="5">Section 5</div>,
     ]
     
-    rerender(<StoryScroller sections={newSections} />)
+    rerender(
+      <ScrollProvider>
+        <StoryScroller sections={newSections} />
+      </ScrollProvider>
+    )
     
     expect(screen.queryByText('Section 1')).not.toBeInTheDocument()
     expect(screen.getByText('Section 4')).toBeInTheDocument()
@@ -263,7 +287,7 @@ describe('StoryScroller Component', () => {
   })
 
   it('applies accessibility attributes', () => {
-    const { container } = render(<StoryScroller sections={mockSections} />)
+    const { container } = renderWithProvider(<StoryScroller sections={mockSections} />)
     
     const sections = container.querySelectorAll('section')
     sections.forEach((section) => {
@@ -277,7 +301,7 @@ describe('StoryScroller Component', () => {
       padding: '20px',
     }
     
-    const { container } = render(
+    const { container } = renderWithProvider(
       <StoryScroller sections={mockSections} style={customStyle} />
     )
     

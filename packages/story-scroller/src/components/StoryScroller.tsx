@@ -1,11 +1,12 @@
-"use client"
-
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger, ScrollToPlugin, Observer } from 'gsap/all'
 import { useGSAP } from '@gsap/react'
-import type { StoryScrollerProps, ScrollState } from '../types'
+import type { StoryScrollerProps } from '../types'
 import type { LenisInstance, ObserverInstance } from '../types/internal'
+import { scrollSelectors } from '../state/scrollReducer'
+import { useScrollContext, useScrollActions } from '../context/ScrollContext'
+import { createBrowserService } from '../services/BrowserService'
 
 // Dynamic import for Lenis to prevent SSR issues
 const initLenis = async () => {
@@ -37,47 +38,51 @@ export const StoryScroller: React.FC<StoryScrollerProps> = ({
   style = {},
 }) => {
   const container = useRef<HTMLDivElement>(null)
-  const scrollState = useRef<ScrollState>({
-    currentIndex: 0,
-    isAnimating: false,
-    isScrolling: false,
-    lastScrollTime: 0,
-  })
+  const { state, browserService: contextBrowserService } = useScrollContext()
+  const actions = useScrollActions()
   
-  const [isClient, setIsClient] = useState(false)
-  const [pathname] = useState<string | null>(null)
+  // Use browserService from context if available, otherwise create a new one
+  const browserService = contextBrowserService || createBrowserService()
   
-  // Detect client-side mount
+  // Detect client-side mount using browserService
   useEffect(() => {
-    setIsClient(true)
-    // Pathname state is set externally if needed
-  }, [])
+    if (browserService.isClient()) {
+      actions.setClientMounted()
+    }
+    // Pathname state can be set externally if needed
+  }, []) // Remove deps that change on every render
+  
+  // Update section count when sections change
+  useEffect(() => {
+    actions.setSectionCount(sections.length)
+  }, [sections.length, actions])
   
   // Handle route changes
   useEffect(() => {
-    if (!isClient) return
+    if (!browserService.isClient()) return
     
     const handleRouteChange = () => {
-      window.scrollTo(0, 0)
+      browserService.scrollTo(0, 0)
       ScrollTrigger.refresh(true)
+      actions.resetScrollState()
     }
     
     // Next.js route change detection via pathname
-    if (pathname !== null) {
+    if (state.pathname !== null) {
       handleRouteChange()
     }
     
     // Fallback to popstate for browser navigation
-    window.addEventListener('popstate', handleRouteChange)
+    browserService.addEventListener('popstate', handleRouteChange)
     return () => {
-      window.removeEventListener('popstate', handleRouteChange)
+      browserService.removeEventListener('popstate', handleRouteChange)
     }
-  }, [pathname, isClient])
+  }, [state.pathname, actions, browserService])
   
   // Main scroll system setup
   useGSAP(
     () => {
-      if (!isClient || !container.current) return
+      if (!browserService.isClient() || !container.current) return
       
       // These need to be in the outer scope for cleanup
       let lenisInstance: LenisInstance | null = null
@@ -91,13 +96,14 @@ export const StoryScroller: React.FC<StoryScrollerProps> = ({
           const Lenis = await initLenis()
           
           // Initialize Lenis with configuration
+          const docBody = browserService.getDocumentBody()
           lenisInstance = new Lenis({
             duration,
             easing,
             orientation: 'vertical',
             gestureOrientation: 'vertical',
             smoothWheel: true,
-            eventsTarget: smoothTouch ? undefined : document.body,
+            eventsTarget: smoothTouch ? undefined : (docBody || undefined),
             touchMultiplier,
             infinite: false,
             autoResize: true,
@@ -113,55 +119,56 @@ export const StoryScroller: React.FC<StoryScrollerProps> = ({
           // Sync Lenis with ScrollTrigger
           lenisInstance.on('scroll', () => {
             ScrollTrigger.update()
-            scrollState.current.isScrolling = true
-            scrollState.current.lastScrollTime = Date.now()
+            actions.startScrolling()
           })
           
           // IMPROVEMENT FROM FEEDBACK: Use ScrollTrigger scrollEnd event
           scrollEndHandler = () => {
-            scrollState.current.isAnimating = false
-            scrollState.current.isScrolling = false
+            actions.endAnimation()
+            actions.endScrolling()
           }
           ScrollTrigger.addEventListener('scrollEnd', scrollEndHandler)
           
-          // Delay ScrollTrigger config to avoid Next.js hydration errors
-          if (typeof window !== 'undefined') {
+          // Delay ScrollTrigger config to avoid hydration errors
+          if (browserService.isClient()) {
             setTimeout(() => {
               ScrollTrigger.config({
                 syncInterval: 40,
                 autoRefreshEvents: 'visibilitychange,DOMContentLoaded,load',
               })
               
-              ScrollTrigger.scrollerProxy(document.body, {
-                scrollTop(value?: number) {
-                  if (arguments.length && value !== undefined) {
-                    lenisInstance?.scrollTo(value, { immediate: true })
-                  }
-                  return lenisInstance?.scroll || 0
-                },
-                getBoundingClientRect() {
-                  return {
-                    top: 0,
-                    left: 0,
-                    width: window.innerWidth,
-                    height: window.innerHeight,
-                  }
-                },
-              })
+              const docBody = browserService.getDocumentBody()
+              if (docBody) {
+                ScrollTrigger.scrollerProxy(docBody, {
+                  scrollTop(value?: number) {
+                    if (arguments.length && value !== undefined) {
+                      lenisInstance?.scrollTo(value, { immediate: true })
+                    }
+                    return lenisInstance?.scroll || 0
+                  },
+                  getBoundingClientRect() {
+                    const viewport = browserService.getViewportDimensions()
+                    return {
+                      top: 0,
+                      left: 0,
+                      width: viewport.width,
+                      height: viewport.height,
+                    }
+                  },
+                })
+              }
               ScrollTrigger.refresh(true)
             }, 100)
           }
           
           // Navigation function
           const gotoSection = (index: number) => {
-            const state = scrollState.current
-            if (state.isAnimating) return
+            if (!scrollSelectors.canNavigate(state)) return
             
             const newIndex = gsap.utils.clamp(0, sections.length - 1, index)
             if (newIndex === state.currentIndex) return
             
-            state.isAnimating = true
-            state.currentIndex = newIndex
+            actions.gotoSection(newIndex, Date.now())
             
             // Notify parent component
             onSectionChange?.(newIndex)
@@ -171,46 +178,49 @@ export const StoryScroller: React.FC<StoryScrollerProps> = ({
             )
             if (!sectionEl) {
               console.warn(`StoryScroller: Section ${newIndex} not found`)
-              state.isAnimating = false
+              actions.endAnimation()
               return
             }
             
-            // Use getBoundingClientRect for accurate positioning
-            const targetY = sectionEl.getBoundingClientRect().top + window.scrollY
+            // Use browserService for accurate positioning
+            const rect = browserService.getBoundingClientRect(sectionEl)
+            const targetY = rect.top + browserService.getScrollY()
             
-            gsap.to(window, {
-              scrollTo: {
-                y: targetY,
-                autoKill: false,
-              },
+            // Create a proxy object for GSAP to animate
+            const scrollProxy = { y: browserService.getScrollY() }
+            
+            gsap.to(scrollProxy, {
+              y: targetY,
               duration,
               ease: 'power2.inOut',
+              onUpdate: () => {
+                browserService.scrollTo(0, scrollProxy.y)
+              },
               onComplete: () => {
-                state.isAnimating = false
+                actions.endAnimation()
               },
             })
           }
           
           // GSAP Observer for scroll/touch input
+          const observerTarget = browserService.getDocumentBody()
           observer = Observer.create({
-            target: window,
+            target: (observerTarget || container.current) as Window | HTMLElement | Element,
             type: 'wheel,touch',
             tolerance,
             preventDefault,
             wheelSpeed: invertDirection ? 1 : -1,
             onDown: () => {
-              const state = scrollState.current
-              if (state.isAnimating || Date.now() - state.lastScrollTime < 200) return
+              if (!scrollSelectors.canNavigate(state)) return
               gotoSection(state.currentIndex + (invertDirection ? -1 : 1))
             },
             onUp: () => {
-              const state = scrollState.current
-              if (state.isAnimating || Date.now() - state.lastScrollTime < 200) return
+              if (!scrollSelectors.canNavigate(state)) return
               gotoSection(state.currentIndex - (invertDirection ? -1 : 1))
             },
             // Firefox-specific workaround
             onWheel: (self) => {
-              const isFirefox = navigator.userAgent.includes('Firefox')
+              const isFirefox = browserService.getUserAgent().includes('Firefox')
               if (isFirefox && Math.abs(self.deltaY) < 50) {
                 // Boost small movements on Firefox
                 // Note: deltaY is readonly, so we handle this in the onDown/onUp logic
@@ -220,36 +230,36 @@ export const StoryScroller: React.FC<StoryScrollerProps> = ({
           
           // Keyboard navigation
           if (keyboardNavigation) {
-            const handleKeydown = (e: KeyboardEvent) => {
-              const state = scrollState.current
+            const handleKeydown = (e: Event) => {
+              const keyEvent = e as KeyboardEvent
               if (state.isAnimating) return
               
-              switch (e.key) {
+              switch (keyEvent.key) {
                 case 'ArrowDown':
                 case 'PageDown':
-                  e.preventDefault()
+                  keyEvent.preventDefault()
                   gotoSection(state.currentIndex + 1)
                   break
                 case 'ArrowUp':
                 case 'PageUp':
-                  e.preventDefault()
+                  keyEvent.preventDefault()
                   gotoSection(state.currentIndex - 1)
                   break
                 case 'Home':
-                  e.preventDefault()
+                  keyEvent.preventDefault()
                   gotoSection(0)
                   break
                 case 'End':
-                  e.preventDefault()
+                  keyEvent.preventDefault()
                   gotoSection(sections.length - 1)
                   break
               }
             }
-            window.addEventListener('keydown', handleKeydown)
+            browserService.addEventListener('keydown', handleKeydown)
             
             // Store cleanup for keyboard
             cleanupKeyboard = () => {
-              window.removeEventListener('keydown', handleKeydown)
+              browserService.removeEventListener('keydown', handleKeydown)
             }
           }
         } catch (error) {
@@ -285,23 +295,30 @@ export const StoryScroller: React.FC<StoryScrollerProps> = ({
         gsap.killTweensOf('*')
       }
     },
-    { scope: container, dependencies: [sections.length, isClient] }
+    { scope: container, dependencies: [sections.length, state, actions, browserService] }
   )
   
-  // Suppress Next.js hydration warnings from ScrollTrigger
+  // Handle ScrollTrigger style cleanup properly without hydration hacks
   useEffect(() => {
-    if (typeof document !== 'undefined') {
-      const bodyStyle = document.body.getAttribute('style')
-      if (bodyStyle?.includes('overflow')) {
-        document.body.removeAttribute('style')
-        requestAnimationFrame(() => {
-          if (bodyStyle) {
-            document.body.setAttribute('style', bodyStyle)
-          }
-        })
-      }
+    if (!browserService.isClient()) return
+    
+    const docBody = browserService.getDocumentBody()
+    if (!docBody) return
+    
+    // Use a more robust approach - let ScrollTrigger manage its own styles
+    // and only intervene if there's an actual issue
+    const cleanupScrollTriggerStyles = () => {
+      // ScrollTrigger will handle its own cleanup
+      ScrollTrigger.refresh()
     }
-  }, [])
+    
+    // Run cleanup after a short delay to ensure proper initialization
+    const timeoutId = setTimeout(cleanupScrollTriggerStyles, 200)
+    
+    return () => {
+      clearTimeout(timeoutId)
+    }
+  }, [browserService])
   
   // Render
   return (

@@ -1,10 +1,16 @@
+import React from 'react'
 import { renderHook, act } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
 import { useStoryScroller } from '../src/hooks/useStoryScroller'
+import { ScrollProvider } from '../src/context/ScrollContext'
 
 describe('useStoryScroller Hook', () => {
+  const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <ScrollProvider>{children}</ScrollProvider>
+  )
+
   it('initializes with correct values', () => {
-    const { result } = renderHook(() => useStoryScroller(5))
+    const { result } = renderHook(() => useStoryScroller(5), { wrapper })
     
     expect(result.current.currentSection).toBe(0)
     expect(result.current.isFirstSection).toBe(true)
@@ -12,7 +18,7 @@ describe('useStoryScroller Hook', () => {
   })
 
   it('navigates to next section', () => {
-    const { result } = renderHook(() => useStoryScroller(5))
+    const { result } = renderHook(() => useStoryScroller(5), { wrapper })
     
     act(() => {
       result.current.nextSection()
@@ -24,7 +30,7 @@ describe('useStoryScroller Hook', () => {
   })
 
   it('navigates to previous section', () => {
-    const { result } = renderHook(() => useStoryScroller(5))
+    const { result } = renderHook(() => useStoryScroller(5), { wrapper })
     
     // First go to section 2
     act(() => {
@@ -42,7 +48,7 @@ describe('useStoryScroller Hook', () => {
   })
 
   it('navigates to specific section', () => {
-    const { result } = renderHook(() => useStoryScroller(5))
+    const { result } = renderHook(() => useStoryScroller(5), { wrapper })
     
     act(() => {
       result.current.gotoSection(3)
@@ -52,7 +58,7 @@ describe('useStoryScroller Hook', () => {
   })
 
   it('clamps section index to valid range', () => {
-    const { result } = renderHook(() => useStoryScroller(5))
+    const { result } = renderHook(() => useStoryScroller(5), { wrapper })
     
     // Try to go past the end
     act(() => {
@@ -70,7 +76,7 @@ describe('useStoryScroller Hook', () => {
   })
 
   it('correctly identifies first and last sections', () => {
-    const { result } = renderHook(() => useStoryScroller(3))
+    const { result } = renderHook(() => useStoryScroller(3), { wrapper })
     
     // At first section
     expect(result.current.isFirstSection).toBe(true)
@@ -94,7 +100,7 @@ describe('useStoryScroller Hook', () => {
   })
 
   it('navigates to first section', () => {
-    const { result } = renderHook(() => useStoryScroller(5))
+    const { result } = renderHook(() => useStoryScroller(5), { wrapper })
     
     // Go to middle section first
     act(() => {
@@ -111,7 +117,7 @@ describe('useStoryScroller Hook', () => {
   })
 
   it('navigates to last section', () => {
-    const { result } = renderHook(() => useStoryScroller(5))
+    const { result } = renderHook(() => useStoryScroller(5), { wrapper })
     
     act(() => {
       result.current.lastSection()
@@ -122,7 +128,7 @@ describe('useStoryScroller Hook', () => {
   })
 
   it('prevents navigation past boundaries', () => {
-    const { result } = renderHook(() => useStoryScroller(3))
+    const { result } = renderHook(() => useStoryScroller(3), { wrapper })
     
     // Try to go before first
     act(() => {
@@ -145,7 +151,7 @@ describe('useStoryScroller Hook', () => {
   })
 
   it('handles single section', () => {
-    const { result } = renderHook(() => useStoryScroller(1))
+    const { result } = renderHook(() => useStoryScroller(1), { wrapper })
     
     expect(result.current.currentSection).toBe(0)
     expect(result.current.isFirstSection).toBe(true)
@@ -160,7 +166,7 @@ describe('useStoryScroller Hook', () => {
   })
 
   it('updates when setCurrentSection is called directly', () => {
-    const { result } = renderHook(() => useStoryScroller(5))
+    const { result } = renderHook(() => useStoryScroller(5), { wrapper })
     
     act(() => {
       result.current.setCurrentSection(3)
@@ -170,7 +176,7 @@ describe('useStoryScroller Hook', () => {
   })
   
   it('returns all expected properties', () => {
-    const { result } = renderHook(() => useStoryScroller(5))
+    const { result } = renderHook(() => useStoryScroller(5), { wrapper })
     
     expect(result.current).toHaveProperty('currentSection')
     expect(result.current).toHaveProperty('setCurrentSection')

@@ -100,12 +100,3 @@ export interface StoryScrollerProps extends StoryScrollerConfig {
   style?: React.CSSProperties
 }
 
-/**
- * Internal state for scroll management.
- */
-export interface ScrollState {
-  currentIndex: number
-  isAnimating: boolean
-  isScrolling: boolean
-  lastScrollTime: number
-}

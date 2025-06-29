@@ -64,7 +64,7 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
 // Suppress console errors during tests (GSAP warnings, etc.)
 const originalError = console.error
 beforeAll(() => {
-  console.error = (...args: any[]) => {
+  console.error = (...args: unknown[]) => {
     if (
       typeof args[0] === 'string' &&
       (args[0].includes('GSAP') || args[0].includes('ScrollTrigger'))
